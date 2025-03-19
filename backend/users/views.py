@@ -9,6 +9,7 @@ import random
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from .tasks import send_verification_email 
+from .tasks import send_registration_link
 
 User = get_user_model()
 
@@ -106,7 +107,7 @@ class RegisterUserView(APIView):
        
         FRONTEND_URL = "http://localhost:5173/complete-registration"
         registration_link = f"{FRONTEND_URL}?token={registration_token}&email={email}"
-        send_verification_email.delay(email, registration_link)
+        send_registration_link.delay(email, registration_link)
 
         return Response({"message": "Utilisateur ajouté. Un email a été envoyé pour compléter l'inscription."}, status=status.HTTP_201_CREATED)
 
@@ -219,10 +220,10 @@ class LoginView(APIView):
         
         refresh = RefreshToken.for_user(user)
         role_redirects = {
-            "admin": "/admin-dashboard",
-            "installateur": "/installateur-dashboard",
-            "technicien": "/technicien-dashboard",
-            "client": "/client-dashboard",
+            "admin": "/",
+            "installateur": "/",
+            "technicien": "/",
+            "client": "/",
         }
         redirect_url = role_redirects.get(user.role, "/")  
 

@@ -1,17 +1,12 @@
 import React, { useState } from "react";
-import axios from "axios";
-import "../Authentification/RegisterAdmin.css";
+import "../../assets/RegisterAdmin.css";
 import newImage from "/assets/panneau-solaire.jpeg";
+import { RegisterAdminType } from "../../types/type";
+import PublicApiService from "../../Api/APIpublic";
+
 
 const RegisterAdmin = () => {
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    verificationCode: "",
-    password: "",
-    confirmPassword: "",
-  });
+  const [formData, setFormData] = useState(RegisterAdminType);
 
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
@@ -21,14 +16,15 @@ const RegisterAdmin = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+
   const handleSendCode = async () => {
     if (!formData.email) {
-      setError("Please enter your email first.");
+      setError("Veuillez entrer votre email.");
       return;
     }
 
     try {
-      await axios.post("http://127.0.0.1:8000/users/register-admin/", {
+      await PublicApiService.registerAdmin({
         email: formData.email,
         first_name: formData.firstName,
         last_name: formData.lastName,
@@ -38,38 +34,38 @@ const RegisterAdmin = () => {
 
       setVerificationSent(true);
       setError(null);
-      setSuccess("Verification code sent! Please check your email.");
+      setSuccess("Code de vérification envoyé ! Vérifiez votre email.");
     } catch (err) {
-      setError(err.response?.data?.error || "Failed to send verification code.");
+      setError(err.response?.data?.error || "Échec de l'envoi du code de vérification.");
     }
   };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match");
+      setError("Les mots de passe ne correspondent pas.");
       return;
     }
 
     if (!verificationSent) {
-      setError("Please request a verification code first.");
+      setError("Veuillez d'abord demander un code de vérification.");
       return;
     }
 
     try {
-      const verifyResponse = await axios.post("http://127.0.0.1:8000/users/verify-admin/", {
-        email: formData.email,
-        code: formData.verificationCode,
-      });
+      const verifyResponse = await PublicApiService.verifyAdmin(
+        formData.email,
+        formData.verificationCode
+      );
 
       if (verifyResponse.status === 200) {
-        setSuccess("Account verified and registered successfully!");
+        setSuccess("Compte vérifié et enregistré avec succès !");
         setError(null);
       }
     } catch (err) {
-      setError(err.response?.data?.error || "Invalid verification code.");
-      return;
+      setError(err.response?.data?.error || "Code de vérification invalide.");
     }
   };
 

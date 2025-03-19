@@ -1,1 +1,0 @@
-<h1>Installateur Dashboard</h1>

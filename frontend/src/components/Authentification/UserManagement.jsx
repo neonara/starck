@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-
+import { AddUserType } from "../../types/type"; 
+import ApiService from "../../Api/Api";
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
-  const [email, setEmail] = useState("");
-  const [role, setRole] = useState("installateur");
+  const [formData, setFormData] = useState(AddUserType); 
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -15,31 +14,23 @@ const UserManagement = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get("http://127.0.0.1:8000/users/", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
-      });
+      const response = await ApiService.getUsers();  
       setUsers(response.data);
     } catch (err) {
-      console.error("Failed to fetch users", err);
+      console.error("Erreur de récupération des utilisateurs", err);
     }
+  };
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleAddUser = async () => {
     try {
-      await axios.post(
-        "http://127.0.0.1:8000/users/register/",
-        { email, role },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-          },
-        }
-      );
+      await ApiService.addUser(formData);  
       setSuccess("Utilisateur ajouté avec succès !");
       setError(null);
-      setEmail("");
+      setFormData(AddUserType);
       fetchUsers();
     } catch (err) {
       setError(err.response?.data?.error || "Échec de l'ajout.");
@@ -60,9 +51,10 @@ const UserManagement = () => {
         <div className="mb-4">
           <input
             type="email"
+            name="email"
             placeholder="Email de l'utilisateur"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={formData.email}
+            onChange={handleChange}
             required
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
           />
@@ -73,7 +65,7 @@ const UserManagement = () => {
             onClick={() => setDropdownOpen(!dropdownOpen)}
             className="w-full flex justify-between items-center bg-gray-100 px-4 py-3 rounded-lg border border-gray-300 hover:bg-gray-200 cursor-pointer"
           >
-            {role.charAt(0).toUpperCase() + role.slice(1)}
+            {formData.role.charAt(0).toUpperCase() + formData.role.slice(1)}
             <span>{dropdownOpen ? "▲" : "▼"}</span>
           </button>
 
@@ -84,7 +76,7 @@ const UserManagement = () => {
                   key={option}
                   className="px-4 py-2 hover:bg-gray-200 cursor-pointer"
                   onClick={() => {
-                    setRole(option);
+                    setFormData({ ...formData, role: option });
                     setDropdownOpen(false);
                   }}
                 >
@@ -103,12 +95,8 @@ const UserManagement = () => {
             Ajouter
           </button>
         </div>
-
-        
-        
-        </div>
       </div>
-  
+    </div>
   );
 };
 

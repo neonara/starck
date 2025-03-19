@@ -28,7 +28,7 @@ const RegisterAdmin = () => {
     }
 
     try {
-      await axios.post("http://127.0.0.1:8000/users/register-admin/", {
+      await axios.post("/users/register-admin/", {
         email: formData.email,
         first_name: formData.firstName,
         last_name: formData.lastName,
@@ -58,7 +58,7 @@ const RegisterAdmin = () => {
     }
 
     try {
-      const verifyResponse = await axios.post("http://127.0.0.1:8000/users/verify-admin/", {
+      const verifyResponse = await axios.post("/users/verify-admin/", {
         email: formData.email,
         code: formData.verificationCode,
       });

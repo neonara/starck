@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import './App.css'
 import "flowbite";
 import "./index.css";
@@ -7,9 +6,9 @@ import RegisterAdmin from "./Authentification/RegisterAdmin";
 import Login from './Authentification/Login';
 import UserManagement from './Authentification/UserManagement';
 import CompleteRegistration from './Authentification/CompleteRegistration';
-
+import ForgotPassword from './Authentification/ForgotPassword';
+import ResetPassword from './Authentification/ResetPassword';
 function App() {
-  const [count, setCount] = useState(0)
 
   return (
     <Router>
@@ -18,7 +17,8 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path="/user-management" element={<UserManagement />} />
         <Route path="/complete-registration" element={<CompleteRegistration />} />
-
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
       </Routes>
     </Router>
   )

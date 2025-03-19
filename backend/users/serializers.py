@@ -31,7 +31,6 @@ class AdminRegistrationSerializer(serializers.ModelSerializer):
         role = validated_data.pop('role', 'admin')
         email = validated_data.get('email')
         
-        # Créez l'utilisateur
         user = User(**validated_data)
         user.role = role
         user.is_active = False  

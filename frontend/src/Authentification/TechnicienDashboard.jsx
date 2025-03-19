@@ -1,1 +1,0 @@
-<h1>Technicien Dashboard</h1>

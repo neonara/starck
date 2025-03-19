@@ -1,23 +1,24 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import { FaUser, FaLock } from "react-icons/fa";
+import { LoginType } from "../../types/type";  
+import PublicApiService from "../../Api/APIpublic"; 
 
 export default function LoginPage() {
-  const [identifier, setIdentifier] = useState("");
-  const [password, setPassword] = useState("");
+  const [loginData, setLoginData] = useState(LoginType);  
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+
+  const handleChange = (e) => {
+    setLoginData({ ...loginData, [e.target.name]: e.target.value });
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError(null);
 
     try {
-      const response = await axios.post("http://127.0.0.1:8000/users/login/", {
-        identifier,
-        password,
-      });
+      const response = await PublicApiService.login(loginData);  
 
       localStorage.setItem("accessToken", response.data.access);
       localStorage.setItem("refreshToken", response.data.refresh);
@@ -25,9 +26,9 @@ export default function LoginPage() {
 
       const roleRedirects = {
         admin: "/user-management",
-        installateur: "/installateur-dashboard",
-        technicien: "/technicien-dashboard",
-        client: "/client-dashboard",
+        installateur: "/",
+        technicien: "/",
+        client: "/",
       };
       const redirectUrl = roleRedirects[response.data.user.role] || "/dashboard";
       navigate(redirectUrl);
@@ -35,6 +36,7 @@ export default function LoginPage() {
       setError(err.response?.data?.error || "Une erreur s'est produite.");
     }
   };
+
 
   return (
     <div className="fixed top-0 left-0 w-screen h-screen flex items-center justify-center bg-cover bg-center overflow-hidden"
@@ -54,15 +56,15 @@ export default function LoginPage() {
         <form onSubmit={handleLogin}>
           <div className="flex items-center gap-4 justify-center">
             
-            <div className="flex items-center bg-white   rounded-full px-4 py-1 w-50">
+            <div className="flex items-center bg-white rounded-full px-4 py-1 w-50">
               <FaUser className="text-gray-500" />
               <input
                 type="text"
-                value={identifier}
-                onChange={(e) => setIdentifier(e.target.value)}
+                name="identifier"
+                value={loginData.identifier}
+                onChange={handleChange}
                 placeholder="Email ou Nom d'utilisateur"
                 required
-                
               />
             </div>
 
@@ -70,8 +72,9 @@ export default function LoginPage() {
               <FaLock className="text-gray-500" />
               <input
                 type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                name="password"
+                value={loginData.password}
+                onChange={handleChange}
                 placeholder="Mot de passe"
                 required
               />

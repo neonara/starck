@@ -47,6 +47,8 @@ const ApiService = {
  
 
   addUser: (userData) => api.post("users/register/", userData),
+  getProfile: () => api.get("users/get-profile/"), 
+  updateProfile: (userData) => api.patch("users/update-profile/", userData),
 };
 
 export default ApiService;

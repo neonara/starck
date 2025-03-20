@@ -68,3 +68,62 @@ class AdminVerificationSerializer(serializers.Serializer):
         self.context['user'] = user
         return data
        
+
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    first_name = serializers.CharField(required=False, allow_blank=True)
+    last_name = serializers.CharField(required=False, allow_blank=True)
+    new_password = serializers.CharField(write_only=True, required=False)
+    confirm_new_password = serializers.CharField(write_only=True, required=False)
+    old_password = serializers.CharField(write_only=True, required=False)
+
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'email', 'role', 'new_password', 'confirm_new_password', 'old_password']
+        read_only_fields = ['role']  
+
+    def validate_email(self, value):
+        user = self.context['request'].user
+        if user.role != 'admin' and user.email != value:
+            raise serializers.ValidationError("Seuls les administrateurs peuvent modifier leur email.")
+        return value
+
+    def validate(self, data):
+        user = self.context['request'].user
+        new_password = data.get('new_password')
+        confirm_new_password = data.get('confirm_new_password')
+        old_password = data.get('old_password')
+
+        if new_password or confirm_new_password or old_password:
+            if not old_password:
+                raise serializers.ValidationError({"old_password": "L'ancien mot de passe est requis pour en définir un nouveau."})
+            if not user.check_password(old_password):
+                raise serializers.ValidationError({"old_password": "L'ancien mot de passe est incorrect."})
+            if new_password != confirm_new_password:
+                raise serializers.ValidationError({"new_password": "Les nouveaux mots de passe ne correspondent pas."})
+
+        return data
+
+    def update(self, instance, validated_data):
+        """
+        Mise à jour du profil et du mot de passe si nécessaire.
+        """
+        if 'new_password' in validated_data:
+            instance.set_password(validated_data['new_password'])
+            validated_data.pop('new_password', None)
+            validated_data.pop('confirm_new_password', None)
+            validated_data.pop('old_password', None)
+
+        if 'first_name' in validated_data and validated_data['first_name'] != "":
+            instance.first_name = validated_data['first_name']
+        elif instance.first_name == "":
+            instance.first_name = "Utilisateur"
+
+        if 'last_name' in validated_data and validated_data['last_name'] != "":
+            instance.last_name = validated_data['last_name']
+        elif instance.last_name == "":
+            instance.last_name = "Inconnu"
+
+        instance.save()
+        return instance

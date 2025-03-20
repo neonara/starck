@@ -23,4 +23,12 @@ export const AddUserType = {
     password: "",
     confirm_password: "",
   };
+  export const UpdateProfileType = {
+    first_name: "",
+    last_name: "",
+    email: "",
+    old_password: "",
+    new_password: "",
+    confirm_new_password: "",
+  };
   

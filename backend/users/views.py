@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.conf import settings
-from rest_framework import status, permissions
+from rest_framework import status, permissions, generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
 import uuid
@@ -10,6 +10,9 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from .tasks import send_verification_email 
 from .tasks import send_registration_link
+from .serializers import UserProfileSerializer
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 User = get_user_model()
 
@@ -139,29 +142,18 @@ class CompleteRegistrationView(APIView):
         except User.DoesNotExist:
             return Response({"error": "Utilisateur non trouvé."}, status=status.HTTP_404_NOT_FOUND)
 
-class GetUserByTokenView(APIView):
-    """
-    Récupère les informations de l'utilisateur via le token d'inscription.
-    """
-    permission_classes = [permissions.AllowAny]
+class GetUserProfileView(APIView):
+    authentication_classes = [JWTAuthentication]  # 🔥 Authentification par JWT
+    permission_classes = [IsAuthenticated]  # 🔒 Seuls les utilisateurs connectés peuvent voir leur profil
 
     def get(self, request):
-        email = request.query_params.get('email')
-        token = request.query_params.get('token')
-
-        try:
-            user = User.objects.get(email=email, registration_token=token)
-
-            return Response({
-                "email": user.email,
-                "first_name": user.first_name if user.first_name else "",
-                "last_name": user.last_name if user.last_name else "",
-                "phone": user.phone if hasattr(user, "phone") else ""
-            }, status=status.HTTP_200_OK)
-
-        except User.DoesNotExist:
-            return Response({"error": "Utilisateur introuvable ou token invalide."}, status=status.HTTP_404_NOT_FOUND)
-
+        user = request.user  
+        return Response({
+            "email": user.email,
+            "first_name": user.first_name if user.first_name else "Non défini",
+            "last_name": user.last_name if user.last_name else "Non défini",
+            "role": user.role
+        }, status=status.HTTP_200_OK)
 
 class VerifyAdminView(APIView):
     """
@@ -240,3 +232,34 @@ class LoginView(APIView):
             },
             "redirect_url": redirect_url  
         }, status=status.HTTP_200_OK)
+
+
+
+
+
+
+class UpdateProfileView(generics.RetrieveUpdateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserProfileSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        print("Utilisateur connecté :", self.request.user)
+        return self.request.user  
+
+    def update(self, request, *args, **kwargs):
+        """
+        Gère la mise à jour du profil et du mot de passe.
+        """
+        user = self.get_object()
+        print("Données reçues pour mise à jour :", request.data)  
+
+        serializer = self.get_serializer(user, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+            print("Utilisateur mis à jour :", user.first_name, user.last_name)  
+            return Response({"message": "Profil mis à jour avec succès.", "user": serializer.data})
+
+        print("Erreurs de validation :", serializer.errors) 
+        return Response(serializer.errors, status=400)

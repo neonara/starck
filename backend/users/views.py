@@ -9,11 +9,17 @@ import random
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from .tasks import send_verification_email 
+from django.http import JsonResponse
+from django.contrib.sessions.models import Session
+from django.utils.timezone import now
+from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
 import logging
 logger = logging.getLogger(__name__)
+
+
 
 class RegisterAdminView(APIView):
     permission_classes = [permissions.AllowAny]

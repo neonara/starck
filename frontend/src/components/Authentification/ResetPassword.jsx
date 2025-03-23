@@ -1,66 +1,60 @@
 import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import axios from "axios";
-
+import PublicApiService from "../Api/apipublic"; // ✅ Import du service centralisé
+ 
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const emailFromURL = searchParams.get("email") || "";
-
+ 
   const [email, setEmail] = useState(emailFromURL);
   const [code, setCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-
-  console.log("Email récupéré :", emailFromURL); 
-
+ 
   const handleResetPassword = async (e) => {
     e.preventDefault();
     setMessage("");
     setError("");
-
+ 
     if (!email || !code || !newPassword || !confirmPassword) {
       setError("Tous les champs sont requis.");
       return;
     }
-
+ 
     if (newPassword !== confirmPassword) {
       setError("Les mots de passe ne correspondent pas.");
       return;
     }
-
-    console.log("Données envoyées :", { email, code, newPassword });
-
+ 
     try {
-        await axios.post("http://127.0.0.1:8000/users/reset-password/", {   
-            email: email,
-            code: code,
-            new_password: newPassword,
-            confirm_password: confirmPassword,
-          });
+      await PublicApiService.resetPassword({
+        email,
+        code,
+        new_password: newPassword,
+        confirm_password: confirmPassword,
+      });
+ 
       setMessage("Mot de passe réinitialisé avec succès. Redirection...");
-      
-      setTimeout(() => {
-        navigate("/"); 
-      }, 2000);
+      setTimeout(() => navigate("/"), 2000);
     } catch (err) {
       console.error("Erreur API :", err.response?.data);
       setError(err.response?.data?.error || "Une erreur s'est produite.");
     }
   };
-
+ 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen">
-      <div className="bg-white p-8 rounded-lg shadow-md w-96">
-        <h2 className="text-2xl font-bold mb-4 text-center">Réinitialiser le mot de passe</h2>
-
+<div className="flex flex-col items-center justify-center min-h-screen">
+<div className="bg-white p-8 rounded-lg shadow-md w-96">
+<h2 className="text-2xl font-bold mb-4 text-center">Réinitialiser le mot de passe</h2>
+ 
         {message && <p className="text-green-600 text-center">{message}</p>}
         {error && <p className="text-red-500 text-center">{error}</p>}
-
+ 
         <form onSubmit={handleResetPassword} className="space-y-4">
-          <input
+<input
             type="email"
             placeholder="Email"
             value={email}
@@ -68,7 +62,7 @@ export default function ResetPassword() {
             required
             className="w-full p-2 border border-gray-300 rounded"
           />
-          <input
+<input
             type="text"
             placeholder="Code de vérification"
             value={code}
@@ -76,7 +70,7 @@ export default function ResetPassword() {
             required
             className="w-full p-2 border border-gray-300 rounded"
           />
-          <input
+<input
             type="password"
             placeholder="Nouveau mot de passe"
             value={newPassword}
@@ -84,7 +78,7 @@ export default function ResetPassword() {
             required
             className="w-full p-2 border border-gray-300 rounded"
           />
-          <input
+<input
             type="password"
             placeholder="Confirmer le mot de passe"
             value={confirmPassword}
@@ -92,15 +86,15 @@ export default function ResetPassword() {
             required
             className="w-full p-2 border border-gray-300 rounded"
           />
-          <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
+<button type="submit" className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
             Réinitialiser
-          </button>
-        </form>
-
+</button>
+</form>
+ 
         <div className="text-center mt-4">
-          <a href="/" className="text-blue-600 hover:underline">Retour à la connexion</a>
-        </div>
-      </div>
-    </div>
+<a href="/" className="text-blue-600 hover:underline">Retour à la connexion</a>
+</div>
+</div>
+</div>
   );
 }

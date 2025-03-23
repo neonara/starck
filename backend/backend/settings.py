@@ -165,5 +165,19 @@ DEFAULT_FROM_EMAIL = 'majerdiaya2@gmail.com'
 
 
 
-CORS_ALLOW_ALL_ORIGINS = True  # For dev, or use CORS_ALLOWED_ORIGINS for specific origins.
-CORS_ALLOW_CREDENTIALS = True  # For authentication requests (JWT, cookies, etc.)
+CORS_ALLOW_ALL_ORIGINS = True  
+CORS_ALLOW_CREDENTIALS = True 
+
+
+
+
+#stocker les sessions des utilisateurs dans Redis pour accélérer leur chargement
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
+SESSION_CACHE_ALIAS = "default"
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1", #adresse redis / base redis num 1
+    }
+}

@@ -143,8 +143,7 @@ class CompleteRegistrationView(APIView):
             return Response({"error": "Utilisateur non trouvé."}, status=status.HTTP_404_NOT_FOUND)
 
 class GetUserProfileView(APIView):
-    authentication_classes = [JWTAuthentication]  # 🔥 Authentification par JWT
-    permission_classes = [IsAuthenticated]  # 🔒 Seuls les utilisateurs connectés peuvent voir leur profil
+    permission_classes = [IsAuthenticated] 
 
     def get(self, request):
         user = request.user  

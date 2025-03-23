@@ -16,6 +16,8 @@ User = get_user_model()
 import logging
 logger = logging.getLogger(__name__)
 
+
+
 class RegisterAdminView(APIView):
     permission_classes = [permissions.AllowAny]
 
@@ -63,9 +65,6 @@ class RegisterAdminView(APIView):
         except Exception as e:
             logger.error(f"Erreur lors de la création de l'admin : {str(e)}")
             return Response({"error": "Une erreur s'est produite lors de l'inscription."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-                        
-
 
 
 class RegisterUserView(APIView):
@@ -186,7 +185,6 @@ class VerifyAdminView(APIView):
             return Response({"error": "Admin not found."}, status=status.HTTP_404_NOT_FOUND)
 
 
-
 class LoginView(APIView):
     permission_classes = [permissions.AllowAny]
 
@@ -240,3 +238,64 @@ class LoginView(APIView):
             },
             "redirect_url": redirect_url  
         }, status=status.HTTP_200_OK)
+    
+class ForgotPasswordView(APIView):
+    """
+    Permet à un utilisateur de demander une réinitialisation de mot de passe.
+    Un email avec un code de vérification est envoyé.
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        email = request.data.get("email")
+
+        if not email:
+            return Response({"error": "L'email est requis."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = User.objects.get(email=email)
+
+            reset_code = str(random.randint(100000, 999999))
+            user.verification_code = reset_code
+            user.save()
+
+            send_verification_email.delay(email, reset_code)
+
+            return Response({"message": "Un code de vérification a été envoyé à votre email."}, status=status.HTTP_200_OK)
+
+        except User.DoesNotExist:
+            return Response({"error": "Aucun utilisateur trouvé avec cet email."}, status=status.HTTP_404_NOT_FOUND)
+
+
+class ResetPasswordView(APIView):
+    """
+    Permet à un utilisateur de réinitialiser son mot de passe en utilisant le code reçu par email.
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        email = request.data.get("email")
+        code = request.data.get("code")
+        new_password = request.data.get("new_password")
+        confirm_password = request.data.get("confirm_password")
+
+        if not all([email, code, new_password, confirm_password]):
+            return Response({"error": "Tous les champs sont requis."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if new_password != confirm_password:
+            return Response({"error": "Les mots de passe ne correspondent pas."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = User.objects.get(email=email)
+
+            if user.verification_code == code:
+                user.set_password(new_password)
+                user.verification_code = ""  
+                user.save()
+
+                return Response({"message": "Mot de passe réinitialisé avec succès."}, status=status.HTTP_200_OK)
+
+            return Response({"error": "Code de vérification invalide."}, status=status.HTTP_400_BAD_REQUEST)
+
+        except User.DoesNotExist:
+            return Response({"error": "Utilisateur non trouvé."}, status=status.HTTP_404_NOT_FOUND)

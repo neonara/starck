@@ -10,7 +10,12 @@
   overflow: hidden; 
   
 }
-
+.error-message{
+  color: red;
+}
+.success-message{
+  color: red;
+}
 .register-box {
   display: flex;
   width: 100%;
@@ -73,11 +78,15 @@ input {
   width: 100%;
   padding: 12px;
   border-radius: 6px;
-  border: 1px solid #d1d5db;
+  border: 1px solid #110c0c;
   font-size: 16px;
-  background-color: #f3f4f6;
+  background-color: #47494d;
+  color: rgb(16, 13, 13); /* Ajout de la couleur du texte */
 }
 
+input::placeholder {
+  color: #b0b0b0; /* Couleur grise claire pour le placeholder */
+}
 input:focus {
   border-color: #1e3a8a;
   outline: none;

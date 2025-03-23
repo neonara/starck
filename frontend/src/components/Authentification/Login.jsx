@@ -65,6 +65,7 @@ export default function LoginPage() {
                 onChange={handleChange}
                 placeholder="Email ou Nom d'utilisateur"
                 required
+                
               />
             </div>
 
@@ -77,6 +78,7 @@ export default function LoginPage() {
                 onChange={handleChange}
                 placeholder="Mot de passe"
                 required
+                className="bg-transparent outline-none text-black placeholder-gray-500 px-2 flex-grow"
               />
             </div>
 
@@ -85,12 +87,15 @@ export default function LoginPage() {
             </button>
           </div>
         </form>
-
-        <div className="text-center mt-6">
+        <div className="flex justify-center mt-6 space-x-4">
           <a href="/register-admin" className="text-blue-600 font-semibold hover:underline">
-            Enregistrement de l'admin
+          Enregistrement de l'admin
+          </a>
+          <a href="/forgot-password" className="text-blue-600 font-semibold hover:underline">
+          Mot de passe oublié ?
           </a>
         </div>
+
 
       </div>
     </div>

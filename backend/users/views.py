@@ -7,9 +7,12 @@ from rest_framework.views import APIView
 import uuid
 import random
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth import authenticate
 from .tasks import send_verification_email 
 from .tasks import send_registration_link
+from django.core.cache import cache
+
 
 User = get_user_model()
 
@@ -38,22 +41,24 @@ class RegisterAdminView(APIView):
             return Response({"error": "Cet email est déjà enregistré."}, status=status.HTTP_400_BAD_REQUEST)
 
         verification_code = str(random.randint(100000, 999999))
-
+        # Stocker le code de vérification dans Redis avec une expiration (5 minutes)
+        cache.set(f"admin_verification:{email}", verification_code, timeout=300)
+        
         try:
-            user = User.objects.create_user(  
+            user = User.objects.create_user(
                 first_name=first_name,
                 last_name=last_name,
                 email=email,
                 username=email,  
                 role="admin",
                 is_active=False,
-                verification_code=verification_code
             )
             user.set_password(password) 
             user.save()
 
             logger.info(f"Admin créé : {email}, en attente de vérification.")
 
+           
            
             send_verification_email.delay(email, verification_code)
 
@@ -90,8 +95,11 @@ class RegisterUserView(APIView):
         if User.objects.filter(email=email).exists():
             return Response({"error": "Cet email est déjà enregistré."}, status=status.HTTP_400_BAD_REQUEST)
 
-      
         registration_token = str(uuid.uuid4())
+
+        # Ajouter le token dans le cache
+        cache.set(f"registration_token:{email}", registration_token, timeout=3600)  # 1 heure
+        
 
         
         user = User.objects.create(
@@ -128,10 +136,14 @@ class CompleteRegistrationView(APIView):
 
         try:
             user = User.objects.get(email=email)
-            if user.check_password(token):  
+            # Vérifier le token dans le cache
+            cached_token = cache.get(f"registration_token:{email}")
+            if cached_token and cached_token == token:
                 user.set_password(password)
                 user.is_active = True
                 user.save()
+                # Supprimer le token du cache après utilisation
+                cache.delete(f"registration_token:{email}")
                 return Response({"message": "Inscription complétée avec succès."}, status=status.HTTP_200_OK)
             else:
                 return Response({"error": "Token invalide."}, status=status.HTTP_400_BAD_REQUEST)
@@ -147,85 +159,95 @@ class GetUserByTokenView(APIView):
     def get(self, request):
         email = request.query_params.get('email')
         token = request.query_params.get('token')
-
+        
+        # Vérifier d'abord dans le cache
+        cache_key = f"user_info:{email}:{token}"
+        cached_user = cache.get(cache_key)
+        
+        if cached_user:
+            return Response(cached_user, status=status.HTTP_200_OK)
+        
         try:
             user = User.objects.get(email=email, registration_token=token)
-
-            return Response({
+            user_data = {
                 "email": user.email,
                 "first_name": user.first_name if user.first_name else "",
                 "last_name": user.last_name if user.last_name else "",
                 "phone": user.phone if hasattr(user, "phone") else ""
-            }, status=status.HTTP_200_OK)
+            }
+            
+            # Mettre en cache pour 5 minutes
+            cache.set(cache_key, user_data, timeout=300)
+            
+            return Response(user_data, status=status.HTTP_200_OK)
 
         except User.DoesNotExist:
             return Response({"error": "Utilisateur introuvable ou token invalide."}, status=status.HTTP_404_NOT_FOUND)
 
 
 class VerifyAdminView(APIView):
-    """
-    Verify admin email with a code.
-    """
     permission_classes = [permissions.AllowAny]  
 
     def post(self, request):
         email = request.data.get('email')
         code = request.data.get('code')
 
+        if not email or not code:
+            return Response({"error": "Email et code requis."}, status=status.HTTP_400_BAD_REQUEST)
+
         try:
             user = User.objects.get(email=email, role='admin')
-            if user.verification_code == code:
+            verification_code = cache.get(f"admin_verification:{email}")
+
+            if verification_code and verification_code == code:
                 user.is_active = True
-                user.verification_code = ""  
                 user.save()
-                return Response({"detail": "Account verified successfully. You can now log in."},
+
+                # Supprimer le code de Redis après vérification réussie
+                cache.delete(f"admin_verification:{email}")
+
+                return Response({"detail": "Compte vérifié avec succès. Vous pouvez maintenant vous connecter."},
                                 status=status.HTTP_200_OK)
-            return Response({"error": "Invalid verification code."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"error": "Code de vérification invalide ou expiré."}, status=status.HTTP_400_BAD_REQUEST)
+
         except User.DoesNotExist:
-            return Response({"error": "Admin not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": "Admin non trouvé."}, status=status.HTTP_404_NOT_FOUND)
 
 
 class LoginView(APIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
-        identifier = request.data.get("identifier")  
+        identifier = request.data.get("identifier")
         password = request.data.get("password")
 
         if not identifier or not password:
             return Response({"error": "L'identifiant et le mot de passe sont requis."}, status=status.HTTP_400_BAD_REQUEST)
 
-        
-        user = User.objects.filter(email=identifier).first() or User.objects.filter(username=identifier).first()
+        # Vérifier si l'utilisateur est déjà en cache
+        cache_key = f"user:{identifier}"
+        cached_user = cache.get(cache_key)
 
-        if user is None:
+        if cached_user:
+            user = User.objects.filter(id=cached_user["id"]).first()
+        else:
+            user = User.objects.filter(email=identifier).first() or User.objects.filter(username=identifier).first()
+
+            if user:
+                cache.set(cache_key, {"id": user.id, "role": user.role, "is_active": user.is_active}, timeout=600)  # Stocké 10 min
+
+        if user is None or not user.check_password(password):
             return Response({"error": "Identifiants invalides."}, status=status.HTTP_400_BAD_REQUEST)
 
-       
-        if not user.check_password(password):
-            return Response({"error": "Identifiants invalides."}, status=status.HTTP_400_BAD_REQUEST)
-
-        
         if not user.is_active:
             return Response({"error": "Votre compte est inactif. Veuillez vérifier votre email."}, status=status.HTTP_403_FORBIDDEN)
 
-       
-        user = authenticate(username=user.username, password=password)
-
-        if user is None:
-            return Response({"error": "Identifiants invalides."}, status=status.HTTP_400_BAD_REQUEST)
-
-        
         refresh = RefreshToken.for_user(user)
-        role_redirects = {
-            "admin": "/",
-            "installateur": "/",
-            "technicien": "/",
-            "client": "/",
-        }
-        redirect_url = role_redirects.get(user.role, "/")  
 
-        
+        # Stocker le token dans Redis (expire après 1h)
+        token_key = f"token:{user.id}"
+        cache.set(token_key, str(refresh.access_token), timeout=3600)
+
         return Response({
             "refresh": str(refresh),
             "access": str(refresh.access_token),
@@ -235,8 +257,7 @@ class LoginView(APIView):
                 "role": user.role,
                 "first_name": user.first_name,
                 "last_name": user.last_name,
-            },
-            "redirect_url": redirect_url  
+            }
         }, status=status.HTTP_200_OK)
     
 class ForgotPasswordView(APIView):
@@ -256,9 +277,10 @@ class ForgotPasswordView(APIView):
             user = User.objects.get(email=email)
 
             reset_code = str(random.randint(100000, 999999))
-            user.verification_code = reset_code
-            user.save()
-
+            
+            # Stocker dans Redis pour 5 minutes
+            cache.set(f"password_reset:{email}", reset_code, timeout=300)
+            
             send_verification_email.delay(email, reset_code)
 
             return Response({"message": "Un code de vérification a été envoyé à votre email."}, status=status.HTTP_200_OK)
@@ -285,17 +307,49 @@ class ResetPasswordView(APIView):
         if new_password != confirm_password:
             return Response({"error": "Les mots de passe ne correspondent pas."}, status=status.HTTP_400_BAD_REQUEST)
 
-        try:
-            user = User.objects.get(email=email)
+        # Vérifier le code dans Redis
+        cached_code = cache.get(f"password_reset:{email}")
 
-            if user.verification_code == code:
+        if cached_code and cached_code == code:
+            try:
+                user = User.objects.get(email=email)
                 user.set_password(new_password)
-                user.verification_code = ""  
                 user.save()
 
+                # Supprimer le code après utilisation
+                cache.delete(f"password_reset:{email}")
+
                 return Response({"message": "Mot de passe réinitialisé avec succès."}, status=status.HTTP_200_OK)
+            except User.DoesNotExist:
+                return Response({"error": "Utilisateur non trouvé."}, status=status.HTTP_404_NOT_FOUND)
 
-            return Response({"error": "Code de vérification invalide."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"error": "Code de vérification invalide ou expiré."}, status=status.HTTP_400_BAD_REQUEST)
 
-        except User.DoesNotExist:
-            return Response({"error": "Utilisateur non trouvé."}, status=status.HTTP_404_NOT_FOUND)
+
+class LogoutView(APIView):
+    """
+    Permet à l'utilisateur de se déconnecter en supprimant son token de Redis et en le blacklistant.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            refresh_token = request.data.get("refresh_token")
+            print(f"Token reçu : {refresh_token}")  # Vérifie ce qui est envoyé
+
+            if not refresh_token:
+                return Response({"error": "Token de rafraîchissement requis."}, status=status.HTTP_400_BAD_REQUEST)
+
+            # Blacklister le token de rafraîchissement
+            token = RefreshToken(refresh_token)
+            token.blacklist()  # Si ça plante ici, le token est soit expiré, soit déjà en blacklist
+
+            # Supprimer le token de Redis
+            token_key = f":1:token:{request.user.id}"
+            cache.delete(token_key)
+
+            return Response({"message": "Déconnexion réussie."}, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        

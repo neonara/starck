@@ -26,9 +26,9 @@ export default function LoginPage() {
 
       const roleRedirects = {
         admin: "/user-management",
-        installateur: "/",
-        technicien: "/",
-        client: "/",
+        installateur: "/dashboard-installateur",
+        technicien: "/dashboard-technicien",
+        client: "/dashboard-client",
       };
       const redirectUrl = roleRedirects[response.data.user.role] || "/dashboard";
       navigate(redirectUrl);

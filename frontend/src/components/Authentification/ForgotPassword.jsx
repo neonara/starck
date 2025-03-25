@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import PublicApiService from "../Api/apipublic"; // ✅ Nouveau service centralisé
+import PublicApiService from "../../Api/APIpublic"; 
  
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");

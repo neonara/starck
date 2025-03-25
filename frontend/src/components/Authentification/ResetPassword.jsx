@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import PublicApiService from "../Api/apipublic"; // ✅ Import du service centralisé
+import PublicApiService from "../../Api/APIpublic"; 
  
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();

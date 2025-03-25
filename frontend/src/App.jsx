@@ -2,10 +2,10 @@ import './App.css'
 import "flowbite";
 import "./index.css";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import RegisterAdmin from "./Authentification/RegisterAdmin";
-import Login from './Authentification/Login';
-import UserManagement from './Authentification/UserManagement';
-import CompleteRegistration from './Authentification/CompleteRegistration';
+import RegisterAdmin from './components/Authentification/RegisterAdmin';
+import Login from './components/Authentification/Login';
+import UserManagement from './components/Authentification/UserManagement';
+import CompleteRegistration from './components/Authentification/CompleteRegistration';
 import ForgotPassword from './components/Authentification/ForgotPassword';
 import ResetPassword from'./components/Authentification/ResetPassword';
 function App() {

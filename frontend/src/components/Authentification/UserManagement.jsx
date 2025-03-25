@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { AddUserType } from "../../types/type"; 
 import ApiService from "../../Api/Api";
+
 const UserManagement = () => {
-  const [users, setUsers] = useState([]);
+  const [setUsers] = useState([]);
   const [formData, setFormData] = useState(AddUserType); 
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
@@ -38,12 +39,21 @@ const UserManagement = () => {
     }
   };
 
+// Fonction qui sera appelée lors du logout
+const handleLogout = () => {
+  ApiService.logout();
+};
+
   return (
-    <div className="min-h-screen flex justify-center items-center px-4">
-      <div className="w-full max-w-3xl bg-white p-10 rounded-lg shadow-lg">
+    <div className="min-h-screen flex flex-col items-center px-4">
+      {/* Barre de navigation avec logout */}
+      <button onClick={handleLogout}>Déconnexion</button>
+      {/* Formulaire d'ajout d'utilisateur */}
+      <div className="w-full max-w-3xl bg-white p-10 rounded-lg shadow-lg mt-6">
         <h2 className="text-3xl font-bold text-center text-blue-700 mb-6">
           Ajouter un utilisateur
         </h2>
+        
 
         {error && <p className="text-red-500 text-center">{error}</p>}
         {success && <p className="text-green-500 text-center">{success}</p>}

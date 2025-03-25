@@ -22,6 +22,7 @@ const RegisterAdmin = () => {
       setError("Veuillez entrer votre email.");
       return;
     }
+    console.log("Données envoyées à l'API :", formData);
 
     try {
       await PublicApiService.registerAdmin({

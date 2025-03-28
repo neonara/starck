@@ -11,7 +11,7 @@ const UpdateProfile = () => {
   useEffect(() => {
     ApiService.getProfile()
       .then((response) => {
-        console.log("Données du profil récupérées :", response.data); // DEBUG
+        console.log("Données du profil récupérées :", response.data);
         setFormData({
           first_name: response.data.first_name || "",
           last_name: response.data.last_name || "",
@@ -38,17 +38,30 @@ const UpdateProfile = () => {
     setMessage(null);
     setError(null);
   
-    console.log("Données envoyées à l'API :", formData); 
+    const payload = { ...formData };
+  
+    if (!payload.old_password) delete payload.old_password;
+    if (!payload.new_password) delete payload.new_password;
+    if (!payload.confirm_new_password) delete payload.confirm_new_password;
+  
+    console.log("Données envoyées à l'API :", payload); 
   
     try {
-      const response = await ApiService.updateProfile(formData);
+      const response = await ApiService.updateProfile(payload);
       console.log("Réponse de l'API :", response.data); 
       setMessage("Profil mis à jour avec succès !");
     } catch (err) {
       console.error("Erreur lors de la mise à jour du profil :", err);
-      setError(err.response?.data?.error || "Erreur lors de la mise à jour du profil.");
+      const serverError = err.response?.data;
+      if (typeof serverError === "object") {
+        const firstKey = Object.keys(serverError)[0];
+        setError(serverError[firstKey]);
+      } else {
+        setError("Erreur lors de la mise à jour du profil.");
+      }
     }
   };
+  
 
   return (
     <div className="max-w-md mx-auto mt-10 p-6 border rounded-lg shadow-md bg-white">

@@ -9,6 +9,10 @@ class JWTAuthenticationMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
+        # Ignorer le middleware pour l'interface d'administration
+        if request.path.startswith('/admin/'):
+            return self.get_response(request)
+
         authorization_header = request.headers.get('Authorization', '')
 
         if authorization_header.startswith('Bearer '):

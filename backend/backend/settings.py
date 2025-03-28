@@ -39,9 +39,14 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',  # Assure-toi que cette ligne est présente
     'corsheaders',
     'users',
-    'rest_framework_simplejwt.token_blacklist',  # Assure-toi que cette ligne est présente
+    'equipements',
+    'installations',
+    'alarmes',
+    'notifications',
+    'production',
 
 ]
 

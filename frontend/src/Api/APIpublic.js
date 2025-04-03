@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const baseURL = "http://localhost:8000/";
+const baseURL = "http://127.0.0.1:8000/";
 
 const apipublic = axios.create({
   baseURL,
@@ -20,6 +20,19 @@ const PublicApiService = {
     apipublic.get("users/get-user-by-token/", { params: { email, token } }),
 
   completeRegistration: (userData) => apipublic.post("users/complete-registration/", userData),
+
+  forgotPassword: (email) => apipublic.post("users/forgot-password/", { email }),
+
+  resetPassword: ({ email, code, new_password, confirm_password }) =>
+    apipublic.post("users/reset-password/", {
+      email,
+      code,
+      new_password,
+      confirm_password,
+    }),
+
+
 };
 
 export default PublicApiService;
+

@@ -3,9 +3,17 @@ import AppLayout from './components/layout/AppLayout';
 
 // Authentification
 import RegisterAdmin from "./components/Authentification/RegisterAdmin";
+import './App.css'
+import "flowbite";
+import "./index.css";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import RegisterAdmin from './components/Authentification/RegisterAdmin';
 import Login from './components/Authentification/Login';
 import UserManagement from './components/Authentification/UserManagement';
 import CompleteRegistration from './components/Authentification/CompleteRegistration';
+import ForgotPassword from './components/Authentification/ForgotPassword';
+import ResetPassword from'./components/Authentification/ResetPassword';
+
 import UpdateProfile from './components/Authentification/UpdateProfile';
 
 // Admin 
@@ -38,6 +46,8 @@ function App() {
       <Route path="modifier-installation/:id" element={< EditInstallation/>} />
        <Route path="liste-clients" element={<ListeClientsPage/>}/>
        <Route path="modifier-client/:id" element={<ModifierClientPage />} />
+       <Route path="/forgot-password" element={<ForgotPassword />} />
+       <Route path="/reset-password" element={<ResetPassword />} />
        </Route>
   </Routes>
 </Router>

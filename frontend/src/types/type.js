@@ -1,11 +1,11 @@
 export const RegisterAdminType = {
-    firstName: "",
-    lastName: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    verificationCode: "",
-  };
+  firstName: "",
+  lastName: "",
+  email: "",
+  password: "",
+  confirmPassword: "",
+  verificationCode: "",
+};
   
   export const LoginType = {
     identifier: "",

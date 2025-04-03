@@ -44,8 +44,8 @@ INSTALLED_APPS = [
     'users',
     'equipements',
     'installations',
-    'alarmes',
-    'notifications',
+    'alarme',
+    'notification',
     'production',
 
 ]
@@ -95,7 +95,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'solar_db',  
-      'USER': 'postgres',
+        'USER': 'postgres',
         'PASSWORD': 'root',
         'HOST': 'localhost',
         'PORT': '5432',
@@ -162,7 +162,6 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-"EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'"
 
 # Celery Configuration
 CELERY_BROKER_URL = 'redis://localhost:6379/0'

@@ -1,2 +1,4 @@
 venv/
 backend/backend/__pycache__s
+__pycache__/
+*.pyc

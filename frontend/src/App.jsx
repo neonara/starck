@@ -6,6 +6,10 @@ import RegisterAdmin from './components/Authentification/RegisterAdmin';
 import Login from './components/Authentification/Login';
 import UserManagement from './components/Authentification/UserManagement';
 import CompleteRegistration from './components/Authentification/CompleteRegistration';
+import ForgotPassword from './components/Authentification/ForgotPassword';
+import ResetPassword from'./components/Authentification/ResetPassword';
+
+import UpdateProfile from './components/Authentification/UpdateProfile';
 
 function App() {
 
@@ -18,6 +22,11 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path="/user-management" element={<UserManagement />} />
         <Route path="/complete-registration" element={<CompleteRegistration />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+
+        <Route path="/update-profile" element={<UpdateProfile />} />
+
 
       </Routes>
     </Router>

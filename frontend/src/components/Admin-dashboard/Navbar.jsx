@@ -9,10 +9,9 @@ const Navbar = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   return (
-    <nav className="fixed top-0 left-0 w-full z-50 bg-white shadow-sm px-6 py-3 flex justify-between items-center">
-      <div className="flex items-center gap-2">
-        <img src={logo} alt="Logo" className="w-7 h-7" />
-        <span className="text-xl font-semibold text-gray-800">Starck</span>
+<nav className="fixed top-0 left-64 right-0 z-50 bg-white shadow-sm px-6 py-3 flex justify-between items-center">
+<div className="flex items-center gap-2">
+
       </div>
 
       <div className="flex items-center gap-4 relative">

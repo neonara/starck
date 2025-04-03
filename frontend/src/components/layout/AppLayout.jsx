@@ -1,23 +1,20 @@
-import { useState } from 'react';
-import { Outlet } from 'react-router-dom';
-import Navbar from '../Admin-dashboard/Navbar';
-import Sidebar from '../Admin-dashboard/Sidebar';
+import { Outlet } from "react-router-dom";
+import Sidebar from "../Admin-dashboard/Sidebar";
+import Navbar from "../Admin-dashboard/Navbar";
 
 const AppLayout = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className=" min-h-screen">
+      <Sidebar />
 
-      <Sidebar  />
-
-      <div className="flex-1 min-h-screen pl-64">
+      <div className="pl-64">
         <Navbar />
-        <main className="flex-1 bg-gray-100">
-      
-          <Outlet />
-          </main>
-        
+
+        <main className="w-full px-6 py-8">
+          <div className="max-w-6xl w-full mx-auto">
+            <Outlet />
+          </div>
+        </main>
       </div>
     </div>
   );

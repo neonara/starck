@@ -18,8 +18,6 @@ const statusColors = {
 };
 
 const ListeInstallationPage = () => {
- 
-
   const [globalFilter, setGlobalFilter] = useState("");
   const [pageSize, setPageSize] = useState(5);
   const [showMore, setShowMore] = useState(false);
@@ -110,8 +108,7 @@ const ListeInstallationPage = () => {
     ]);
     toast.success("Installation ajoutée ✅");
   }; 
-  
-    
+
   const columns = useMemo(() => {
     const baseColumns = [
       { header: "Nom", accessorKey: "nom" },
@@ -174,7 +171,7 @@ const ListeInstallationPage = () => {
       header: "Actions",
       cell: ({ row }) => (
         <div className="flex gap-2">
-          <button className="text-blue-500 hover:text-blue-700">
+          <button onClick={() => navigate(`/modifier-installation/${row.original.id}`)} className="text-blue-500 hover:text-blue-700">
             <FaEdit />
           </button>
           <button onClick={() => handleDelete(row)} className="text-red-500 hover:text-red-700">
@@ -205,6 +202,7 @@ const ListeInstallationPage = () => {
   useEffect(() => {
     table.setPageSize(pageSize);
   }, [pageSize]);
+
 
   return (
     <div className="p-6 pt-28 bg-white rounded-xl shadow">
@@ -270,7 +268,16 @@ const ListeInstallationPage = () => {
           </thead>
           <tbody className="divide-y divide-gray-100">
             {table.getRowModel().rows.map((row) => (
-              <tr key={row.id} className="hover:bg-gray-50">
+              <tr
+              key={row.id}
+              className="hover:bg-gray-100 cursor-pointer"
+              onClick={(e) => {
+                if (e.target.closest("button")) return;
+                navigate(`/dashboard-installation/${row.original.id}`);
+              }}
+            >
+            
+            
                 {row.getVisibleCells().map((cell) => (
                   <td key={cell.id} className="px-4 py-2 whitespace-nowrap">
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}

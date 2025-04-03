@@ -40,6 +40,11 @@ const UserManagement = () => {
     }
   };
 
+// Fonction qui sera appelée lors du logout
+const handleLogout = () => {
+  ApiService.logout();
+};
+
   return (
     <div className="w-full px-6 pt-28 pb-16 flex flex-col items-center">
       {/* TITRE en dehors de la carte */}

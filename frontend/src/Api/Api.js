@@ -1,5 +1,6 @@
 import axios from "axios";
-import { jwtDecode as jwt_decode } from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
+
 import dayjs from "dayjs";
 
 const baseURL = "http://localhost:8000/";
@@ -21,7 +22,7 @@ api.interceptors.request.use(async (req) => {
 
   if (accessToken) {
     req.headers.Authorization = `Bearer ${accessToken}`;
-    const user = jwt_decode(accessToken);
+    const user = jwtDecode(accessToken);
     const isExpired = dayjs.unix(user.exp).diff(dayjs()) < 1;
 
     if (!isExpired) return req;
@@ -49,6 +50,29 @@ const ApiService = {
   addUser: (userData) => api.post("users/register/", userData),
   getProfile: () => api.get("users/get-profile/"), 
   updateProfile: (userData) => api.patch("users/update-profile/", userData),
+
+  logout: async () => {
+    const refreshToken = getRefreshToken();
+
+    // Vérifie si le refreshToken existe
+    if (!refreshToken) {
+      console.error("Aucun token de rafraîchissement trouvé !");
+      return;
+    }
+
+    try {
+      await api.post("users/logout/", { refresh_token: refreshToken });
+
+      // Si la déconnexion réussie, supprime les tokens du stockage local
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      console.log("Déconnexion réussie !");
+      
+      window.location.href = "/";  
+    } catch (error) {
+      console.error("Erreur lors de la déconnexion :", error);
+    }
+  },
 };
 
 export default ApiService;

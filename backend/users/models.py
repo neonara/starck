@@ -10,7 +10,7 @@ class User(AbstractUser):
         ('client', 'Client'),
     ]
     
-    role = models.CharField(max_length=20, default='admin')  
+    role = models.CharField(max_length=20, default='admin')   
     verification_code = models.CharField(
         max_length=6, 
         blank=True, 

@@ -14,6 +14,11 @@ import Dashboard from './components/Admin-dashboard/Dashboard';
 //Insttalation
 import ListeInstallationPage from "./components/Installations/liste-installations";
 import AjouterInstallation from "./components/Installations/ajouter-installation";
+import DashboardInstallation from "./components/Installations/DashboardInstallation";
+import EditInstallation from "./components/Installations/modifier-installation";
+//Clients
+import ListeClientsPage from "./components/Utilisateurs/Clients/Liste-Client";
+import ModifierClientPage from "./components/Utilisateurs/Clients/modifier-client";
 function App() {
   return (
     <Router>
@@ -29,8 +34,11 @@ function App() {
       <Route path="update-profile" element={<UpdateProfile />} />
       <Route path="liste-installations" element={<ListeInstallationPage />} />
       <Route path="ajouter-installation" element={<AjouterInstallation />} />
-
-      </Route>
+      <Route path="dashboard-installation/:id" element={<DashboardInstallation />} />
+      <Route path="modifier-installation/:id" element={< EditInstallation/>} />
+       <Route path="liste-clients" element={<ListeClientsPage/>}/>
+       <Route path="modifier-client/:id" element={<ModifierClientPage />} />
+       </Route>
   </Routes>
 </Router>
   );

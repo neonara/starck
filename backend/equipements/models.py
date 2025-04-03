@@ -1,40 +1,79 @@
 from django.db import models
-import uuid
+from django.contrib.auth import get_user_model
 from installations.models import Installation
-from django.core.exceptions import ValidationError
 
-class Equipement(models.Model):
+User = get_user_model()
+
+class Equipment(models.Model):
+    """Modèle dédié aux équipements solaires"""
+    
     TYPE_CHOICES = [
-        ("Onduleur", "Onduleur"),
-        ("Panneau", "Panneau"),
-        ("Compteur", "Compteur"),
-        ("Batterie", "Batterie"),
-        ("Capteur", "Capteur"),
+        ('panel', 'Panneau solaire'),
+        ('inverter', 'Onduleur'),
+        ('battery', 'Batterie'),
+        ('meter', 'Compteur'),
+        ('monitoring', 'Système de monitoring'),
+        ('other', 'Autre'),
     ]
-
-    MARQUE_CHOICES = [
-        ('Huawei', 'Huawei'),
-        ('Schneider', 'Schneider'),
-        ('Tesla', 'Tesla'),
-    ]
-
-    STATUT_CHOICES = [
-        ("Actif", "Actif"),
-        ("En panne", "En panne"),
-        ("Maintenance", "Maintenance"),
-    ]
-
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    installation = models.ForeignKey(Installation, on_delete=models.CASCADE, related_name="equipements")
-    nom = models.CharField(max_length=100)
-    type = models.CharField(max_length=50, choices=TYPE_CHOICES)
-    marque = models.CharField(max_length=50, choices=MARQUE_CHOICES)
-    numero_serie = models.CharField(max_length=100, unique=True)
-    protocole = models.CharField(max_length=50, choices=[("WiFi", "WiFi"), ("RS485", "RS485"), ("Zigbee", "Zigbee"), ("Ethernet", "Ethernet")], default="WiFi")
-    statut = models.CharField(max_length=50, choices=STATUT_CHOICES, default="Actif")
-    date_ajout = models.DateTimeField(auto_now_add=True)
-
-
-
+    
+    installation = models.ForeignKey(
+        Installation,
+        on_delete=models.CASCADE,
+        related_name='equipments',
+        verbose_name="Installation associée"
+    )
+    equipment_type = models.CharField(
+        max_length=20,
+        choices=TYPE_CHOICES,
+        verbose_name="Type d'équipement"
+    )
+    model_number = models.CharField(
+        max_length=100,
+        verbose_name="Numéro de modèle"
+    )
+    serial_number = models.CharField(
+        max_length=100,
+        unique=True,
+        verbose_name="Numéro de série"
+    )
+    manufacturer = models.CharField(
+        max_length=100,
+        verbose_name="Fabricant"
+    )
+    
+    # Champs techniques
+    installation_date = models.DateField(
+        verbose_name="Date d'installation"
+    )
+    warranty_expiry = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="Fin de garantie"
+    )
+    technical_specs = models.JSONField(
+        null=True,
+        blank=True,
+        verbose_name="Spécifications techniques"
+    )
+    
+    # Identifiants uniques
+    qr_code = models.CharField(
+        max_length=100,
+        unique=True,
+        null=True,
+        blank=True,
+        verbose_name="Code QR"
+    )
+    
+    class Meta:
+        verbose_name = "Équipement"
+        verbose_name_plural = "Équipements"
+        ordering = ['equipment_type', 'model_number']
+        indexes = [
+            models.Index(fields=['serial_number']),
+            models.Index(fields=['equipment_type']),
+        ]
+    
     def __str__(self):
-        return f"{self.nom} ({self.type}) - {self.marque}"
+        return f"{self.get_equipment_type_display()} - {self.model_number}"
+        

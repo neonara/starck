@@ -13,14 +13,14 @@ const Navbar = () => {
   const [hasNewNotif, setHasNewNotif] = useState(false);
   const [user, setUser] = useState({ name: "", email: "" });
 
-  // 🔄 Charger le profil utilisateur
+  // 🔄 Charger profil utilisateur
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await ApiService.getProfile();
+        const res = await ApiService.getProfile();
         setUser({
-          name: response.data.first_name + " " + response.data.last_name,
-          email: response.data.email,
+          name: `${res.data.first_name} ${res.data.last_name}`,
+          email: res.data.email,
         });
       } catch (err) {
         console.error("Erreur chargement profil :", err);
@@ -32,7 +32,6 @@ const Navbar = () => {
   // 🔌 Connexion WebSocket
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
-
     if (!token) {
       console.warn("❌ Aucun token trouvé dans localStorage");
       return;
@@ -45,15 +44,24 @@ const Navbar = () => {
     };
 
     socket.onmessage = (e) => {
-      const data = JSON.parse(e.data);
-      console.log("🧪 Donnée WebSocket reçue :", data);
-
-      // ✅ Le message vient directement sans wrapper "message"
-      const message = data;
-
-      toast.success(message.content || "🔔 Notification reçue !");
-      setNotifications((prev) => [...prev, message]);
-      setHasNewNotif(true);
+      console.log("📩 Message brut reçu :", e.data);  // 👈 À AJOUTER
+    
+      try {
+        const data = JSON.parse(e.data);
+        console.log("🧪 WebSocket data :", data);
+    
+        const message = data.message || { title: "❓", content: "Notification non formatée" };
+    
+        toast.success(message.content || "🔔 Nouvelle notification !");
+        setNotifications((prev) => [...prev, message]);
+        setHasNewNotif(true);
+      } catch (err) {
+        console.error("❌ Erreur parsing WebSocket :", err);
+      }
+    };
+    
+    socket.onerror = (err) => {
+      console.error("🚨 Erreur WebSocket :", err);
     };
 
     socket.onclose = () => {
@@ -68,38 +76,41 @@ const Navbar = () => {
       <div className="flex items-center gap-2" />
 
       <div className="flex items-center gap-4 relative">
-        {/* Cloche notifications */}
+        {/* 🔔 Cloche notifications */}
         <div className="relative">
           <button
-            className="relative rounded-full border p-2 text-gray-500 hover:bg-gray-100"
             onClick={() => {
               setNotifOpen(!notifOpen);
               setHasNewNotif(false);
             }}
+            className="relative rounded-full border p-2 text-gray-500 hover:bg-gray-100"
           >
             <Bell className="w-5 h-5" />
             {hasNewNotif && (
-              <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-red-500 animate-ping"></span>
+              <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-red-500 animate-ping" />
             )}
           </button>
 
-          {/* Liste notifications */}
-          {notifOpen && notifications.length > 0 && (
+          {notifOpen && (
             <div className="absolute right-0 mt-2 w-80 bg-white border rounded-md shadow-md z-50 text-sm">
               <div className="px-4 py-2 font-semibold border-b">Notifications</div>
-              <ul className="max-h-60 overflow-y-auto divide-y">
-                {notifications.map((notif, index) => (
-                  <li key={index} className="px-4 py-2 hover:bg-gray-50">
-                    <p className="font-medium">{notif.title}</p>
-                    <p className="text-gray-500 text-sm">{notif.content}</p>
-                  </li>
-                ))}
-              </ul>
+              {notifications.length > 0 ? (
+                <ul className="max-h-60 overflow-y-auto divide-y">
+                  {notifications.map((notif, index) => (
+                    <li key={index} className="px-4 py-2 hover:bg-gray-50">
+                      <p className="font-medium">{notif.title}</p>
+                      <p className="text-gray-500 text-sm">{notif.content}</p>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <div className="px-4 py-2 text-gray-500">Aucune notification.</div>
+              )}
             </div>
           )}
         </div>
 
-        {/* Menu utilisateur */}
+        {/* 👤 Menu utilisateur */}
         <div className="relative">
           <button
             onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -124,7 +135,7 @@ const Navbar = () => {
                 </li>
                 <li>
                   <Link to="/update-profile" className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100">
-                    <Settings className="w-4 h-4" /> Modifier Profil
+                    <Settings className="w-4 h-4" /> Paramètres
                   </Link>
                 </li>
               </ul>
@@ -143,6 +154,12 @@ const Navbar = () => {
       </div>
 
       <Toaster position="top-right" />
+
+      {/* 💡 Zone de debug (dev only) */}
+      <div className="fixed top-16 right-4 bg-gray-100 p-2 text-xs rounded shadow max-w-sm z-50">
+        <strong>🧠 Notifications :</strong>
+        <pre className="whitespace-pre-wrap break-all">{JSON.stringify(notifications, null, 2)}</pre>
+      </div>
     </nav>
   );
 };

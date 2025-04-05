@@ -5,6 +5,8 @@ import {
 import { Link } from 'react-router-dom';
 import { toast, Toaster } from 'react-hot-toast';
 import ApiService from "../../Api/Api";
+import { useNavigate } from 'react-router-dom';
+
 
 const Navbar = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -12,8 +14,9 @@ const Navbar = () => {
   const [notifications, setNotifications] = useState([]);
   const [hasNewNotif, setHasNewNotif] = useState(false);
   const [user, setUser] = useState({ name: "", email: "" });
+  const navigate = useNavigate();
 
-  // 🔄 Charger profil utilisateur
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -29,44 +32,29 @@ const Navbar = () => {
     fetchProfile();
   }, []);
 
-  // 🔌 Connexion WebSocket
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
-    if (!token) {
-      console.warn("❌ Aucun token trouvé dans localStorage");
-      return;
-    }
+    if (!token) return;
 
     const socket = new WebSocket(`ws://localhost:8000/ws/notifications/?token=${token}`);
 
-    socket.onopen = () => {
-      console.log("🟢 WebSocket connecté");
-    };
+    socket.onopen = () => console.log("WebSocket connecté");
 
     socket.onmessage = (e) => {
-      console.log("📩 Message brut reçu :", e.data);  // 👈 À AJOUTER
-    
       try {
         const data = JSON.parse(e.data);
-        console.log("🧪 WebSocket data :", data);
-    
-        const message = data.message || { title: "❓", content: "Notification non formatée" };
-    
+        const message = data.message || { title: "❓", content: "Notification inconnue" };
+
         toast.success(message.content || "🔔 Nouvelle notification !");
         setNotifications((prev) => [...prev, message]);
         setHasNewNotif(true);
       } catch (err) {
-        console.error("❌ Erreur parsing WebSocket :", err);
+        console.error("Erreur de parsing :", err);
       }
     };
-    
-    socket.onerror = (err) => {
-      console.error("🚨 Erreur WebSocket :", err);
-    };
 
-    socket.onclose = () => {
-      console.log("🔌 WebSocket fermé");
-    };
+    socket.onerror = (err) => console.error(" Erreur WebSocket :", err);
+    socket.onclose = () => console.log(" WebSocket fermé");
 
     return () => socket.close();
   }, [user.email]);
@@ -76,13 +64,12 @@ const Navbar = () => {
       <div className="flex items-center gap-2" />
 
       <div className="flex items-center gap-4 relative">
-        {/* 🔔 Cloche notifications */}
         <div className="relative">
           <button
-            onClick={() => {
-              setNotifOpen(!notifOpen);
-              setHasNewNotif(false);
-            }}
+          onClick={() => {
+            setHasNewNotif(false); 
+            navigate("/notification"); 
+          }}
             className="relative rounded-full border p-2 text-gray-500 hover:bg-gray-100"
           >
             <Bell className="w-5 h-5" />
@@ -110,7 +97,6 @@ const Navbar = () => {
           )}
         </div>
 
-        {/* 👤 Menu utilisateur */}
         <div className="relative">
           <button
             onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -154,12 +140,6 @@ const Navbar = () => {
       </div>
 
       <Toaster position="top-right" />
-
-      {/* 💡 Zone de debug (dev only) */}
-      <div className="fixed top-16 right-4 bg-gray-100 p-2 text-xs rounded shadow max-w-sm z-50">
-        <strong>🧠 Notifications :</strong>
-        <pre className="whitespace-pre-wrap break-all">{JSON.stringify(notifications, null, 2)}</pre>
-      </div>
     </nav>
   );
 };

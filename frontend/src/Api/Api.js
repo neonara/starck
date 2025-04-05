@@ -50,11 +50,14 @@ const ApiService = {
   addUser: (userData) => api.post("users/register/", userData),
   getProfile: () => api.get("users/get-profile/"), 
   updateProfile: (userData) => api.patch("users/update-profile/", userData),
-
+  getNotifications: () => api.get("notification/get-my-notifications/"),
+  markAsRead: (id) => api.patch(`notification/mark-read/${id}/`),
+  markAllAsRead: () => api.patch("notification/mark-all-read/"),
+  deleteNotification: (id) => api.delete(`notification/delete/${id}/`),
+  
   logout: async () => {
     const refreshToken = getRefreshToken();
 
-    // Vérifie si le refreshToken existe
     if (!refreshToken) {
       console.error("Aucun token de rafraîchissement trouvé !");
       return;
@@ -63,7 +66,6 @@ const ApiService = {
     try {
       await api.post("users/logout/", { refresh_token: refreshToken });
 
-      // Si la déconnexion réussie, supprime les tokens du stockage local
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
       console.log("Déconnexion réussie !");

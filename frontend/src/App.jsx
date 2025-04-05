@@ -1,13 +1,11 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import AppLayout from './components/layout/AppLayout';
-
-// Authentification
-import RegisterAdmin from "./components/Authentification/RegisterAdmin";
 import './App.css'
 import "flowbite";
 import "./index.css";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import RegisterAdmin from './components/Authentification/RegisterAdmin';
+
+// Authentification
+import RegisterAdmin from "./components/Authentification/RegisterAdmin";
 import Login from './components/Authentification/Login';
 import UserManagement from './components/Authentification/UserManagement';
 import CompleteRegistration from './components/Authentification/CompleteRegistration';

@@ -8,3 +8,4 @@ celery_app = Celery('backend')
 celery_app.config_from_object('django.conf:settings', namespace='CELERY')
 celery_app.autodiscover_tasks()
 app = celery_app
+app.autodiscover_tasks()

@@ -15,6 +15,7 @@ from .serializers import UserProfileSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.core.cache import cache
+from .permissions import IsAdminOrInstallateur
 
 
 User = get_user_model()
@@ -80,7 +81,7 @@ class RegisterUserView(APIView):
     Permet à un admin ou un installateur d'ajouter un utilisateur.
     L'utilisateur reçoit un email avec un lien pour compléter son inscription.
     """
-    permission_classes = [permissions.IsAuthenticated]  
+    permission_classes = [IsAuthenticated, IsAdminOrInstallateur]
 
     def post(self, request):
         email = request.data.get('email')
@@ -139,13 +140,11 @@ class CompleteRegistrationView(APIView):
 
         try:
             user = User.objects.get(email=email)
-            # Vérifier le token dans le cache
             cached_token = cache.get(f"registration_token:{email}")
             if cached_token and cached_token == token:
                 user.set_password(password)
                 user.is_active = True
                 user.save()
-                # Supprimer le token du cache après utilisation
                 cache.delete(f"registration_token:{email}")
                 return Response({"message": "Inscription complétée avec succès."}, status=status.HTTP_200_OK)
             else:
@@ -154,7 +153,7 @@ class CompleteRegistrationView(APIView):
             return Response({"error": "Utilisateur non trouvé."}, status=status.HTTP_404_NOT_FOUND)
 
 class GetUserProfileView(APIView):
-    permission_classes = [IsAuthenticated] 
+    permission_classes = [IsAuthenticated, IsAdminOrInstallateur]
 
     def get(self, request):
         user = request.user  
@@ -164,6 +163,7 @@ class GetUserProfileView(APIView):
                 "last_name": user.last_name if user.last_name else "Non défini",
                 "role": user.role
             }, status=status.HTTP_200_OK)
+
 class GetUserByTokenView(APIView):
     """
     Récupère les informations de l'utilisateur via le token d'inscription.

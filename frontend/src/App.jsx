@@ -27,6 +27,8 @@ import ListeClientsPage from "./components/Utilisateurs/Clients/Liste-Client";
 import ModifierClientPage from "./components/Utilisateurs/Clients/modifier-client";
 //notifications
 import NotificationsPage from "./components/notifications/notifications";
+//historique
+
 function App() {
   return (
     <Router>
@@ -49,6 +51,7 @@ function App() {
        <Route path="/forgot-password" element={<ForgotPassword />} />
        <Route path="/reset-password" element={<ResetPassword />} />
        <Route path="/notification" element={<NotificationsPage/>}/>
+
        </Route>
   </Routes>
 </Router>

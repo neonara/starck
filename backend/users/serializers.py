@@ -5,6 +5,8 @@ import string
 from django.core.mail import send_mail
 from django.conf import settings
 from .tasks import send_verification_email
+from django.contrib.auth.password_validation import validate_password
+
 User = get_user_model()
 
 class AdminRegistrationSerializer(serializers.ModelSerializer):
@@ -127,3 +129,14 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
         instance.save()
         return instance
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id', 'email', 'first_name', 'last_name', 'role', 'is_active', 'is_verified')
+        read_only_fields = ('id', 'email', 'is_verified')
+
+class UserUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('first_name', 'last_name', 'role', 'is_active')

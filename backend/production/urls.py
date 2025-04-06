@@ -1,8 +1,7 @@
+# urls.py
 from django.urls import path
-from . import views 
+from .views import ProductionConsommationAPIView
 
 urlpatterns = [
-
-    path('', views.index, name='production_index'),
-    
+    path('production-consommation/', ProductionConsommationAPIView.as_view(), name='production_consommation'),
 ]

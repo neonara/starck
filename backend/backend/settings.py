@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'notification',
 
     'production',
+    'historique',
 
 ]
 ASGI_APPLICATION = 'backend.asgi.application'
@@ -99,7 +100,12 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'backend.wsgi.application'
-
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173", 
+]
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
+]
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases

@@ -2,6 +2,7 @@ from celery import shared_task
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 from django.utils.timezone import now
+
 @shared_task
 def send_notification_to_email(
     email,
@@ -19,11 +20,25 @@ def send_notification_to_email(
     from alarme.models import Alarme
 
     User = get_user_model()
+
     try:
         user = User.objects.get(email=email)
 
-        installation = Installation.objects.get(id=installation_id) if installation_id else None
-        alarme = Alarme.objects.get(id=alarme_id) if alarme_id else None
+       
+        installation = None
+        if installation_id:
+            try:
+                installation = Installation.objects.get(id=installation_id)
+            except Installation.DoesNotExist:
+                print(f"⚠️ Installation ID {installation_id} introuvable")
+
+      
+        alarme = None
+        if alarme_id:
+            try:
+                alarme = Alarme.objects.get(id=alarme_id)
+            except Alarme.DoesNotExist:
+                print(f"⚠️ Alarme ID {alarme_id} introuvable")
 
         notif = Notification.objects.create(
             utilisateur=user,
@@ -36,6 +51,7 @@ def send_notification_to_email(
             priorite=priorite
         )
 
+       
         channel_layer = get_channel_layer()
         group = f"user_{user.id}"
         async_to_sync(channel_layer.group_send)(
@@ -54,5 +70,8 @@ def send_notification_to_email(
                 },
             },
         )
+
+        print(f" Notification enregistrée et envoyée à {email}")
+
     except Exception as e:
-        print(f"❌ Erreur création + envoi notif : {e}")
+        print(f" Erreur création + envoi notif : {e}")

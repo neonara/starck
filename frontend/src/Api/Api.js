@@ -36,7 +36,7 @@ api.interceptors.request.use(async (req) => {
       console.error(" Erreur lors du rafraîchissement du token", err);
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
-      window.location.href = "/login";  
+      window.location.href = "/";  
     }
   }
 
@@ -50,10 +50,6 @@ const ApiService = {
   addUser: (userData) => api.post("users/register/", userData),
   getProfile: () => api.get("users/get-profile/"), 
   updateProfile: (userData) => api.patch("users/update-profile/", userData),
-  getNotifications: () => api.get("notification/get-my-notifications/"),
-  markAsRead: (id) => api.patch(`notification/mark-read/${id}/`),
-  markAllAsRead: () => api.patch("notification/mark-all-read/"),
-  deleteNotification: (id) => api.delete(`notification/delete/${id}/`),
   
   logout: async () => {
     const refreshToken = getRefreshToken();
@@ -75,6 +71,23 @@ const ApiService = {
       console.error("Erreur lors de la déconnexion :", error);
     }
   },
+  //notification
+  getNotifications: () => api.get("notification/get-my-notifications/"),
+  markAsRead: (id) => api.patch(`notification/mark-read/${id}/`),
+  markAllAsRead: () => api.patch("notification/mark-all-read/"),
+  deleteNotification: (id) => api.delete(`notification/delete/${id}/`),
+  // historique
+  exportHistorique: {
+    getExports: () => api.get("historique/liste/"),
+    creerExport: (format = "csv", installationId) =>
+      api.post("historique/creer-export/", {format, installation_id: installationId, }),
+    creerExportGlobal: (params) =>
+      api.post("historique/export-global/", params),
+      deleteExport: (id) => api.delete(`historique/supprimer/${id}/`),
+      creerExportGlobalUtilisateurs: (params) =>
+        api.post("historique/export-utilisateurs/", params),
+  }
+  
 };
 
 export default ApiService;

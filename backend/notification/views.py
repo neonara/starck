@@ -15,8 +15,8 @@ def send_notification_view(request):
     titre = request.data.get('titre', "📢 Notification")
     type_notification = request.data.get('type_notification', 'system')
     canal = request.data.get('canal', 'in_app')
-    installation_id = request.data.get('installation_id')
-    alarme_id = request.data.get('alarme_id')
+    installation_id = request.data.get('installation_id') or None
+    alarme_id = request.data.get('alarme_id') or None
     priorite = request.data.get('priorite', 1)
 
     if not email or not message:
@@ -32,7 +32,8 @@ def send_notification_view(request):
         alarme_id=alarme_id,
         priorite=priorite
     )
-    return Response({"success": True, "message": "Notification envoyée."})
+
+    return Response({"success": True, "message": "Notification en cours d'envoi 🚀"})
 
 
 @api_view(['GET'])

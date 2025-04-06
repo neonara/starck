@@ -9,11 +9,50 @@ import {
 } from "@tanstack/react-table";
 import { FaSort, FaSortUp, FaSortDown, FaEdit, FaTrash, FaDownload, FaPlus } from "react-icons/fa";
 import toast, { Toaster } from "react-hot-toast";
+import ApiService from "../../../Api/Api";
 
 const ListeClientsPage = () => {
   const navigate = useNavigate();
+  const [exportFormat, setExportFormat] = useState("csv");
+const [showExportOptions, setShowExportOptions] = useState(false);
+const [showModalExports, setShowModalExports] = useState(false);
+const [exports, setExports] = useState([]);
+
   const [globalFilter, setGlobalFilter] = useState("");
   const [pageSize, setPageSize] = useState(5);
+  const handleExportClick = async (format) => {
+    setExportFormat(format);
+    setShowExportOptions(false);
+    try {
+      await ApiService.exportHistorique.creerExportGlobalUtilisateurs({ format });
+      toast.success(`Export ${format.toUpperCase()} lancé ✅`);
+      setShowModalExports(true);
+      loadExports(); 
+    } catch (err) {
+      toast.error("Erreur lors de l’export ❌");
+      console.error(err);
+    }
+  };
+  const loadExports = async () => {
+    try {
+      const res = await ApiService.exportHistorique.getExports();
+      setExports(res.data);
+    } catch (err) {
+      console.error("Erreur chargement exports", err);
+    }
+  };
+  
+  const handleDeleteExport = async (id) => {
+    try {
+      await ApiService.exportHistorique.deleteExport(id);
+      toast.success("Fichier supprimé ✅");
+      loadExports();
+    } catch (err) {
+      toast.error("Erreur suppression ❌");
+    }
+  };
+  
+  
   const [data, setData] = useState([
     {
       id: "1",
@@ -136,12 +175,32 @@ const ListeClientsPage = () => {
             onChange={(e) => setGlobalFilter(e.target.value)}
             className="border px-3 py-1 rounded w-64 text-sm"
           />
-          <button
-            onClick={handleExportCSV}
-            className="flex items-center gap-2 px-3 py-1 border rounded text-sm text-gray-700 hover:bg-gray-100"
-          >
-            <FaDownload /> Télécharger
-          </button>
+         <div className="relative">
+  <button
+    onClick={() => setShowExportOptions(!showExportOptions)}
+    className="flex items-center gap-2 px-3 py-1 border rounded text-sm text-gray-700 hover:bg-gray-100"
+  >
+    <FaDownload /> Télécharger
+  </button>
+
+  {showExportOptions && (
+    <div className="absolute right-0 mt-2 w-40 bg-white border rounded shadow z-50">
+      <button
+        onClick={() => handleExportClick("csv")}
+        className="block w-full px-4 py-2 text-left hover:bg-gray-100"
+      >
+        Exporter en CSV
+      </button>
+      <button
+        onClick={() => handleExportClick("xlsx")}
+        className="block w-full px-4 py-2 text-left hover:bg-gray-100"
+      >
+        Exporter en Excel
+      </button>
+    </div>
+  )}
+</div>
+
           <button
             onClick={() => navigate("/user-management")}
             className="flex items-center gap-2 px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
@@ -230,6 +289,53 @@ const ListeClientsPage = () => {
           </button>
         </div>
       </div>
+      {showModalExports && (
+  <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+    <div className="bg-white rounded-lg shadow-lg p-6 w-[600px]">
+      <h2 className="text-lg font-bold mb-4">Tâches</h2>
+      <table className="w-full text-sm">
+        <thead className="bg-gray-100">
+          <tr>
+            <th className="text-left py-2 px-3">Nom de la tâche</th>
+            <th className="text-left py-2 px-3">Créé le</th>
+            <th className="text-left py-2 px-3">État/Opération</th>
+          </tr>
+        </thead>
+        <tbody>
+          {exports.map((exp) => (
+            <tr key={exp.id} className="hover:bg-gray-50">
+              <td className="py-2 px-3">{exp.nom}</td>
+              <td className="py-2 px-3">{new Date(exp.date_creation).toLocaleString()}</td>
+              <td className="py-2 px-3 flex gap-2">
+                <a href={exp.fichier} download>
+                  <FaDownload className="text-blue-600 cursor-pointer" />
+                </a>
+                <FaTrash
+                  className="text-red-500 cursor-pointer"
+                  onClick={() => handleDeleteExport(exp.id)}
+                />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <p className="text-xs mt-4 text-gray-500">
+        10 fichiers maximum enregistrés pendant 3 jours.
+      </p>
+
+      <div className="flex justify-end mt-4">
+        <button
+          className="px-4 py-1 border rounded text-gray-600 hover:bg-gray-100"
+          onClick={() => setShowModalExports(false)}
+        >
+          Fermer
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
     </div>
   );
 };

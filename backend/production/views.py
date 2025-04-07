@@ -31,12 +31,31 @@ class ListeProductionView(APIView):
         serializer = ProductionConsommationSerializer(donnees, many=True)
         return Response(serializer.data, status=200)
 
+class StatistiquesGlobalesView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        base_qs = ProductionConsommation.objects.all()
+
+        jour = base_qs.filter(horodatage__date=timezone.now().date()).aggregate(total=Sum('energie_produite_kwh'))['total'] or 0
+        mois = base_qs.filter(horodatage__year=timezone.now().year, horodatage__month=timezone.now().month).aggregate(total=Sum('energie_produite_kwh'))['total'] or 0
+        annee = base_qs.filter(horodatage__year=timezone.now().year).aggregate(total=Sum('energie_produite_kwh'))['total'] or 0
+        totale = base_qs.aggregate(total=Sum('energie_produite_kwh'))['total'] or 0
+        puissance = base_qs.aggregate(max=Sum('puissance_maximale_kw'))['max'] or 0
+
+        return Response({
+            "production_journaliere": jour,
+            "production_mensuelle": mois,
+            "production_annuelle": annee,
+            "production_totale": totale,
+            "puissance_totale": puissance
+        }, status=200)
+
 class StatistiquesProductionView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, installation_id):
         today = timezone.now().date()
-
         year = today.year
         month = today.month
 

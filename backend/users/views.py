@@ -18,6 +18,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.core.cache import cache
 from django_filters.rest_framework import DjangoFilterBackend
 
+from .permissions import IsAdminOrInstallateur
 
 
 User = get_user_model()
@@ -85,6 +86,8 @@ class RegisterUserView(APIView):
     """
     permission_classes = [permissions.IsAuthenticated]
     
+    permission_classes = [IsAuthenticated, IsAdminOrInstallateur]
+
     def post(self, request):
         try:
             logger.info(f"Tentative de création d'utilisateur par {request.user.email}")
@@ -181,7 +184,7 @@ class CompleteRegistrationView(APIView):
             return Response({"error": "Utilisateur non trouvé."}, status=status.HTTP_404_NOT_FOUND)
 
 class GetUserProfileView(APIView):
-    permission_classes = [IsAuthenticated] 
+    permission_classes = [IsAuthenticated, IsAdminOrInstallateur]
 
     def get(self, request):
         user = request.user  
@@ -201,6 +204,13 @@ class GetUserProfileView(APIView):
 
         return Response(user_data, status=status.HTTP_200_OK)
     
+        return Response({
+                "email": user.email,
+                "first_name": user.first_name if user.first_name else "Non défini",
+                "last_name": user.last_name if user.last_name else "Non défini",
+                "role": user.role
+            }, status=status.HTTP_200_OK)
+
 class GetUserByTokenView(APIView):
     """
     Récupère les informations de l'utilisateur via le token d'inscription.

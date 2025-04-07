@@ -4,7 +4,9 @@ import ReactApexChart from "react-apexcharts";
 import { useNavigate } from "react-router-dom";
 import {  ArrowUpRight } from "lucide-react";
 
-
+import ApiService from "../../Api/Api";
+import toast from "react-hot-toast";
+import { FaDownload } from "react-icons/fa";
 
 const installation = {
   nom: "Installation Mahdia",
@@ -24,9 +26,13 @@ const weather = {
 };
 
 const DashboardInstallation = () => {
+
   const navigate = useNavigate(); 
 
   const [view, setView] = useState("jour");
+  const [exportFormat, setExportFormat] = useState("csv");
+const [showExportOptions, setShowExportOptions] = useState(false);
+
 
   const buttons = [
     { label: "Jour", value: "jour" },
@@ -36,7 +42,19 @@ const DashboardInstallation = () => {
   ];
 
   const handleViewChange = (value) => setView(value);
-
+  const handleExportClick = async (format) => {
+    setExportFormat(format);
+    setShowExportOptions(false);
+    try {
+      const clientId = installation.client_id ; 
+      await ApiService.exportHistorique.creerExport(format, clientId);
+      toast.success(`Export ${format.toUpperCase()} lancé ✅`);
+    } catch (err) {
+      toast.error("Erreur export ❌");
+      console.error(err);
+    }
+  };
+  
   const data = {
     jour: [10, 20, 15, 30, 25, 40, 35],
     mois: [200, 220, 210, 250, 230, 240, 260],
@@ -85,15 +103,46 @@ const DashboardInstallation = () => {
   return (
     <div className="p-6 pt-24 max-w-7xl mx-auto">
     <div className="flex justify-between items-start mb-4">
-      <h1 className="text-3xl font-semibold">Détails de l'installation</h1>
-  
+  <h1 className="text-3xl font-semibold">Détails de l'installation</h1>
+
+  <div className="flex gap-2">
+    {/* Bouton Retour */}
+    <button
+      onClick={() => navigate(`/liste-installations/`)}
+      className="text-sm text-blue-600 hover:underline flex items-center gap-2"
+    >
+      <ArrowUpRight size={16} /> Retour
+    </button>
+
+    {/* Bouton Export */}
+    <div className="relative">
       <button
-        onClick={() => navigate(`/liste-installations/`)}
-        className="text-sm text-blue-600 hover:underline flex items-center gap-2"
+        onClick={() => setShowExportOptions(!showExportOptions)}
+        className="flex items-center gap-2 px-3 py-1 border rounded text-sm text-gray-700 hover:bg-gray-100"
       >
-        <ArrowUpRight size={16} /> Retour
+        <FaDownload /> Exporter
       </button>
+
+      {showExportOptions && (
+        <div className="absolute right-0 mt-2 w-40 bg-white border rounded shadow z-50">
+          <button
+            onClick={() => handleExportClick("csv")}
+            className="block w-full px-4 py-2 text-left hover:bg-gray-100"
+          >
+            Exporter en CSV
+          </button>
+          <button
+            onClick={() => handleExportClick("xlsx")}
+            className="block w-full px-4 py-2 text-left hover:bg-gray-100"
+          >
+            Exporter en Excel
+          </button>
+        </div>
+      )}
     </div>
+  </div>
+</div>
+
   
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Carte principale simplifiée */}

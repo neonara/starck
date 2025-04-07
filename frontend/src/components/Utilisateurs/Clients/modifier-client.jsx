@@ -3,41 +3,63 @@ import { useParams } from "react-router-dom";
 import { FaPen } from "react-icons/fa";
 import { Toaster, toast } from "react-hot-toast";
 import { IoClose } from "react-icons/io5";
+import ApiService from "../../../Api/Api";
 
 const ModifierClientPage = () => {
   const { id } = useParams();
   const [client, setClient] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [form, setForm] = useState({});
+
+  const [form, setForm] = useState({
+    first_name: "",
+    last_name: "",
+    email: "",
+    phone_number: "",
+    installation: "",
+    last_login: "",
+  });
+  
 
   useEffect(() => {
-    const fakeClient = {
-      id: "1",
-      role: "client",
-      first_name: "Ahmed",
-      last_name: "Ben Salah",
-      email: "ahmed@example.com",
-      phone_number: "12345678",
-      installation: "Installation A",
-      last_login: "2025-03-29T15:45:00Z",
+    const fetchClient = async () => {
+      try {
+        const res = await ApiService.getUserById(id);
+        setClient(res.data);
+        setForm(res.data);
+      } catch (err) {
+        toast.error("Erreur lors du chargement du client ❌");
+      }
     };
-    setClient(fakeClient);
-    setForm(fakeClient);
+    fetchClient();
   }, [id]);
+  if (!client) {
+  return (
+    <div className="pt-28 p-6 text-gray-700">
+      Chargement des données du client...
+    </div>
+  );
+}
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setClient(form);
-    toast.success("Client modifié avec succès ✅");
-    setIsEditing(false);
+    try {
+      await ApiService.updateUser(id, form);
+      setClient(form);
+      toast.success("Client modifié avec succès ✅");
+      setIsEditing(false);
+    } catch (err) {
+      toast.error("Erreur lors de la modification ❌");
+      console.error("Erreur PATCH :", err);
+    }
   };
+  
 
-  if (!client) return <div className="pt-28 p-6">Chargement...</div>;
 
   return (
 <div className="pt-28 px-6 w-full">
@@ -108,7 +130,7 @@ const ModifierClientPage = () => {
                 <input
                   type="text"
                   name="first_name"
-                  value={form.first_name}
+                  value={form.first_name || ""}
                   onChange={handleChange}
                   className="w-full border px-3 py-2 rounded"
                 />

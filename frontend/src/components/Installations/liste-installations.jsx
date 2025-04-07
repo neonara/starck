@@ -27,10 +27,11 @@ const ListeInstallationPage = () => {
   const [showModalExports, setShowModalExports] = useState(false);
   const [exports, setExports] = useState([]);
   const navigate = useNavigate();
+
   const loadExports = async () => {
     try {
       const res = await ApiService.exportHistorique.getExports();
-      setExports(res.data);
+      setExports(Array.isArray(res.data.results) ? res.data.results : []);
     } catch (err) {
       console.error("Erreur chargement des exports", err);
     }
@@ -52,8 +53,8 @@ const ListeInstallationPage = () => {
     try {
       await ApiService.exportHistorique.creerExportGlobal({ format });
       toast.success(`Export ${format.toUpperCase()} lancé ✅`);
-      setShowModalExports(true); // Ouvre la fenêtre
-      loadExports(); // charge les fichiers après export
+      setShowModalExports(true); 
+      loadExports(); 
     } catch (err) {
       toast.error("Erreur lors de l’export ❌");
       console.error(err);
@@ -286,13 +287,21 @@ const ListeInstallationPage = () => {
   {showExportOptions && (
     <div className="absolute right-0 mt-2 w-40 bg-white border rounded shadow z-50">
       <button
-        onClick={() => handleExportClick("csv")}
+      type="button"
+      onClick={(e) => {
+        e.preventDefault();
+        handleExportClick("csv");
+      }}
         className="block w-full px-4 py-2 text-left hover:bg-gray-100"
       >
         Exporter en CSV
       </button>
       <button
-        onClick={() => handleExportClick("xlsx")}
+        type="button"
+        onClick={(e) => {
+          e.preventDefault();
+          handleExportClick("xlsx");
+        }}
         className="block w-full px-4 py-2 text-left hover:bg-gray-100"
       >
         Exporter en Excel

@@ -20,6 +20,23 @@ const [exports, setExports] = useState([]);
 
   const [globalFilter, setGlobalFilter] = useState("");
   const [pageSize, setPageSize] = useState(5);
+
+  const loadExports = async () => {
+    console.log("🔄 Appel à loadExports");
+    try {
+      const res = await ApiService.exportHistorique.getExports();
+      console.log("📁 Résultat exports :", res.data);
+      
+      const result = Array.isArray(res.data.results) ? res.data.results : [];
+      setExports(result);
+    } catch (err) {
+      console.error("❌ Erreur chargement exports", err);
+      setExports([]);
+    }
+  };
+  
+  
+  
   const handleExportClick = async (format) => {
     setExportFormat(format);
     setShowExportOptions(false);
@@ -27,20 +44,15 @@ const [exports, setExports] = useState([]);
       await ApiService.exportHistorique.creerExportGlobalUtilisateurs({ format });
       toast.success(`Export ${format.toUpperCase()} lancé ✅`);
       setShowModalExports(true);
-      loadExports(); 
+      setTimeout(() => {
+        loadExports();
+      }, 1000);
     } catch (err) {
       toast.error("Erreur lors de l’export ❌");
       console.error(err);
     }
   };
-  const loadExports = async () => {
-    try {
-      const res = await ApiService.exportHistorique.getExports();
-      setExports(res.data);
-    } catch (err) {
-      console.error("Erreur chargement exports", err);
-    }
-  };
+
   
   const handleDeleteExport = async (id) => {
     try {
@@ -83,16 +95,6 @@ const [exports, setExports] = useState([]);
     }
   };
 
-  const handleExportCSV = () => {
-    const headers = Object.keys(data[0]).join(",");
-    const rows = data.map((row) => Object.values(row).join(","));
-    const csvContent = [headers, ...rows].join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.setAttribute("download", "clients.csv");
-    link.click();
-  };
 
   const columns = useMemo(() => {
     return [
@@ -176,29 +178,39 @@ const [exports, setExports] = useState([]);
             className="border px-3 py-1 rounded w-64 text-sm"
           />
          <div className="relative">
-  <button
-    onClick={() => setShowExportOptions(!showExportOptions)}
-    className="flex items-center gap-2 px-3 py-1 border rounded text-sm text-gray-700 hover:bg-gray-100"
-  >
-    <FaDownload /> Télécharger
-  </button>
+         <button
+  type="button"
+  onClick={() => setShowExportOptions(!showExportOptions)}
+  className="flex items-center gap-2 px-3 py-1 border rounded text-sm text-gray-700 hover:bg-gray-100"
+>
+  <FaDownload /> Télécharger
+</button>
 
-  {showExportOptions && (
-    <div className="absolute right-0 mt-2 w-40 bg-white border rounded shadow z-50">
-      <button
-        onClick={() => handleExportClick("csv")}
-        className="block w-full px-4 py-2 text-left hover:bg-gray-100"
-      >
-        Exporter en CSV
-      </button>
-      <button
-        onClick={() => handleExportClick("xlsx")}
-        className="block w-full px-4 py-2 text-left hover:bg-gray-100"
-      >
-        Exporter en Excel
-      </button>
-    </div>
-  )}
+{showExportOptions && (
+  <div className="absolute right-0 mt-2 w-40 bg-white border rounded shadow z-50">
+    <button
+      type="button"
+      onClick={(e) => {
+        e.preventDefault();
+        handleExportClick("csv");
+      }}
+      className="block w-full px-4 py-2 text-left hover:bg-gray-100"
+    >
+      Exporter en CSV
+    </button>
+    <button
+      type="button"
+      onClick={(e) => {
+        e.preventDefault();
+        handleExportClick("xlsx");
+      }}
+      className="block w-full px-4 py-2 text-left hover:bg-gray-100"
+    >
+      Exporter en Excel
+    </button>
+  </div>
+)}
+
 </div>
 
           <button

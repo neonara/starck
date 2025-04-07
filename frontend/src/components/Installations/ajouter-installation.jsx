@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaChevronUp, FaChevronDown, FaArrowLeft } from "react-icons/fa";
-import ApiService from "../../Api/Api"; // Assurez-vous d'importer ApiService
+import { FaArrowLeft } from "react-icons/fa";
+import ApiService from "../../Api/Api"; 
 import { toast } from "react-hot-toast";
 
 const AjouterInstallation = () => {
@@ -14,18 +14,18 @@ const AjouterInstallation = () => {
     capacite_kw: "",
     production_actuelle_kw: "",
     consommation_kw: "",
-    etat: "Actif",
+    statut: "active", 
     connecte_reseau: false,
     dernier_controle: "",
     alarme_active: false,
-    client_email: "",
-    installateurs_email: [],
-    type_installation: "",
-    date_installation: "",
+    client_email: "",  
+    installateurs_email: [],  
+    type_installation: "",  
+    date_installation: "",  
     ville: "",
     code_postal: "",
     pays: "",
-    documentation_technique: "",
+    documentation_technique: "", 
     expiration_garantie: "",
     reference_contrat: "",
   });
@@ -38,7 +38,7 @@ const AjouterInstallation = () => {
   useEffect(() => {
     const fetchClients = async () => {
       try {
-        const res = await ApiService.getClients(); // Appel à l'API pour récupérer les clients
+        const res = await ApiService.getClients(); 
         setClients(res.data.results);
       } catch (err) {
         console.error("Erreur lors du chargement des clients :", err);
@@ -49,7 +49,7 @@ const AjouterInstallation = () => {
 
     const fetchInstallateurs = async () => {
       try {
-        const res = await ApiService.getInstallateurs(); // Appel à l'API pour récupérer les installateurs
+        const res = await ApiService.getInstallateurs(); 
         setInstallateurs(res.data.results);
       } catch (err) {
         console.error("Erreur lors du chargement des installateurs :", err);
@@ -61,23 +61,64 @@ const AjouterInstallation = () => {
     fetchClients();
     fetchInstallateurs();
   }, []);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
+  
+    // Vérification des champs requis
+    if (!form.nom || !form.adresse || !form.client_email) {
+      toast.error("Tous les champs requis doivent être remplis !");
+      return;
+    }
+  
+    if (!form.capacite_kw || isNaN(form.capacite_kw) || parseFloat(form.capacite_kw) <= 0) {
+      toast.error("La capacité en kW doit être une valeur numérique valide et supérieure à 0 !");
+      return;
+    }
+  
+    if (isNaN(form.latitude) || isNaN(form.longitude)) {
+      toast.error("Latitude et Longitude doivent être des valeurs numériques valides !");
+      return;
+    }
+  
+    const capaciteKw = parseFloat(form.capacite_kw);
+    const latitude = parseFloat(form.latitude);
+    const longitude = parseFloat(form.longitude);
+  
+    const installationData = {
+      nom: form.nom,
+      adresse: form.adresse,
+      latitude: latitude,
+      longitude: longitude,
+      capacite_kw: capaciteKw,  
+      production_actuelle_kw: parseFloat(form.production_actuelle_kw),
+      consommation_kw: parseFloat(form.consommation_kw),
+      statut: form.statut,
+      connecte_reseau: form.connecte_reseau,
+      dernier_controle: form.dernier_controle,
+      alarme_active: form.alarme_active,
+      client_email: form.client_email,
+      installateurs_email: form.installateurs_email,
+      type_installation: form.type_installation,
+      date_installation: form.date_installation,
+      ville: form.ville,
+      code_postal: form.code_postal,
+      pays: form.pays,
+      documentation_technique: form.documentation_technique,
+      expiration_garantie: form.expiration_garantie,
+      reference_contrat: form.reference_contrat,
+    };
+  
     try {
-      if (!form.nom || !form.adresse || !form.client_email) {
-        toast.error("Tous les champs requis doivent être remplis !");
-        return;
-      }
-
-      await ApiService.ajouterInstallation(form);
+      await ApiService.ajouterInstallation(installationData);
       toast.success("Installation ajoutée avec succès ✅");
-      navigate("/liste-installations");
+      navigate("/liste-installations");  
     } catch (err) {
       console.error("Erreur lors de l'ajout :", err);
       toast.error("Erreur lors de l'ajout de l'installation ❌");
     }
   };
+  
+  
 
   return (
     <div className="p-6 pt-24 w-full bg-white rounded-xl shadow mx-auto max-w-7xl">
@@ -110,7 +151,34 @@ const AjouterInstallation = () => {
             className="input"
             placeholder="Adresse"
           />
+          <input
+            name="latitude"
+            value={form.latitude}
+            onChange={(e) => setForm({ ...form, latitude: e.target.value })}
+            className="input"
+            placeholder="Latitude"
+          />
+          <input
+            name="longitude"
+            value={form.longitude}
+            onChange={(e) => setForm({ ...form, longitude: e.target.value })}
+            className="input"
+            placeholder="Longitude"
+          />
         </div>
+        <div>
+  <h3 className="text-lg font-medium">Capacité en kW</h3>
+  <input
+    name="capacite_kw"
+    type="number"
+    step="0.01"
+    value={form.capacite_kw}
+    onChange={(e) => setForm({ ...form, capacite_kw: e.target.value })}
+    className="input"
+    placeholder="Capacité en kW"
+    required
+  />
+</div>
 
         {/* Sélectionner un client */}
         <div>

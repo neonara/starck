@@ -31,11 +31,11 @@ api.interceptors.request.use(async (req) => {
 
     try {
       const resp = await axios.post(`${baseURL}token/refresh/`, { refresh: refreshToken });
-      console.log(" Nouveau token d'accès: ", resp.data.access);
+      console.log("Nouveau token d'accès: ", resp.data.access);
       localStorage.setItem("accessToken", resp.data.access);
       req.headers.Authorization = `Bearer ${resp.data.access}`;
     } catch (err) {
-      console.error(" Erreur lors du rafraîchissement du token", err);
+      console.error("Erreur lors du rafraîchissement du token", err);
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
       window.location.href = "/";  
@@ -45,13 +45,10 @@ api.interceptors.request.use(async (req) => {
   return req;
 });
 
-
 const ApiService = {
- 
-
+  // Utilisateur
   addUser: (userData) => api.post("users/register/", userData),
   getProfile: () => api.get("users/profile/"),
-
   updateProfile: (userData) => api.patch("users/update-profile/", userData),
   getAllUsers: (params = {}) => api.get("users/", { params }),
   deleteUser: (id) => api.delete(`users/usersdetail/${id}/`),
@@ -59,6 +56,8 @@ const ApiService = {
   updateUser: (id, userData) => api.patch(`users/usersdetail/${id}/`, userData),
   getClients: () => api.get("users/clients/"),
   getInstallateurs: () => api.get("users/installateurs/"),
+
+  // Déconnexion
   logout: async () => {
     const refreshToken = getRefreshToken();
 
@@ -79,29 +78,35 @@ const ApiService = {
       console.error("Erreur lors de la déconnexion :", error);
     }
   },
-  //Insttalation
+
+  // Installation
   ajouterInstallation: (data) => api.post("installations/ajouter-installation/", data),
-
-
-  //notification
+  modifierInstallation: (id, data) =>
+    api.put(`installations/modifier-installation/${id}/`, data),  // Use 'id' here, which corresponds to the 'pk'
+  
+  supprimerInstallation: (installationId) =>
+    api.delete(`installations/supprimer-installation/${installationId}/`),
+  listerInstallations: () => api.get("installations/"),
+  detailsInstallation: (installationId) =>
+    api.get(`installations/${installationId}/`),
+  statistiquesInstallations: () => api.get("installations/statistiques/"),
+  // Notifications
   getNotifications: () => api.get("notification/get-my-notifications/"),
   markAsRead: (id) => api.patch(`notification/mark-read/${id}/`),
   markAllAsRead: () => api.patch("notification/mark-all-read/"),
   deleteNotification: (id) => api.delete(`notification/delete/${id}/`),
 
-
-  // historique
+  // Historique
   exportHistorique: {
     getExports: () => api.get("historique/liste/"),
     creerExport: (format = "csv", installationId) =>
-      api.post("historique/creer-export/", {format, installation_id: installationId, }),
+      api.post("historique/creer-export/", { format, installation_id: installationId }),
     creerExportGlobal: (params) =>
       api.post("historique/export-global/", params),
-      deleteExport: (id) => api.delete(`historique/supprimer/${id}/`),
-      creerExportGlobalUtilisateurs: (params) =>
-        api.post("historique/export-utilisateurs/", params),
+    deleteExport: (id) => api.delete(`historique/supprimer/${id}/`),
+    creerExportGlobalUtilisateurs: (params) =>
+      api.post("historique/export-utilisateurs/", params),
   }
-  
 };
 
 export default ApiService;

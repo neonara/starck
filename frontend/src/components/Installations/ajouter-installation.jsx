@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaChevronUp, FaChevronDown, FaArrowLeft } from "react-icons/fa";
+import ApiService from "../../Api/Api"; // Assurez-vous d'importer ApiService
+import { toast } from "react-hot-toast";
 
 const AjouterInstallation = () => {
   const navigate = useNavigate();
@@ -16,41 +18,70 @@ const AjouterInstallation = () => {
     connecte_reseau: false,
     dernier_controle: "",
     alarme_active: false,
-    client: "",
-    installateurs: [],
+    client_email: "",
+    installateurs_email: [],
+    type_installation: "",
     date_installation: "",
+    ville: "",
+    code_postal: "",
+    pays: "",
+    documentation_technique: "",
+    expiration_garantie: "",
+    reference_contrat: "",
   });
 
-  const [sections, setSections] = useState({
-    localisation: true,
-    capacite: true,
-    etat: true,
-    propriete: true,
-  });
+  const [clients, setClients] = useState([]);
+  const [installateurs, setInstallateurs] = useState([]);
+  const [loadingClients, setLoadingClients] = useState(true);
+  const [loadingInstallateurs, setLoadingInstallateurs] = useState(true);
 
-  const handleToggle = (section) => {
-    setSections({ ...sections, [section]: !sections[section] });
-  };
+  useEffect(() => {
+    const fetchClients = async () => {
+      try {
+        const res = await ApiService.getClients(); // Appel à l'API pour récupérer les clients
+        setClients(res.data.results);
+      } catch (err) {
+        console.error("Erreur lors du chargement des clients :", err);
+      } finally {
+        setLoadingClients(false);
+      }
+    };
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setForm({ ...form, [name]: type === "checkbox" ? checked : value });
-  };
+    const fetchInstallateurs = async () => {
+      try {
+        const res = await ApiService.getInstallateurs(); // Appel à l'API pour récupérer les installateurs
+        setInstallateurs(res.data.results);
+      } catch (err) {
+        console.error("Erreur lors du chargement des installateurs :", err);
+      } finally {
+        setLoadingInstallateurs(false);
+      }
+    };
 
-  const handleMultiSelect = (e) => {
-    const options = [...e.target.options];
-    const selected = options.filter((o) => o.selected).map((o) => o.value);
-    setForm({ ...form, installateurs: selected });
-  };
+    fetchClients();
+    fetchInstallateurs();
+  }, []);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Formulaire soumis:", form);
+    try {
+      if (!form.nom || !form.adresse || !form.client_email) {
+        toast.error("Tous les champs requis doivent être remplis !");
+        return;
+      }
+
+      await ApiService.ajouterInstallation(form);
+      toast.success("Installation ajoutée avec succès ✅");
+      navigate("/liste-installations");
+    } catch (err) {
+      console.error("Erreur lors de l'ajout :", err);
+      toast.error("Erreur lors de l'ajout de l'installation ❌");
+    }
   };
 
   return (
-<div className="p-6 pt-24 w-full bg-white rounded-xl shadow mx-auto max-w-7xl">
-<div className="flex justify-between items-center mb-6">
+    <div className="p-6 pt-24 w-full bg-white rounded-xl shadow mx-auto max-w-7xl">
+      <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-semibold">Ajouter une Installation</h2>
         <button
           onClick={() => navigate(-1)}
@@ -61,93 +92,68 @@ const AjouterInstallation = () => {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">
+        {/* Localisation */}
         <div>
-          <div
-            className="flex justify-between items-center cursor-pointer"
-            onClick={() => handleToggle("localisation")}
-          >
-            <h3 className="text-lg font-medium">Localisation</h3>
-            {sections.localisation ? <FaChevronUp /> : <FaChevronDown />}
-          </div>
-          {sections.localisation && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-              <input name="nom" value={form.nom} onChange={handleChange} className="input" placeholder="Nom" required />
-              <input name="adresse" value={form.adresse} onChange={handleChange} className="input" placeholder="Adresse" />
-              <input name="latitude" value={form.latitude} onChange={handleChange} className="input" placeholder="Latitude" />
-              <input name="longitude" value={form.longitude} onChange={handleChange} className="input" placeholder="Longitude" />
-            </div>
+          <h3 className="text-lg font-medium">Localisation</h3>
+          <input
+            name="nom"
+            value={form.nom}
+            onChange={(e) => setForm({ ...form, nom: e.target.value })}
+            className="input"
+            placeholder="Nom"
+            required
+          />
+          <input
+            name="adresse"
+            value={form.adresse}
+            onChange={(e) => setForm({ ...form, adresse: e.target.value })}
+            className="input"
+            placeholder="Adresse"
+          />
+        </div>
+
+        {/* Sélectionner un client */}
+        <div>
+          <h3 className="text-lg font-medium">Sélectionner un Client</h3>
+          {loadingClients ? (
+            <p>Chargement des clients...</p>
+          ) : (
+            <select
+              name="client_email"
+              value={form.client_email}
+              onChange={(e) => setForm({ ...form, client_email: e.target.value })}
+              className="input"
+              required
+            >
+              <option value="">Sélectionner un client</option>
+              {clients.map((client) => (
+                <option key={client.id} value={client.email}>
+                  {client.first_name} {client.last_name} - {client.email}
+                </option>
+              ))}
+            </select>
           )}
         </div>
 
+        {/* Sélectionner des installateurs */}
         <div>
-          <div
-            className="flex justify-between items-center cursor-pointer"
-            onClick={() => handleToggle("capacite")}
-          >
-            <h3 className="text-lg font-medium">Capacité et Production</h3>
-            {sections.capacite ? <FaChevronUp /> : <FaChevronDown />}
-          </div>
-          {sections.capacite && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-              <input name="capacite_kw" value={form.capacite_kw} onChange={handleChange} className="input" placeholder="Capacité (kW)" />
-              <input name="production_actuelle_kw" value={form.production_actuelle_kw} onChange={handleChange} className="input" placeholder="Production actuelle (kW)" />
-              <input name="consommation_kw" value={form.consommation_kw} onChange={handleChange} className="input" placeholder="Consommation (kW)" />
-            </div>
-          )}
-        </div>
-
-        <div>
-          <div
-            className="flex justify-between items-center cursor-pointer"
-            onClick={() => handleToggle("etat")}
-          >
-            <h3 className="text-lg font-medium">État et Connexion</h3>
-            {sections.etat ? <FaChevronUp /> : <FaChevronDown />}
-          </div>
-          {sections.etat && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-              <select name="etat" value={form.etat} onChange={handleChange} className="input">
-                <option value="Actif">Actif</option>
-                <option value="Inactif">Inactif</option>
-                <option value="En maintenance">En maintenance</option>
-              </select>
-              <label className="flex gap-2 items-center">
-                <input type="checkbox" name="connecte_reseau" checked={form.connecte_reseau} onChange={handleChange} />
-                Connecté au réseau
-              </label>
-              <label className="flex gap-2 items-center">
-                <input type="checkbox" name="alarme_active" checked={form.alarme_active} onChange={handleChange} />
-                Alarme active
-              </label>
-              <input name="dernier_controle" type="datetime-local" value={form.dernier_controle} onChange={handleChange} className="input" />
-            </div>
-          )}
-        </div>
-
-        <div>
-          <div
-            className="flex justify-between items-center cursor-pointer"
-            onClick={() => handleToggle("propriete")}
-          >
-            <h3 className="text-lg font-medium">Informations Propriétaire</h3>
-            {sections.propriete ? <FaChevronUp /> : <FaChevronDown />}
-          </div>
-          {sections.propriete && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-              <input name="client" value={form.client} onChange={handleChange} className="input" placeholder="Nom du client" />
-              <select
-                name="installateurs"
-                multiple
-                value={form.installateurs}
-                onChange={handleMultiSelect}
-                className="input h-32"
-              >
-                <option value="tech1">tech1</option>
-                <option value="tech2">tech2</option>
-                <option value="tech3">tech3</option>
-              </select>
-              <input name="date_installation" type="date" value={form.date_installation} onChange={handleChange} className="input" />
-            </div>
+          <h3 className="text-lg font-medium">Sélectionner des Installateurs</h3>
+          {loadingInstallateurs ? (
+            <p>Chargement des installateurs...</p>
+          ) : (
+            <select
+              name="installateurs_email"
+              multiple
+              value={form.installateurs_email}
+              onChange={(e) => setForm({ ...form, installateurs_email: [...e.target.selectedOptions].map(o => o.value) })}
+              className="input"
+            >
+              {installateurs.map((installateur) => (
+                <option key={installateur.id} value={installateur.email}>
+                  {installateur.first_name} {installateur.last_name} - {installateur.email}
+                </option>
+              ))}
+            </select>
           )}
         </div>
 

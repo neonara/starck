@@ -1,22 +1,21 @@
-import React, { Suspense, lazy, useState } from 'react';
-import { PieChart, Pie, Cell } from 'recharts';
-import {
-  AlertCircle, AlertTriangle, Info, Zap,
-  Users, Wrench
-} from 'lucide-react';
+import React, { useEffect, useState } from "react";
+import { Suspense, lazy } from "react";
+import ApiService from "../../Api/Api"; 
+import { PieChart, Pie, Cell } from "recharts";
+import { AlertCircle, AlertTriangle, Info, Zap, Users, Wrench } from "lucide-react";
 
-const ReactApexChart = lazy(() => import('react-apexcharts'));
+const ReactApexChart = lazy(() => import("react-apexcharts"));
 
 const dataInstallations = [
-  { name: 'Normales', value: 200, color: '#29b6f6' },
-  { name: 'En panne', value: 60, color: '#e53935' }
+  { name: "Normales", value: 200, color: "#29b6f6" },
+  { name: "En panne", value: 60, color: "#e53935" }
 ];
 
 const dataAlarms = [
-  { name: 'Critique', value: 7, color: '#e53935', icon: <AlertCircle size={16} /> },
-  { name: 'Majeur', value: 10, color: '#fb8c00', icon: <Zap size={16} /> },
-  { name: 'Mineur', value: 60, color: '#fdd835', icon: <AlertTriangle size={16} /> },
-  { name: 'Avertis.', value: 30, color: '#29b6f6', icon: <Info size={16} /> },
+  { name: "Critique", value: 7, color: "#e53935", icon: <AlertCircle size={16} /> },
+  { name: "Majeur", value: 10, color: "#fb8c00", icon: <Zap size={16} /> },
+  { name: "Mineur", value: 60, color: "#fdd835", icon: <AlertTriangle size={16} /> },
+  { name: "Avertis.", value: 30, color: "#29b6f6", icon: <Info size={16} /> }
 ];
 
 const initialData = {
@@ -37,45 +36,45 @@ const StatCard = ({ icon, label, value }) => (
 );
 
 const ProductionChart = () => {
-  const [view, setView] = useState('daily');
+  const [view, setView] = useState("daily");
   const [series, setSeries] = useState([
-    { name: 'Objectif', data: initialData.daily },
-    { name: 'Réalisé', data: initialData.daily.map((val) => Math.floor(val * 0.6)) },
+    { name: "Objectif", data: initialData.daily },
+    { name: "Réalisé", data: initialData.daily.map((val) => Math.floor(val * 0.6)) }
   ]);
 
   const options = {
-    chart: { type: 'area', toolbar: { show: false }, zoom: { enabled: false } },
+    chart: { type: "area", toolbar: { show: false }, zoom: { enabled: false } },
     dataLabels: { enabled: false },
-    stroke: { curve: 'smooth', width: 2 },
-    fill: { type: 'gradient', gradient: { opacityFrom: 0.4, opacityTo: 0, stops: [0, 100] } },
+    stroke: { curve: "smooth", width: 2 },
+    fill: { type: "gradient", gradient: { opacityFrom: 0.4, opacityTo: 0, stops: [0, 100] } },
     xaxis: {
       categories:
-        view === 'daily'
-          ? ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
-          : view === 'monthly'
-          ? ['Janv', 'Févr', 'Mars', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sept']
-          : view === 'annual'
-          ? ['2019', '2020', '2021', '2022']
-          : ['Total'],
+        view === "daily"
+          ? ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"]
+          : view === "monthly"
+          ? ["Janv", "Févr", "Mars", "Avr", "Mai", "Juin", "Juil", "Août", "Sept"]
+          : view === "annual"
+          ? ["2019", "2020", "2021", "2022"]
+          : ["Total"]
     },
     tooltip: { y: { formatter: (val) => `${val} unités` } },
-    colors: ['#3b82f6', '#93c5fd'],
+    colors: ["#3b82f6", "#93c5fd"]
   };
 
   const handleViewChange = (newView) => {
     setView(newView);
     const newData = initialData[newView];
     setSeries([
-      { name: 'Objectif', data: newData },
-      { name: 'Réalisé', data: newData.map((val) => Math.floor(val * 0.6)) },
+      { name: "Objectif", data: newData },
+      { name: "Réalisé", data: newData.map((val) => Math.floor(val * 0.6)) }
     ]);
   };
 
   const buttons = [
-    { label: 'Production journalière', value: 'daily' },
-    { label: 'Production mensuelle', value: 'monthly' },
-    { label: 'Production annuelle', value: 'annual' },
-    { label: 'Totale', value: 'total' },
+    { label: "Production journalière", value: "daily" },
+    { label: "Production mensuelle", value: "monthly" },
+    { label: "Production annuelle", value: "annual" },
+    { label: "Totale", value: "total" }
   ];
 
   return (
@@ -92,8 +91,8 @@ const ProductionChart = () => {
               onClick={() => handleViewChange(value)}
               className={`px-4 py-1.5 rounded-md text-sm font-medium ${
                 view === value
-                  ? 'bg-blue-100 text-blue-900'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? "bg-blue-100 text-blue-900"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               }`}
             >
               {label}
@@ -109,14 +108,27 @@ const ProductionChart = () => {
 };
 
 const Dashboard = () => {
+  const [stats, setStats] = useState({ total_clients: 0, total_installateurs: 0 });
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await ApiService.getUserStats();
+        setStats(response.data);
+      } catch (error) {
+        console.error("Erreur lors de la récupération des statistiques", error);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
   return (
     <div className="pr-0 pl-0 pt-16 flex flex-col gap-0">
-
-
       <div className="flex gap-6">
         <div className="flex flex-col gap-4 w-64">
-          <StatCard icon={<Users className="text-blue-600" />} label="Total Clients" value="89" />
-          <StatCard icon={<Wrench className="text-green-600" />} label="Total Installateurs" value="15" />
+          <StatCard icon={<Users className="text-blue-600" />} label="Total Clients" value={stats.total_clients} />
+          <StatCard icon={<Wrench className="text-green-600" />} label="Total Installateurs" value={stats.total_installateurs} />
         </div>
 
         <div className="flex flex-1 gap-6">

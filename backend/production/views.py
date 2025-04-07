@@ -7,10 +7,12 @@ from installations.models import Installation
 from django.utils import timezone
 from django.db.models import Sum
 from datetime import timedelta
+from users.permissions import IsAdminOrInstallateur
+from rest_framework.permissions import IsAuthenticated
 
 
 class AjouterDonneesView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminOrInstallateur]
 
     def post(self, request):
         serializer = ProductionConsommationSerializer(data=request.data)
@@ -20,7 +22,7 @@ class AjouterDonneesView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class ListeProductionView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminOrInstallateur]
 
     def get(self, request):
         installation_id = request.query_params.get('installation_id')
@@ -32,7 +34,7 @@ class ListeProductionView(APIView):
         return Response(serializer.data, status=200)
 
 class StatistiquesGlobalesView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminOrInstallateur]
 
     def get(self, request):
         base_qs = ProductionConsommation.objects.all()
@@ -51,8 +53,9 @@ class StatistiquesGlobalesView(APIView):
             "puissance_totale": puissance
         }, status=200)
 
+
 class StatistiquesProductionView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminOrInstallateur]
 
     def get(self, request, installation_id):
         today = timezone.now().date()

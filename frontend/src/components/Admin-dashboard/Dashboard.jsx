@@ -35,11 +35,15 @@ const StatCard = ({ icon, label, value }) => (
   </div>
 );
 
-const ProductionChart = () => {
+const ProductionChart = ({ productionData }) => {
   const [view, setView] = useState("daily");
+
+  // Vérification que productionData et ses propriétés sont définis
+  const data = productionData || initialData; // Si productionData est undefined, utiliser initialData comme fallback
+
   const [series, setSeries] = useState([
-    { name: "Objectif", data: initialData.daily },
-    { name: "Réalisé", data: initialData.daily.map((val) => Math.floor(val * 0.6)) }
+    { name: "Objectif", data: data.daily },
+    { name: "Réalisé", data: data.daily.map((val) => Math.floor(val * 0.6)) }
   ]);
 
   const options = {
@@ -63,7 +67,7 @@ const ProductionChart = () => {
 
   const handleViewChange = (newView) => {
     setView(newView);
-    const newData = initialData[newView];
+    const newData = data[newView];
     setSeries([
       { name: "Objectif", data: newData },
       { name: "Réalisé", data: newData.map((val) => Math.floor(val * 0.6)) }
@@ -106,9 +110,9 @@ const ProductionChart = () => {
     </div>
   );
 };
-
 const Dashboard = () => {
   const [stats, setStats] = useState({ total_clients: 0, total_installateurs: 0 });
+  const [productionData, setProductionData] = useState(null);  // Valeur initiale à null
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -120,8 +124,33 @@ const Dashboard = () => {
       }
     };
 
+    const fetchGlobalStats = async () => {
+      try {
+        const response = await ApiService.statistiquesGlobales();
+        const globalData = response.data;
+
+        // Formater les données pour qu'elles soient compatibles avec le graphique
+        const formattedData = {
+          daily: [globalData.production_journaliere],
+          monthly: [globalData.production_mensuelle],
+          annual: [globalData.production_annuelle],
+          total: [globalData.production_totale]
+        };
+
+        setProductionData(formattedData);  // Mettre à jour productionData avec les données récupérées
+      } catch (error) {
+        console.error("Erreur lors de la récupération des statistiques globales", error);
+      }
+    };
+
     fetchStats();
+    fetchGlobalStats();
   }, []);
+
+  // Afficher un état de chargement si productionData est undefined
+  if (!productionData) {
+    return <div>Chargement des statistiques...</div>;
+  }
 
   return (
     <div className="pr-0 pl-0 pt-16 flex flex-col gap-0">
@@ -207,7 +236,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <ProductionChart />
+      <ProductionChart productionData={productionData} />
     </div>
   );
 };

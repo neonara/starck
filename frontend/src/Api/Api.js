@@ -112,10 +112,14 @@ getUserStats: () => api.get("users/stats/"),
     deleteExport: (id) => api.delete(`historique/supprimer/${id}/`),
     creerExportGlobalUtilisateurs: (params) =>
       api.post("historique/export-utilisateurs/", params),
-  }
+  },
 
 
-  
+// Production
+ajouterDonnees: (prodData) => api.post("ajouter_prod/", prodData), 
+listeProduction: () => api.get("list_prod/"), 
+statistiquesProduction: (installationId) => api.get(`production/statistiques/${installationId}/`),  // Statistiques pour une installation
+statistiquesGlobales: () => api.get("production/statistiques/globales/"),  // Statistiques globales
 };
 
 export default ApiService;

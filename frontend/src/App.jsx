@@ -1,5 +1,8 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import AppLayout from './components/layout/AppLayout';
+import './App.css'
+import "flowbite";
+import "./index.css";
 
 // Authentification
 import RegisterAdmin from "./components/Authentification/RegisterAdmin";
@@ -22,6 +25,10 @@ import EditInstallation from "./components/Installations/modifier-installation";
 //Clients
 import ListeClientsPage from "./components/Utilisateurs/Clients/Liste-Client";
 import ModifierClientPage from "./components/Utilisateurs/Clients/modifier-client";
+//notifications
+import NotificationsPage from "./components/notifications/notifications";
+//historique
+
 function App() {
   return (
     <Router>
@@ -41,6 +48,10 @@ function App() {
       <Route path="modifier-installation/:id" element={< EditInstallation/>} />
        <Route path="liste-clients" element={<ListeClientsPage/>}/>
        <Route path="modifier-client/:id" element={<ModifierClientPage />} />
+       <Route path="/forgot-password" element={<ForgotPassword />} />
+       <Route path="/reset-password" element={<ResetPassword />} />
+       <Route path="/notification" element={<NotificationsPage/>}/>
+
        </Route>
   </Routes>
 </Router>

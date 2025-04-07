@@ -24,9 +24,8 @@ const Sidebar = () => {
       icon: Users,
       children: [
         { label: "Ajout Utilisateur", path: "/user-management" },
-        { label: "Clients", path: "/liste-clients" },
-        { label: "Insttalateurs", path: "" },
-        { label: "Techniciens", path: "" },
+        { label: "Utilisateurs", path: "/liste-clients" },
+       
       ]
     },
     {
@@ -97,7 +96,6 @@ const Sidebar = () => {
                   )}
                 </>
               ) : (
-                // Lien direct (ex: Tableaux de bord)
                 <Link
                   to={path}
                   className={`flex items-center w-full px-3 py-2 rounded-md text-sm font-medium transition ${

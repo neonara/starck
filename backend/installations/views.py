@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import Installation
 from .serializers import InstallationSerializer
+from users.permissions import IsAdminOrInstallateur
 
 User = get_user_model()
 
@@ -103,3 +104,6 @@ class StatistiquesInstallationsView(APIView):
             "total_normales": total_normales,
             "total_en_panne": total_en_panne
         }, status=status.HTTP_200_OK)
+
+
+   

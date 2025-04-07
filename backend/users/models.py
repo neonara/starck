@@ -22,6 +22,7 @@ class User(AbstractUser):
     email = models.EmailField(unique=True)
     verification_code = models.CharField(max_length=6, blank=True, null=True)
     is_verified = models.BooleanField(default=False)
+    phone_number = models.CharField(max_length=20, blank=True, null=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'first_name', 'last_name']

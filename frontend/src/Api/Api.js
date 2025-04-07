@@ -57,6 +57,10 @@ const ApiService = {
   getClients: () => api.get("users/clients/"),
   getInstallateurs: () => api.get("users/installateurs/"),
 
+//dashboard
+
+getUserStats: () => api.get("users/stats/"),
+
   // Déconnexion
   logout: async () => {
     const refreshToken = getRefreshToken();
@@ -80,10 +84,12 @@ const ApiService = {
   },
 
   // Installation
-  ajouterInstallation: (data) => api.post("installations/ajouter-installation/", data),
-  modifierInstallation: (id, data) =>
-    api.put(`installations/modifier-installation/${id}/`, data),  // Use 'id' here, which corresponds to the 'pk'
-  
+  ajouterInstallation: (installationData) => 
+    api.post("installations/ajouter-installation/", installationData),  
+
+ modifierInstallation: (id, data) =>
+  api.put(`installations/modifier-installation/${id}/`, data),  
+
   supprimerInstallation: (installationId) =>
     api.delete(`installations/supprimer-installation/${installationId}/`),
   listerInstallations: () => api.get("installations/"),
@@ -107,6 +113,9 @@ const ApiService = {
     creerExportGlobalUtilisateurs: (params) =>
       api.post("historique/export-utilisateurs/", params),
   }
+
+
+  
 };
 
 export default ApiService;

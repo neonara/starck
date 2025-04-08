@@ -31,8 +31,10 @@ import NotificationsPage from "./components/notifications/notifications";
 
 function App() {
   return (
+    
     <Router>
   <Routes>
+  
     <Route path="/" element={<Login />} />
     <Route path="/register-admin" element={<RegisterAdmin />} />
     <Route path="/complete-registration" element={<CompleteRegistration />} />

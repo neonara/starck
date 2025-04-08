@@ -1,0 +1,210 @@
+[33mcommit 393884e1df64891107f96c5c62eea892b2542b61[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mdev1[m[33m, [m[1;31morigin/dev1[m[33m)[m
+Author: unknown <you@example.com>
+Date:   Mon Apr 7 22:05:49 2025 +0200
+
+    g
+
+[33mcommit b08d3bc01cb2f27377df994a64af447cad7fbed9[m
+Author: unknown <you@example.com>
+Date:   Mon Apr 7 21:05:35 2025 +0200
+
+    conneion back+front
+
+[33mcommit e8f67e5a39ade046608a18b2e0d5145190a54e37[m
+Author: unknown <you@example.com>
+Date:   Mon Apr 7 12:44:04 2025 +0200
+
+    final check of historique
+
+[33mcommit 246320cde379607bd42b20521d513a53ba5e5237[m
+Merge: 8ebe290 2da9584
+Author: unknown <you@example.com>
+Date:   Mon Apr 7 00:25:15 2025 +0200
+
+    merge
+
+[33mcommit 8ebe29031c8dfb40f14ab953c0526c7c6236bf75[m
+Author: unknown <you@example.com>
+Date:   Mon Apr 7 00:17:10 2025 +0200
+
+    liste
+
+[33mcommit 2da9584b5a7236ba9914775c0c1842d6b2f4abbd[m
+Author: taysir-zt <zttayssir25@email.com>
+Date:   Mon Apr 7 00:16:16 2025 +0200
+
+    API utilisateurs et installations
+
+[33mcommit 70f439103df894f0f42c4d996a45e3f3b7ff5875[m
+Author: unknown <you@example.com>
+Date:   Mon Apr 7 00:06:52 2025 +0200
+
+    Importation historique
+
+[33mcommit af5b9491747791572ba6f5ddd0dd8a7e887d8c77[m
+Author: unknown <you@example.com>
+Date:   Sun Apr 6 00:50:02 2025 +0200
+
+    finalisation du systéme notif
+
+[33mcommit 698935412f484d0a6b731b919cc645b32cd0e3b1[m
+Author: unknown <you@example.com>
+Date:   Sat Apr 5 23:15:13 2025 +0200
+
+    notification
+
+[33mcommit 7e4d4697870fecc7f34a8d3fb3320562745c42b7[m
+Author: unknown <you@example.com>
+Date:   Sat Apr 5 21:24:49 2025 +0200
+
+    notification en temps réelle
+
+[33mcommit d5b302929b6d7a2f2a5cf2945880a5e19808b8d4[m
+Merge: b03d05a 162f3eb
+Author: taysir-zt <zttayssir25@email.com>
+Date:   Thu Apr 3 19:49:15 2025 +0200
+
+    Résolution du conflit de settings.py et suppression des fichiers __pycache__
+
+[33mcommit b3cdc91d5cde5375c32519e0c5180f53f9d0ace4[m
+Merge: 162f3eb aafda26
+Author: unknown <you@example.com>
+Date:   Thu Apr 3 19:49:04 2025 +0200
+
+    Resolve merge conflicts
+
+[33mcommit b03d05a3172c8c6ed1da73b711f04fee12ef609e[m
+Author: taysir-zt <zttayssir25@email.com>
+Date:   Thu Apr 3 19:46:21 2025 +0200
+
+    cache redis
+
+[33mcommit f8f0322c45b9839add36de78dcfb558d5cf9d547[m
+Merge: aafda26 438898f
+Author: taysir-zt <zttayssir25@email.com>
+Date:   Thu Apr 3 19:32:35 2025 +0200
+
+    Removed .pyc files and added .gitignore
+
+[33mcommit 162f3eb521febc98e7f77e6e45429baa717351e7[m
+Author: unknown <you@example.com>
+Date:   Thu Apr 3 19:27:04 2025 +0200
+
+    mdp celery
+
+[33mcommit aafda2621f512cac3f4e28d34960449c59812f35[m
+Author: taysir-zt <zttayssir25@email.com>
+Date:   Thu Apr 3 19:11:37 2025 +0200
+
+    modèles
+
+[33mcommit 438898f849ebc465a4dcfb4b2badf71bd7471988[m
+Author: unknown <you@example.com>
+Date:   Thu Apr 3 12:25:30 2025 +0200
+
+    Admin dashboard+ gestion des installation + gestion des utilisateurs frontend
+
+[33mcommit f29b022e3a23c047c797f368914b7bac269a12d2[m
+Author: unknown <you@example.com>
+Date:   Fri Mar 28 05:27:43 2025 +0100
+
+    Dashboard Admin + Gestion des installation partie frontend
+
+[33mcommit 8017c4aa94a8644508a5fb45775e2c4735799776[m
+Author: taysir-zt <zttayssir25@email.com>
+Date:   Fri Mar 28 02:14:38 2025 +0100
+
+    Modèle installations et équipements
+
+[33mcommit 9b6cb3af07e7addb3bbf4a968f7b808d61fe017d[m
+Merge: 9e07684 8b5d137
+Author: taysir-zt <zttayssir25@email.com>
+Date:   Wed Mar 26 02:32:18 2025 +0100
+
+    Résolution des conflits dans les fichiers
+
+[33mcommit 9e07684cb8cd28b7c47a0730ae004e20b8331938[m
+Author: taysir-zt <zttayssir25@email.com>
+Date:   Tue Mar 25 11:55:09 2025 +0100
+
+    cache redis
+
+[33mcommit 772dabbc2eef6906a98b3981d4f99b49ebcd2c46[m
+Author: taysir-zt <zttayssir25@email.com>
+Date:   Tue Mar 25 11:53:02 2025 +0100
+
+    cache redis
+
+[33mcommit 8b5d13717e03a9bf8128dd46518d19452eb6600c[m
+Author: unknown <you@example.com>
+Date:   Mon Mar 24 00:19:36 2025 +0100
+
+    Ajout Middleware file
+
+[33mcommit b03cfca66539371cc66c28e966a98f5c3d09399c[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m
+Author: taysir-zt <zttayssir25@email.com>
+Date:   Sun Mar 23 22:09:37 2025 +0100
+
+    forgot password
+
+[33mcommit 7c6964cbb0663fb7b3d0e5c38a3a5ee0a27ece46[m
+Merge: 181f76b d5ffad8
+Author: taysir-zt <zttayssir25@email.com>
+Date:   Sun Mar 23 22:06:44 2025 +0100
+
+    forgot password
+
+[33mcommit d5ffad8195b4de6b6c59af97f1de23ae9730aea3[m
+Author: taysir-zt <zttayssir25@email.com>
+Date:   Sun Mar 23 21:42:15 2025 +0100
+
+    redis cache
+
+[33mcommit 7937ccca6d651599fd8e33da1f3ee0cc529a24fe[m
+Author: unknown <you@example.com>
+Date:   Thu Mar 20 04:18:34 2025 +0100
+
+    Mise a jour du profile utilisateur
+
+[33mcommit 181f76b52a2bd01d99e333b91a8661764fea7a38[m
+Merge: 7d859cd fc3b16f
+Author: unknown <you@example.com>
+Date:   Wed Mar 19 23:50:35 2025 +0100
+
+    modification architecture frontend
+
+[33mcommit 7d859cdf7902ca11c51a9f68ea32026b3a6e7330[m
+Author: unknown <you@example.com>
+Date:   Wed Mar 19 23:43:01 2025 +0100
+
+    modification architecture frontend
+
+[33mcommit 3ab19d8ff7726d41a686662a8248b0de8dadde6a[m
+Author: taysir-zt <zttayssir25@gmail.com>
+Date:   Wed Mar 19 10:19:52 2025 +0100
+
+    forgotpassword
+
+[33mcommit fc3b16f4d23ec3f7347e4d1b917ca003fe264a1d[m
+Author: unknown <you@example.com>
+Date:   Wed Mar 19 03:02:23 2025 +0100
+
+    Modification du architecture du frontend
+
+[33mcommit 87421587f2dd28f9a7d1599c4146fe9d9bc5d3d0[m
+Author: unknown <you@example.com>
+Date:   Mon Mar 17 02:53:53 2025 +0100
+
+    Authentification
+
+[33mcommit bfb70e1b46a5f6583bfb8c8b92dc750bc8462c6f[m
+Author: unknown <you@example.com>
+Date:   Thu Mar 6 00:19:16 2025 +0100
+
+    first commit
+
+[33mcommit a328a4e8d341a5e2cac7d43653e82a5ad6096b9a[m
+Author: neonara <nour.d@neonara.digital>
+Date:   Thu Jan 23 14:17:07 2025 +0100
+
+    Create README.md

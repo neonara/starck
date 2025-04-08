@@ -8,13 +8,33 @@ from django.db.models import Count
 class AjouterAlarmeView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
-    def post(self, request):
-        serializer = AlarmeSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"message": "Alarme ajoutée avec succès."}, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+def post(self, request):
+    serializer = AlarmeSerializer(data=request.data)
+    if serializer.is_valid():
+        alarme = serializer.save()
+        
+        # Envoyer l'alarme via WebSocket
+        channel_layer = get_channel_layer()
+        async_to_sync(channel_layer.group_send)(
+            "alarms",
+            {
+                "type": "send_alarm_update",
+                "message": {
+                    "id": alarme.id,
+                    "code_alarme": alarme.code_alarme,
+                    "titre": alarme.titre,
+                    "description": alarme.description,
+                    "gravite": alarme.gravite,
+                    "statut": alarme.statut,
+                    "declenchee_le": alarme.declenchee_le.isoformat(),
+                }
+            }
+        )
+        
+        return Response({"message": "Alarme ajoutée avec succès."}, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    
 class ModifierAlarmeView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 

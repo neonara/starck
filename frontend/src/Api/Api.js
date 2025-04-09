@@ -60,6 +60,8 @@ const ApiService = {
 //dashboard
 
 getUserStats: () => api.get("users/stats/"),
+getInstallationStats: () => api.get("statistiques/"),
+
 
   // Déconnexion
   logout: async () => {
@@ -84,18 +86,21 @@ getUserStats: () => api.get("users/stats/"),
   },
 
   // Installation
-  ajouterInstallation: (installationData) => 
-    api.post("installations/ajouter-installation/", installationData),  
+  ajouterInstallation: (data) =>
+    api.post("installations/ajouter-installation/", data, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }),
 
- modifierInstallation: (id, data) =>
-  api.put(`installations/modifier-installation/${id}/`, data),  
+    getInstallations: (params = {}) => api.get("installations/installations/", { params }),
+    deleteInstallation: (id) => api.delete(`installations/supprimer-installation/${id}/`),
+    getInstallationById: (id) => api.get(`installations/detail-installation/${id}/`),
+    updateInstallation: (id, data) => api.put(`installations/modifier-installation/${id}/`, data),
+    getInstallationStats: () => api.get("installations/statistiques/"),
 
-  supprimerInstallation: (installationId) =>
-    api.delete(`installations/supprimer-installation/${installationId}/`),
-  listerInstallations: () => api.get("installations/"),
-  detailsInstallation: (installationId) =>
-    api.get(`installations/${installationId}/`),
-  statistiquesInstallations: () => api.get("installations/statistiques/"),
+    
+
   // Notifications
   getNotifications: () => api.get("notification/get-my-notifications/"),
   markAsRead: (id) => api.patch(`notification/mark-read/${id}/`),

@@ -6,10 +6,7 @@ import { AlertCircle, AlertTriangle, Info, Zap, Users, Wrench } from "lucide-rea
 
 const ReactApexChart = lazy(() => import("react-apexcharts"));
 
-const dataInstallations = [
-  { name: "Normales", value: 200, color: "#29b6f6" },
-  { name: "En panne", value: 60, color: "#e53935" }
-];
+
 
 const dataAlarms = [
   { name: "Critique", value: 7, color: "#e53935", icon: <AlertCircle size={16} /> },
@@ -38,8 +35,7 @@ const StatCard = ({ icon, label, value }) => (
 const ProductionChart = ({ productionData }) => {
   const [view, setView] = useState("daily");
 
-  // Vérification que productionData et ses propriétés sont définis
-  const data = productionData || initialData; // Si productionData est undefined, utiliser initialData comme fallback
+  const data = productionData || initialData; 
 
   const [series, setSeries] = useState([
     { name: "Objectif", data: data.daily },
@@ -112,7 +108,11 @@ const ProductionChart = ({ productionData }) => {
 };
 const Dashboard = () => {
   const [stats, setStats] = useState({ total_clients: 0, total_installateurs: 0 });
-  const [productionData, setProductionData] = useState(null);  // Valeur initiale à null
+  const [productionData, setProductionData] = useState(null); 
+  const [installationStats, setInstallationStats] = useState({
+    total_normales: 0,
+    total_en_panne: 0,
+  });
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -123,13 +123,21 @@ const Dashboard = () => {
         console.error("Erreur lors de la récupération des statistiques", error);
       }
     };
+    const fetchInstallationStats = async () => {
+      try {
+        const res = await ApiService.getInstallationStats();
+        setInstallationStats(res.data);
+      } catch (err) {
+        console.error("Erreur récupération stats installations", err);
+      }
+    };
+    
 
     const fetchGlobalStats = async () => {
       try {
         const response = await ApiService.statistiquesGlobales();
         const globalData = response.data;
 
-        // Formater les données pour qu'elles soient compatibles avec le graphique
         const formattedData = {
           daily: [globalData.production_journaliere],
           monthly: [globalData.production_mensuelle],
@@ -137,7 +145,7 @@ const Dashboard = () => {
           total: [globalData.production_totale]
         };
 
-        setProductionData(formattedData);  // Mettre à jour productionData avec les données récupérées
+        setProductionData(formattedData);  
       } catch (error) {
         console.error("Erreur lors de la récupération des statistiques globales", error);
       }
@@ -145,13 +153,16 @@ const Dashboard = () => {
 
     fetchStats();
     fetchGlobalStats();
+    fetchInstallationStats(); 
   }, []);
 
-  // Afficher un état de chargement si productionData est undefined
   if (!productionData) {
     return <div>Chargement des statistiques...</div>;
   }
-
+  const dataInstallations = [
+    { name: "Normales", value: installationStats.total_normales || 0, color: "#29b6f6" },
+    { name: "En panne", value: installationStats.total_en_panne || 0, color: "#e53935" }
+  ];
   return (
     <div className="pr-0 pl-0 pt-16 flex flex-col gap-0">
       <div className="flex gap-6">

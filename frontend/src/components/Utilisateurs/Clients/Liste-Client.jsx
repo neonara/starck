@@ -152,7 +152,6 @@ const ListeClientsPage = () => {
     <div className="p-6 pt-28 bg-white rounded-xl shadow">
       <Toaster />
 
-      {/* Header */}
       <div className="flex justify-between items-center mb-4">
         <div className="flex gap-2 items-center">
           <label className="text-sm text-gray-600">Afficher</label>

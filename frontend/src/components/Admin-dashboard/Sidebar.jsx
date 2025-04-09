@@ -53,12 +53,10 @@ const Sidebar = () => {
         )}
       </div>
 
-      {/* Menu */}
-      <div className="pt-6 px-2">
+     <div className="pt-6 px-2">
         <ul className="space-y-2">
           {menuItems.map(({ label, icon: Icon, path, children }) => (
             <li key={label}>
-              {/* Si sous-menus */}
               {children ? (
                 <>
                   <button
@@ -115,7 +113,6 @@ const Sidebar = () => {
         </ul>
       </div>
 
-      {/* Toggle button */}
       <button
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
         className="absolute top-1/2 -right-3 transform -translate-y-1/2 z-50 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-full px-1.5 py-1 shadow-md"

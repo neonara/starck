@@ -25,7 +25,7 @@ export default function LoginPage() {
       localStorage.setItem("userRole", response.data.user.role);
 
       const roleRedirects = {
-        admin: "/user-management",
+        admin: "/admin-dashboard",
         installateur: "/update-profile",
         technicien: "/update-profile",
         client: "/update-profile",

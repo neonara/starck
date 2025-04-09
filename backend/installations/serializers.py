@@ -1,13 +1,15 @@
 from rest_framework import serializers
 from .models import Installation
 from django.contrib.auth import get_user_model
-
+from users.serializers import UserSerializer
 User = get_user_model()
 
 class InstallationSerializer(serializers.ModelSerializer):
     client_email = serializers.EmailField(write_only=True)
     installateur_email = serializers.EmailField(write_only=True, required=False)
-
+    client = UserSerializer(read_only=True)
+    installateur = UserSerializer(read_only=True)
+    
     class Meta:
         model = Installation
         fields = [
@@ -28,20 +30,24 @@ class InstallationSerializer(serializers.ModelSerializer):
             'documentation_technique',
             'expiration_garantie',
             'reference_contrat',
+            'client',             
+            'installateur',
         ]
 
+   
+
     def create(self, validated_data):
-        client_email = validated_data.pop('client_email')
+        client_email = validated_data.pop('client_email').strip().lower()
         installateur_email = validated_data.pop('installateur_email', None) 
 
         try:
-            client = User.objects.get(email=client_email, groups__name='Clients')
+            client = User.objects.get(email=client_email, role='client')
         except User.DoesNotExist:
             raise serializers.ValidationError({"client_email": "Aucun client trouvé avec cet e-mail."})
 
         if installateur_email:
             try:
-                installateur = User.objects.get(email=installateur_email, groups__name='Installateurs')
+                installateur = User.objects.get(email=installateur_email, role='installateur')
             except User.DoesNotExist:
                 raise serializers.ValidationError({"installateur_email": "Aucun installateur trouvé avec cet e-mail."})
         else:
@@ -61,10 +67,10 @@ class InstallationSerializer(serializers.ModelSerializer):
         installateur_email = validated_data.pop('installateur_email', None)
 
         if client_email:
-            client = User.objects.get(email=client_email, groups__name='Clients')
+            client = User.objects.get(email=client_email, role='client')
             instance.client = client
         if installateur_email:
-            installateur = User.objects.get(email=installateur_email, groups__name='Installateurs')
+            installateur = User.objects.get(email=installateur_email, role='installateur')
             instance.installateur = installateur
 
         for attr, value in validated_data.items():

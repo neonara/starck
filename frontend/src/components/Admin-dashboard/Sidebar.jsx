@@ -35,6 +35,15 @@ const Sidebar = () => {
         { label: "Installations", path: "/liste-installations" },
         { label: "Appareil", path: "" },
       ]
+    },
+    {
+      label: "Gestion des Alarmes",
+      icon: Server,
+      children: [
+        { label: "Redéfinir l'alarme", path: "/codes-alarmes/ajouter" },
+        { label: "Code Alarme", path: "/ListeCodesAlarmes" },
+        { label: "Alarme Active", path: "/ListeAlarmesDeclenchees" },
+      ]
     }
   ];
 
@@ -45,7 +54,6 @@ const Sidebar = () => {
       } bg-white dark:bg-gray-800 border-r dark:border-gray-700 
       transition-all duration-300 ease-in-out h-screen fixed top-0 left-0 z-40 overflow-x-hidden`}
     >
-      {/* Logo + Nom */}
       <div className="flex items-center gap-2 px-4 pt-6">
         <img src="/assets/logo.jpg" alt="Logo" className="w-6 h-6" />
         {isSidebarOpen && (

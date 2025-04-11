@@ -31,4 +31,13 @@ export const AddUserType = {
     new_password: "",
     confirm_new_password: "",
   };
+  export const AlarmeCodeType = {
+    id: null,
+    marque: "",
+    type_alarme: "",
+    code_constructeur: "",
+    gravite: "",
+    description: "",
+  };
+ 
   

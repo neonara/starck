@@ -8,12 +8,7 @@ const ReactApexChart = lazy(() => import("react-apexcharts"));
 
 
 
-const dataAlarms = [
-  { name: "Critique", value: 7, color: "#e53935", icon: <AlertCircle size={16} /> },
-  { name: "Majeur", value: 10, color: "#fb8c00", icon: <Zap size={16} /> },
-  { name: "Mineur", value: 60, color: "#fdd835", icon: <AlertTriangle size={16} /> },
-  { name: "Avertis.", value: 30, color: "#29b6f6", icon: <Info size={16} /> }
-];
+
 
 const initialData = {
   daily: [120, 150, 100, 210, 180, 190, 220],
@@ -109,6 +104,8 @@ const ProductionChart = ({ productionData }) => {
 const Dashboard = () => {
   const [stats, setStats] = useState({ total_clients: 0, total_installateurs: 0 });
   const [productionData, setProductionData] = useState(null); 
+  const [dataAlarms, setDataAlarms] = useState([]);
+
   const [installationStats, setInstallationStats] = useState({
     total_normales: 0,
     total_en_panne: 0,
@@ -150,10 +147,40 @@ const Dashboard = () => {
         console.error("Erreur lors de la récupération des statistiques globales", error);
       }
     };
-
+    const fetchAlarmStats = async () => {
+      try {
+        const res = await ApiService.getStatistiquesAlarmes(); // appel API
+        const iconMap = {
+          critique: <AlertCircle size={16} />,
+          majeure: <Zap size={16} />,
+          mineure: <AlertTriangle size={16} />,
+        };
+        const colorMap = {
+          critique: "#e53935",
+          majeure: "#fb8c00",
+          mineure: "#fdd835",
+        };
+    
+        const formatted = res.data.map((item) => {
+          const key = item.code_alarme__gravite;
+          return {
+            name: key.charAt(0).toUpperCase() + key.slice(1),
+            value: item.total,
+            color: colorMap[key] || "#ccc",
+            icon: iconMap[key] || <Info size={16} />,
+          };
+        });
+    
+        setDataAlarms(formatted);
+      } catch (error) {
+        console.error("Erreur chargement statistiques alarmes", error);
+      }
+    };
+    
     fetchStats();
     fetchGlobalStats();
     fetchInstallationStats(); 
+    fetchAlarmStats(); 
   }, []);
 
   if (!productionData) {

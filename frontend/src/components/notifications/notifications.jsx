@@ -27,6 +27,32 @@ export default function NotificationsPage() {
 
   useEffect(() => {
     fetchNotifications();
+
+    // Connexion WebSocket
+    const userId = localStorage.getItem("userId");
+    if (!userId) return;
+
+    const socket = new WebSocket(`ws://localhost:8000/ws/notifications/user_${userId}/`);
+
+    socket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      const notif = data.message;
+
+      // 🎉 Toast si alarme
+      if (notif?.type === "alarme") {
+        toast.error(`🚨 ${notif.title}: ${notif.content}`);
+      } else {
+        toast(notif.title || "Nouvelle notification");
+      }
+
+      setNotifications((prev) => [notif, ...prev]);
+    };
+
+    socket.onerror = (e) => {
+      console.error("WebSocket error:", e);
+    };
+
+    return () => socket.close();
   }, []);
 
   const markAsRead = async (id) => {

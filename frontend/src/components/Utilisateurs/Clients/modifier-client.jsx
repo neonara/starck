@@ -3,41 +3,63 @@ import { useParams } from "react-router-dom";
 import { FaPen } from "react-icons/fa";
 import { Toaster, toast } from "react-hot-toast";
 import { IoClose } from "react-icons/io5";
+import ApiService from "../../../Api/Api";
 
 const ModifierClientPage = () => {
   const { id } = useParams();
   const [client, setClient] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [form, setForm] = useState({});
+
+  const [form, setForm] = useState({
+    first_name: "",
+    last_name: "",
+    email: "",
+    phone_number: "",
+    installation: "",
+    last_login: "",
+  });
+  
 
   useEffect(() => {
-    const fakeClient = {
-      id: "1",
-      role: "client",
-      first_name: "Ahmed",
-      last_name: "Ben Salah",
-      email: "ahmed@example.com",
-      phone_number: "12345678",
-      installation: "Installation A",
-      last_login: "2025-03-29T15:45:00Z",
+    const fetchClient = async () => {
+      try {
+        const res = await ApiService.getUserById(id);
+        setClient(res.data);
+        setForm(res.data);
+      } catch (err) {
+        toast.error("Erreur lors du chargement du client ❌");
+      }
     };
-    setClient(fakeClient);
-    setForm(fakeClient);
+    fetchClient();
   }, [id]);
+  if (!client) {
+  return (
+    <div className="pt-28 p-6 text-gray-700">
+      Chargement des données du client...
+    </div>
+  );
+}
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setClient(form);
-    toast.success("Client modifié avec succès ✅");
-    setIsEditing(false);
+    try {
+      await ApiService.updateUser(id, form);
+      setClient(form);
+      toast.success("Client modifié avec succès ✅");
+      setIsEditing(false);
+    } catch (err) {
+      toast.error("Erreur lors de la modification ❌");
+      console.error("Erreur PATCH :", err);
+    }
   };
+  
 
-  if (!client) return <div className="pt-28 p-6">Chargement...</div>;
 
   return (
 <div className="pt-28 px-6 w-full">
@@ -45,7 +67,7 @@ const ModifierClientPage = () => {
 
     <div className="w-full max-w-5xl mx-20">
       <div className="bg-white rounded-xl shadow p-6 relative">
-        <h2 className="text-xl font-semibold mb-4">Informations personnelles</h2>
+        <h2 className="text-xl font-semibold  mb-4">Informations personnelles</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 text-sm text-gray-700">
           <div>
@@ -76,7 +98,7 @@ const ModifierClientPage = () => {
 
       <button
         onClick={() => setIsEditing(true)}
-        className="absolute top-6 right-6 px-4 py-2 flex items-center gap-2 rounded-full border text-sm hover:bg-gray-100"
+        className="absolute top-5 right-1 px-2 py-2 flex items-center gap-2 rounded-full border text-sm hover:bg-gray-100"
       >
         ✏️ Modifier
       </button>
@@ -84,7 +106,6 @@ const ModifierClientPage = () => {
   </div>
 
 
-      {/* ---- MODAL ÉDITION ---- */}
       {isEditing && (
         <div className="fixed inset-0 bg-black bg-opacity-30 z-50 flex items-center justify-center">
           <form
@@ -108,7 +129,7 @@ const ModifierClientPage = () => {
                 <input
                   type="text"
                   name="first_name"
-                  value={form.first_name}
+                  value={form.first_name || ""}
                   onChange={handleChange}
                   className="w-full border px-3 py-2 rounded"
                 />

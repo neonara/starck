@@ -1,23 +1,14 @@
-import React, { Suspense, lazy, useState } from 'react';
-import { PieChart, Pie, Cell } from 'recharts';
-import {
-  AlertCircle, AlertTriangle, Info, Zap,
-  Users, Wrench
-} from 'lucide-react';
+import React, { useEffect, useState } from "react";
+import { Suspense, lazy } from "react";
+import ApiService from "../../Api/Api"; 
+import { PieChart, Pie, Cell } from "recharts";
+import { AlertCircle, AlertTriangle, Info, Zap, Users, Wrench } from "lucide-react";
 
-const ReactApexChart = lazy(() => import('react-apexcharts'));
+const ReactApexChart = lazy(() => import("react-apexcharts"));
 
-const dataInstallations = [
-  { name: 'Normales', value: 200, color: '#29b6f6' },
-  { name: 'En panne', value: 60, color: '#e53935' }
-];
 
-const dataAlarms = [
-  { name: 'Critique', value: 7, color: '#e53935', icon: <AlertCircle size={16} /> },
-  { name: 'Majeur', value: 10, color: '#fb8c00', icon: <Zap size={16} /> },
-  { name: 'Mineur', value: 60, color: '#fdd835', icon: <AlertTriangle size={16} /> },
-  { name: 'Avertis.', value: 30, color: '#29b6f6', icon: <Info size={16} /> },
-];
+
+
 
 const initialData = {
   daily: [120, 150, 100, 210, 180, 190, 220],
@@ -36,46 +27,49 @@ const StatCard = ({ icon, label, value }) => (
   </div>
 );
 
-const ProductionChart = () => {
-  const [view, setView] = useState('daily');
+const ProductionChart = ({ productionData }) => {
+  const [view, setView] = useState("daily");
+
+  const data = productionData || initialData; 
+
   const [series, setSeries] = useState([
-    { name: 'Objectif', data: initialData.daily },
-    { name: 'Réalisé', data: initialData.daily.map((val) => Math.floor(val * 0.6)) },
+    { name: "Objectif", data: data.daily },
+    { name: "Réalisé", data: data.daily.map((val) => Math.floor(val * 0.6)) }
   ]);
 
   const options = {
-    chart: { type: 'area', toolbar: { show: false }, zoom: { enabled: false } },
+    chart: { type: "area", toolbar: { show: false }, zoom: { enabled: false } },
     dataLabels: { enabled: false },
-    stroke: { curve: 'smooth', width: 2 },
-    fill: { type: 'gradient', gradient: { opacityFrom: 0.4, opacityTo: 0, stops: [0, 100] } },
+    stroke: { curve: "smooth", width: 2 },
+    fill: { type: "gradient", gradient: { opacityFrom: 0.4, opacityTo: 0, stops: [0, 100] } },
     xaxis: {
       categories:
-        view === 'daily'
-          ? ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
-          : view === 'monthly'
-          ? ['Janv', 'Févr', 'Mars', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sept']
-          : view === 'annual'
-          ? ['2019', '2020', '2021', '2022']
-          : ['Total'],
+        view === "daily"
+          ? ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"]
+          : view === "monthly"
+          ? ["Janv", "Févr", "Mars", "Avr", "Mai", "Juin", "Juil", "Août", "Sept"]
+          : view === "annual"
+          ? ["2019", "2020", "2021", "2022"]
+          : ["Total"]
     },
     tooltip: { y: { formatter: (val) => `${val} unités` } },
-    colors: ['#3b82f6', '#93c5fd'],
+    colors: ["#3b82f6", "#93c5fd"]
   };
 
   const handleViewChange = (newView) => {
     setView(newView);
-    const newData = initialData[newView];
+    const newData = data[newView];
     setSeries([
-      { name: 'Objectif', data: newData },
-      { name: 'Réalisé', data: newData.map((val) => Math.floor(val * 0.6)) },
+      { name: "Objectif", data: newData },
+      { name: "Réalisé", data: newData.map((val) => Math.floor(val * 0.6)) }
     ]);
   };
 
   const buttons = [
-    { label: 'Production journalière', value: 'daily' },
-    { label: 'Production mensuelle', value: 'monthly' },
-    { label: 'Production annuelle', value: 'annual' },
-    { label: 'Totale', value: 'total' },
+    { label: "Production journalière", value: "daily" },
+    { label: "Production mensuelle", value: "monthly" },
+    { label: "Production annuelle", value: "annual" },
+    { label: "Totale", value: "total" }
   ];
 
   return (
@@ -92,8 +86,8 @@ const ProductionChart = () => {
               onClick={() => handleViewChange(value)}
               className={`px-4 py-1.5 rounded-md text-sm font-medium ${
                 view === value
-                  ? 'bg-blue-100 text-blue-900'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? "bg-blue-100 text-blue-900"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               }`}
             >
               {label}
@@ -107,16 +101,101 @@ const ProductionChart = () => {
     </div>
   );
 };
-
 const Dashboard = () => {
+  const [stats, setStats] = useState({ total_clients: 0, total_installateurs: 0 });
+  const [productionData, setProductionData] = useState(null); 
+  const [dataAlarms, setDataAlarms] = useState([]);
+
+  const [installationStats, setInstallationStats] = useState({
+    total_normales: 0,
+    total_en_panne: 0,
+  });
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await ApiService.getUserStats();
+        setStats(response.data);
+      } catch (error) {
+        console.error("Erreur lors de la récupération des statistiques", error);
+      }
+    };
+    const fetchInstallationStats = async () => {
+      try {
+        const res = await ApiService.getInstallationStats();
+        setInstallationStats(res.data);
+      } catch (err) {
+        console.error("Erreur récupération stats installations", err);
+      }
+    };
+    
+
+    const fetchGlobalStats = async () => {
+      try {
+        const response = await ApiService.statistiquesGlobales();
+        const globalData = response.data;
+
+        const formattedData = {
+          daily: [globalData.production_journaliere],
+          monthly: [globalData.production_mensuelle],
+          annual: [globalData.production_annuelle],
+          total: [globalData.production_totale]
+        };
+
+        setProductionData(formattedData);  
+      } catch (error) {
+        console.error("Erreur lors de la récupération des statistiques globales", error);
+      }
+    };
+    const fetchAlarmStats = async () => {
+      try {
+        const res = await ApiService.getStatistiquesAlarmes(); // appel API
+        const iconMap = {
+          critique: <AlertCircle size={16} />,
+          majeure: <Zap size={16} />,
+          mineure: <AlertTriangle size={16} />,
+        };
+        const colorMap = {
+          critique: "#e53935",
+          majeure: "#fb8c00",
+          mineure: "#fdd835",
+        };
+    
+        const formatted = res.data.map((item) => {
+          const key = item.code_alarme__gravite;
+          return {
+            name: key.charAt(0).toUpperCase() + key.slice(1),
+            value: item.total,
+            color: colorMap[key] || "#ccc",
+            icon: iconMap[key] || <Info size={16} />,
+          };
+        });
+    
+        setDataAlarms(formatted);
+      } catch (error) {
+        console.error("Erreur chargement statistiques alarmes", error);
+      }
+    };
+    
+    fetchStats();
+    fetchGlobalStats();
+    fetchInstallationStats(); 
+    fetchAlarmStats(); 
+  }, []);
+
+  if (!productionData) {
+    return <div>Chargement des statistiques...</div>;
+  }
+  const dataInstallations = [
+    { name: "Normales", value: installationStats.total_normales || 0, color: "#29b6f6" },
+    { name: "En panne", value: installationStats.total_en_panne || 0, color: "#e53935" }
+  ];
   return (
     <div className="pr-0 pl-0 pt-16 flex flex-col gap-0">
-
-
       <div className="flex gap-6">
         <div className="flex flex-col gap-4 w-64">
-          <StatCard icon={<Users className="text-blue-600" />} label="Total Clients" value="89" />
-          <StatCard icon={<Wrench className="text-green-600" />} label="Total Installateurs" value="15" />
+          <StatCard icon={<Users className="text-blue-600" />} label="Total Clients" value={stats.total_clients} />
+          <StatCard icon={<Wrench className="text-green-600" />} label="Total Installateurs" value={stats.total_installateurs} />
         </div>
 
         <div className="flex flex-1 gap-6">
@@ -195,7 +274,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <ProductionChart />
+      <ProductionChart productionData={productionData} />
     </div>
   );
 };

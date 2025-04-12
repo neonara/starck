@@ -28,13 +28,14 @@ import ModifierClientPage from "./components/Utilisateurs/Clients/modifier-clien
 //notifications
 import NotificationsPage from "./components/notifications/notifications";
 //historique
-
+//Alarmes
+import ListeCodesAlarmes from "./components/Alarmes/Code-alarmes/ListeCodesAlarmes";
+import AjouterCodeAlarmePage from "./components/Alarmes/Code-alarmes/AjouterCodeAlarmePage";
+import ListeAlarmesDeclenchees from "./components/Alarmes/AlarmesDeclenche/ListeAlarmesDeclenchees";
 function App() {
   return (
-    
     <Router>
   <Routes>
-  
     <Route path="/" element={<Login />} />
     <Route path="/register-admin" element={<RegisterAdmin />} />
     <Route path="/complete-registration" element={<CompleteRegistration />} />
@@ -54,6 +55,11 @@ function App() {
        <Route path="/reset-password" element={<ResetPassword />} />
        <Route path="/notification" element={<NotificationsPage/>}/>
 
+       <Route path="/ListeCodesAlarmes" element={<ListeCodesAlarmes/>}/>
+       <Route path="/codes-alarmes/ajouter" element={<AjouterCodeAlarmePage />} />
+       <Route path="/ListeAlarmesDeclenchees" element={<ListeAlarmesDeclenchees/>} />
+
+       
        </Route>
   </Routes>
 </Router>

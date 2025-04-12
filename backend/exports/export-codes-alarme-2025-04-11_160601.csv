@@ -1,0 +1,3 @@
+code_constructeur,marque,type_alarme,gravite,description
+F27,Kstar,Terre,majeure,Mise à la terre anormale
+2001,Huawei,DC,majeure,Tension chaîne d'entrée trop élevé

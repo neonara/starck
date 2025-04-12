@@ -5,11 +5,12 @@ from rest_framework.views import APIView
 from .models import Installation
 from .serializers import InstallationSerializer
 from users.permissions import IsAdminOrInstallateur
-
+from rest_framework.permissions import IsAuthenticated
+from users.serializers import UserSerializer
 User = get_user_model()
 
 class AjouterInstallationView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminOrInstallateur]
 
     def post(self, request):
         serializer = InstallationSerializer(data=request.data)
@@ -23,26 +24,15 @@ class AjouterInstallationView(APIView):
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class ModifierInstallationView(generics.UpdateAPIView):
-    permission_classes = [permissions.IsAuthenticated]
+class ModifierInstallationView(generics.RetrieveUpdateAPIView):
+    permission_classes = [IsAuthenticated, IsAdminOrInstallateur]
     queryset = Installation.objects.all()
     serializer_class = InstallationSerializer
-
-    def put(self, request, installation_id, *args, **kwargs):
-        try:
-            installation = self.get_queryset().get(id=installation_id)
-        except Installation.DoesNotExist:
-            return Response({"error": "Installation non trouvée."}, status=404)
-
-        serializer = self.get_serializer(installation, data=request.data)
-
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"message": "Installation mise à jour avec succès.", "installation": serializer.data}, status=200)
-        return Response(serializer.errors, status=400)
+    lookup_field = 'id'
+  
 
 class SupprimerInstallationView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminOrInstallateur]
 
     def delete(self, request, installation_id):
         try:
@@ -54,7 +44,7 @@ class SupprimerInstallationView(APIView):
             return Response({"error": "Installation non trouvée."}, status=status.HTTP_404_NOT_FOUND)
 
 class ListerInstallationsView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminOrInstallateur]
 
     def get(self, request):
         installations = Installation.objects.all()
@@ -83,18 +73,20 @@ class ListerInstallationsView(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 class DetailsInstallationView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get(self, request, installation_id):
+    permission_classes = [IsAuthenticated, IsAdminOrInstallateur]
+    queryset = Installation.objects.all()
+    serializer_class = InstallationSerializer
+    lookup_field = 'id'
+    def get(self, request, id): 
         try:
-            installation = Installation.objects.get(id=installation_id)
+            installation = Installation.objects.get(id=id)
             serializer = InstallationSerializer(installation)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Installation.DoesNotExist:
             return Response({"error": "Installation non trouvée."}, status=status.HTTP_404_NOT_FOUND)
 
 class StatistiquesInstallationsView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminOrInstallateur]
 
     def get(self, request):
         total_normales = Installation.objects.filter(statut='active').count()
@@ -106,4 +98,3 @@ class StatistiquesInstallationsView(APIView):
         }, status=status.HTTP_200_OK)
 
 
-   

@@ -84,7 +84,7 @@ class RegisterUserView(APIView):
     Permet à un admin ou un installateur d'ajouter un utilisateur.
     L'utilisateur reçoit un email avec un lien pour compléter son inscription.
     """
-    permission_classes = [permissions.IsAuthenticated]
+    
     
     permission_classes = [IsAuthenticated, IsAdminOrInstallateur]
 
@@ -434,7 +434,7 @@ class LogoutView(APIView):
             token = RefreshToken(refresh_token)
             token.blacklist() 
 
-            token_key = f":1:token:{request.user.id}"
+            token_key = f"token:{request.user.id}"
             cache.delete(token_key)
 
             return Response({"message": "Déconnexion réussie."}, status=status.HTTP_200_OK)
@@ -449,7 +449,7 @@ class UserListView(generics.ListAPIView):
     Seuls les admins peuvent accéder à cette vue.
     """
     serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminOrInstallateur]
     filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['role', 'is_active'] 
     search_fields = ['email', 'first_name', 'last_name']
@@ -466,7 +466,7 @@ class UserListView(generics.ListAPIView):
 
         queryset = User.objects.all()
 
-        cache.set(cache_key, queryset, timeout=600)#10min
+        cache.set(cache_key, queryset, timeout=600)
 
         return queryset
     
@@ -477,7 +477,7 @@ class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
     """
     queryset = User.objects.all()
     serializer_class = UserUpdateSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminOrInstallateur]
 
     def get_queryset(self):
         if self.request.user.role != 'admin':
@@ -509,7 +509,7 @@ class UserStatsView(APIView):
     Donne le total de clients, installateurs, techniciens.
     Seuls les admins y ont accès.
     """
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminOrInstallateur]
 
     def get(self, request):
         if request.user.role != 'admin':
@@ -524,3 +524,24 @@ class UserStatsView(APIView):
             }
             cache.set(cache_key, data, timeout=600) #10min
         return Response(data)
+    
+
+
+
+class ClientsListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # Filtrer les utilisateurs ayant le rôle "client"
+        clients = User.objects.filter(role='client')  # Assurez-vous que le rôle 'client' existe
+        serializer = UserSerializer(clients, many=True)
+        return Response({"results": serializer.data})
+    
+class InstallateursListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # Filtrer les utilisateurs ayant le rôle "installateur"
+        installateurs = User.objects.filter(role='installateur')  # Assurez-vous que le rôle 'installateur' existe
+        serializer = UserSerializer(installateurs, many=True)
+        return Response({"results": serializer.data})

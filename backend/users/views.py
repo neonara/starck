@@ -545,3 +545,11 @@ class InstallateursListView(APIView):
         installateurs = User.objects.filter(role='installateur')  # Assurez-vous que le rôle 'installateur' existe
         serializer = UserSerializer(installateurs, many=True)
         return Response({"results": serializer.data})
+class TechniciensListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        # Filtrer les utilisateurs ayant le rôle ""
+        techniciens = User.objects.filter(role='technicien') 
+        serializer = UserSerializer(techniciens, many=True)
+        return Response({"results": serializer.data})

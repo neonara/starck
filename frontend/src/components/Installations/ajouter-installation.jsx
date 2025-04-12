@@ -1,164 +1,177 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { FaChevronUp, FaChevronDown, FaArrowLeft } from "react-icons/fa";
+import React, { useEffect, useState } from "react";
+import ApiService from "../../Api/Api";
+import { toast } from "react-toastify";
+
+const sectionTitle = "text-xl font-semibold text-gray-800 mb-4 flex justify-between items-center";
+const inputStyle = "w-full px-4 py-2 border border-gray-300 rounded-lg bg-white  focus:outline-none focus:ring-2 focus:ring-blue-500";
+const labelStyle = "text-sm text-gray-600 font-medium mb-1 block";
 
 const AjouterInstallation = () => {
-  const navigate = useNavigate();
-  const [form, setForm] = useState({
-    nom: "",
-    adresse: "",
-    latitude: "",
-    longitude: "",
-    capacite_kw: "",
-    production_actuelle_kw: "",
-    consommation_kw: "",
-    etat: "Actif",
-    connecte_reseau: false,
-    dernier_controle: "",
-    alarme_active: false,
-    client: "",
-    installateurs: [],
-    date_installation: "",
+  const [formData, setFormData] = useState({
+    nom: "", client_email: "", installateur_email: "", type_installation: "",
+    statut: "active", date_installation: "", capacite_kw: "", latitude: "",
+    longitude: "", adresse: "", ville: "", code_postal: "", pays: "",
+    expiration_garantie: "", reference_contrat: "", documentation_technique: null
   });
 
-  const [sections, setSections] = useState({
-    localisation: true,
-    capacite: true,
-    etat: true,
-    propriete: true,
-  });
+  const [clients, setClients] = useState([]);
+  const [installateurs, setInstallateurs] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [sections, setSections] = useState({ system: true, location: true, users: true, extra: true });
 
-  const handleToggle = (section) => {
-    setSections({ ...sections, [section]: !sections[section] });
-  };
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const resClients = await ApiService.getClients();
+        setClients(resClients.data.results || []);
+        const resInstallateurs = await ApiService.getInstallateurs();
+        setInstallateurs(resInstallateurs.data.results || []);
+      } catch (err) {
+        toast.error("Erreur lors du chargement des utilisateurs.");
+      }
+    };
+    fetchUsers();
+  }, []);
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setForm({ ...form, [name]: type === "checkbox" ? checked : value });
+    const { name, value, type, files } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "file" ? files[0] : value
+    }));
   };
 
-  const handleMultiSelect = (e) => {
-    const options = [...e.target.options];
-    const selected = options.filter((o) => o.selected).map((o) => o.value);
-    setForm({ ...form, installateurs: selected });
+  const toggleSection = (key) => {
+    setSections((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Formulaire soumis:", form);
+    setLoading(true);
+    const data = new FormData();
+    for (const key in formData) {
+      if (formData[key]) data.append(key, formData[key]);
+    }
+
+    try {
+      const response = await ApiService.ajouterInstallation(data);
+      toast.success("✅ " + response.data.message);
+    } catch (error) {
+      const errors = error.response?.data;
+      if (errors && typeof errors === "object") {
+        Object.entries(errors).forEach(([field, msg]) => toast.error(`${field}: ${msg}`));
+      } else {
+        toast.error("❌ Erreur inconnue lors de l'ajout");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-<div className="p-6 pt-24 w-full bg-white rounded-xl shadow mx-auto max-w-7xl">
-<div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold">Ajouter une Installation</h2>
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center text-blue-600 hover:underline"
-        >
-          <FaArrowLeft className="mr-1" /> Retour
+    <form onSubmit={handleSubmit} className="max-w-6xl mx-auto pt-6 space-y-10">
+      {/* Infos système */}
+      <section className="bg-white p-6 rounded-xl shadow space-y-6">
+        <h2 className={sectionTitle}>
+          Infos sur le système
+          <button className="text-sm text-blue-600" onClick={() => toggleSection("system")}>{sections.system ? "Réduire ▲" : "Afficher ▼"}</button>
+        </h2>
+        {sections.system && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className={labelStyle}>Type de centrale :</label>
+              <select name="type_installation" value={formData.type_installation} onChange={handleChange} required className={inputStyle}>
+                <option value="">Sélectionner</option>
+                <option value="residential">Résidentiel</option>
+                <option value="commercial">Commercial</option>
+                <option value="industrial">Industriel</option>
+                <option value="utility">Utilitaire</option>
+              </select>
+            </div>
+            <div>
+              <label className={labelStyle}>Statut :</label>
+              <select name="statut" value={formData.statut} onChange={handleChange} className={inputStyle}>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="maintenance">En maintenance</option>
+                <option value="fault">En panne</option>
+              </select>
+            </div>
+            <div>
+              <label className={labelStyle}>Capacité installée (kW) :</label>
+              <input type="number" name="capacite_kw" value={formData.capacite_kw} onChange={handleChange} required className={inputStyle} />
+            </div>
+            <div>
+              <label className={labelStyle}>Date d’installation :</label>
+              <input type="date" name="date_installation" value={formData.date_installation} onChange={handleChange} required className={inputStyle} />
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* Coordonnées */}
+      <section className="bg-white p-6 rounded-xl shadow space-y-6">
+        <h2 className={sectionTitle}>
+          Coordonnées et emplacement
+          <button className="text-sm text-blue-600" onClick={() => toggleSection("location")}>{sections.location ? "Réduire ▲" : "Afficher ▼"}</button>
+        </h2>
+        {sections.location && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <input name="latitude" placeholder="Latitude" value={formData.latitude} onChange={handleChange} className={inputStyle} required />
+            <input name="longitude" placeholder="Longitude" value={formData.longitude} onChange={handleChange} className={inputStyle} required />
+            <input name="adresse" placeholder="Adresse" value={formData.adresse} onChange={handleChange} className={inputStyle} />
+            <input name="ville" placeholder="Ville" value={formData.ville} onChange={handleChange} className={inputStyle} />
+            <input name="code_postal" placeholder="Code postal" value={formData.code_postal} onChange={handleChange} className={inputStyle} />
+            <input name="pays" placeholder="Pays" value={formData.pays} onChange={handleChange} className={inputStyle} />
+          </div>
+        )}
+      </section>
+
+      {/* Utilisateurs liés */}
+      <section className="bg-white p-6 rounded-xl shadow space-y-6">
+        <h2 className={sectionTitle}>
+          Utilisateurs liés
+          <button className="text-sm text-blue-600" onClick={() => toggleSection("users")}>{sections.users ? "Réduire ▲" : "Afficher ▼"}</button>
+        </h2>
+        {sections.users && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <select name="client_email" value={formData.client_email} onChange={handleChange} required className={inputStyle}>
+              <option value="">Sélectionner un client</option>
+              {clients.map((c) => (
+                <option key={c.id} value={c.email}>{c.first_name} {c.last_name} ({c.email})</option>
+              ))}
+            </select>
+            <select name="installateur_email" value={formData.installateur_email} onChange={handleChange} className={inputStyle}>
+              <option value="">Sélectionner un installateur</option>
+              {installateurs.map((i) => (
+                <option key={i.id} value={i.email}>{i.first_name} {i.last_name} ({i.email})</option>
+              ))}
+            </select>
+          </div>
+        )}
+      </section>
+
+      {/* Autres infos */}
+      <section className="bg-white p-6 rounded-xl shadow space-y-6">
+        <h2 className={sectionTitle}>
+          Informations supplémentaires
+          <button className="text-sm text-blue-600" onClick={() => toggleSection("extra")}>{sections.extra ? "Réduire ▲" : "Afficher ▼"}</button>
+        </h2>
+        {sections.extra && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <input type="date" name="expiration_garantie" value={formData.expiration_garantie} onChange={handleChange} className={inputStyle} />
+            <input name="reference_contrat" value={formData.reference_contrat} onChange={handleChange} placeholder="Référence contrat" className={inputStyle} />
+            <input type="file" name="documentation_technique" onChange={handleChange} accept=".pdf,.doc,.docx" className={inputStyle} />
+          </div>
+        )}
+      </section>
+
+      <div className="text-right">
+        <button type="submit" disabled={loading} className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
+          {loading ? "Ajout..." : "Ajouter l'installation"}
         </button>
       </div>
-
-      <form onSubmit={handleSubmit} className="space-y-8">
-        <div>
-          <div
-            className="flex justify-between items-center cursor-pointer"
-            onClick={() => handleToggle("localisation")}
-          >
-            <h3 className="text-lg font-medium">Localisation</h3>
-            {sections.localisation ? <FaChevronUp /> : <FaChevronDown />}
-          </div>
-          {sections.localisation && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-              <input name="nom" value={form.nom} onChange={handleChange} className="input" placeholder="Nom" required />
-              <input name="adresse" value={form.adresse} onChange={handleChange} className="input" placeholder="Adresse" />
-              <input name="latitude" value={form.latitude} onChange={handleChange} className="input" placeholder="Latitude" />
-              <input name="longitude" value={form.longitude} onChange={handleChange} className="input" placeholder="Longitude" />
-            </div>
-          )}
-        </div>
-
-        <div>
-          <div
-            className="flex justify-between items-center cursor-pointer"
-            onClick={() => handleToggle("capacite")}
-          >
-            <h3 className="text-lg font-medium">Capacité et Production</h3>
-            {sections.capacite ? <FaChevronUp /> : <FaChevronDown />}
-          </div>
-          {sections.capacite && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-              <input name="capacite_kw" value={form.capacite_kw} onChange={handleChange} className="input" placeholder="Capacité (kW)" />
-              <input name="production_actuelle_kw" value={form.production_actuelle_kw} onChange={handleChange} className="input" placeholder="Production actuelle (kW)" />
-              <input name="consommation_kw" value={form.consommation_kw} onChange={handleChange} className="input" placeholder="Consommation (kW)" />
-            </div>
-          )}
-        </div>
-
-        <div>
-          <div
-            className="flex justify-between items-center cursor-pointer"
-            onClick={() => handleToggle("etat")}
-          >
-            <h3 className="text-lg font-medium">État et Connexion</h3>
-            {sections.etat ? <FaChevronUp /> : <FaChevronDown />}
-          </div>
-          {sections.etat && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-              <select name="etat" value={form.etat} onChange={handleChange} className="input">
-                <option value="Actif">Actif</option>
-                <option value="Inactif">Inactif</option>
-                <option value="En maintenance">En maintenance</option>
-              </select>
-              <label className="flex gap-2 items-center">
-                <input type="checkbox" name="connecte_reseau" checked={form.connecte_reseau} onChange={handleChange} />
-                Connecté au réseau
-              </label>
-              <label className="flex gap-2 items-center">
-                <input type="checkbox" name="alarme_active" checked={form.alarme_active} onChange={handleChange} />
-                Alarme active
-              </label>
-              <input name="dernier_controle" type="datetime-local" value={form.dernier_controle} onChange={handleChange} className="input" />
-            </div>
-          )}
-        </div>
-
-        <div>
-          <div
-            className="flex justify-between items-center cursor-pointer"
-            onClick={() => handleToggle("propriete")}
-          >
-            <h3 className="text-lg font-medium">Informations Propriétaire</h3>
-            {sections.propriete ? <FaChevronUp /> : <FaChevronDown />}
-          </div>
-          {sections.propriete && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-              <input name="client" value={form.client} onChange={handleChange} className="input" placeholder="Nom du client" />
-              <select
-                name="installateurs"
-                multiple
-                value={form.installateurs}
-                onChange={handleMultiSelect}
-                className="input h-32"
-              >
-                <option value="tech1">tech1</option>
-                <option value="tech2">tech2</option>
-                <option value="tech3">tech3</option>
-              </select>
-              <input name="date_installation" type="date" value={form.date_installation} onChange={handleChange} className="input" />
-            </div>
-          )}
-        </div>
-
-        <button
-          type="submit"
-          className="mt-6 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-        >
-          Enregistrer
-        </button>
-      </form>
-    </div>
+    </form>
   );
 };
 

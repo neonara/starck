@@ -35,6 +35,15 @@ const Sidebar = () => {
         { label: "Installations", path: "/liste-installations" },
         { label: "Appareil", path: "" },
       ]
+    },
+    {
+      label: "Gestion des Alarmes",
+      icon: Server,
+      children: [
+        { label: "Redéfinir l'alarme", path: "/codes-alarmes/ajouter" },
+        { label: "Code Alarme", path: "/ListeCodesAlarmes" },
+        { label: "Alarme Active", path: "/ListeAlarmesDeclenchees" },
+      ]
     }
   ];
 
@@ -42,10 +51,9 @@ const Sidebar = () => {
     <div
       className={`${
         isSidebarOpen ? 'w-64' : 'w-16'
-      } bg-white dark:bg-gray-800 border-r dark:border-gray-700 
-      transition-all duration-300 ease-in-out h-screen fixed top-0 left-0 z-40 overflow-x-hidden`}
+      } bg-white border-r border-gray-200
+  transition-all duration-300 ease-in-out h-screen fixed top-0 left-0 z-40 overflow-x-hidden`}
     >
-      {/* Logo + Nom */}
       <div className="flex items-center gap-2 px-4 pt-6">
         <img src="/assets/logo.jpg" alt="Logo" className="w-6 h-6" />
         {isSidebarOpen && (
@@ -53,12 +61,10 @@ const Sidebar = () => {
         )}
       </div>
 
-      {/* Menu */}
-      <div className="pt-6 px-2">
+     <div className="pt-6 px-2">
         <ul className="space-y-2">
           {menuItems.map(({ label, icon: Icon, path, children }) => (
             <li key={label}>
-              {/* Si sous-menus */}
               {children ? (
                 <>
                   <button
@@ -115,7 +121,6 @@ const Sidebar = () => {
         </ul>
       </div>
 
-      {/* Toggle button */}
       <button
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
         className="absolute top-1/2 -right-3 transform -translate-y-1/2 z-50 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-full px-1.5 py-1 shadow-md"

@@ -20,7 +20,17 @@ class ListeFicheInterventionView(generics.ListAPIView):
     def get_queryset(self):
         queryset = FicheIntervention.objects.all()
         
-        # Suppression du filtre client
+        search_term = self.request.query_params.get('search')
+        
+        if search_term:
+            queryset = queryset.filter(
+                Q(installation__nom__icontains=search_term) |
+                Q(statut__icontains=search_term) |
+                Q(technicien__email__icontains=search_term) |
+                Q(technicien__first_name__icontains=search_term) |
+                Q(technicien__last_name__icontains=search_term)
+            )
+            
         technicien_id = self.request.query_params.get('technicien')
         if technicien_id:
             queryset = queryset.filter(technicien_id=technicien_id)
@@ -60,12 +70,48 @@ class CreerFicheInterventionView(generics.CreateAPIView):
                 {'error': str(e)},
                 status=status.HTTP_400_BAD_REQUEST
             )
-            
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import permissions
+from .models import FicheIntervention
+from .serializers import FicheInterventionDetailSerializer
+
 class DetailFicheInterventionView(generics.RetrieveAPIView):
-    """Récupérer les détails d'une fiche d'intervention"""
+    """Récupérer les détails d'une fiche d'intervention avec ses statistiques"""
     queryset = FicheIntervention.objects.all()
-    serializer_class = FicheInterventionDetailSerializer 
+    serializer_class = FicheInterventionDetailSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        installation = instance.installation
+
+        interventions_passees = FicheIntervention.objects.filter(
+            installation=installation
+        ).exclude(id=instance.id)
+
+        stats = {
+            "nombre_interventions_precedentes": interventions_passees.count(),
+            "temps_depuis_derniere": None,
+            "temps_moyen_entre": None,
+        }
+
+        # Temps depuis la dernière intervention
+        derniere = interventions_passees.order_by('-date_prevue').first()
+        if derniere:
+            stats["temps_depuis_derniere"] = (instance.date_prevue - derniere.date_prevue).days
+
+        # Temps moyen entre toutes les interventions
+        if interventions_passees.count() > 0:
+            dates = list(interventions_passees.values_list('date_prevue', flat=True).order_by('date_prevue'))
+            dates.append(instance.date_prevue)
+            deltas = [(dates[i+1] - dates[i]).days for i in range(len(dates)-1)]
+            stats["temps_moyen_entre"] = sum(deltas) // len(deltas) if deltas else 0
+
+        data = self.get_serializer(instance).data
+        data["statistiques"] = stats
+        return Response(data)
+
 
 class ModifierFicheInterventionView(generics.UpdateAPIView):
     """Modifier une fiche d'intervention existante"""
@@ -109,30 +155,6 @@ class ChangerStatutFicheInterventionView(APIView):
         serializer = FicheInterventionDetailSerializer(fiche) 
         return Response(serializer.data)
 
-class AssignerTechnicienView(APIView):
-    """Assigner un technicien à une fiche d'intervention"""
-    permission_classes = [permissions.IsAuthenticated]
-
-    def post(self, request, pk):
-        fiche = get_object_or_404(FicheIntervention, pk=pk)
-        technicien_id = request.data.get('technicien_id')
-        
-        try:
-            technicien = User.objects.get(
-                id=technicien_id,
-                groups__name='Techniciens'
-            )
-        except User.DoesNotExist:
-            return Response(
-                {'error': 'Technicien non trouvé'},
-                status=status.HTTP_404_NOT_FOUND
-            )
-        
-        fiche.technicien = technicien
-        fiche.save()
-        
-        serializer = FicheInterventionDetailSerializer(fiche) 
-        return Response(serializer.data)
 
 class TechniciensListView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -141,3 +163,54 @@ class TechniciensListView(APIView):
         techniciens = User.objects.filter(groups__name='Techniciens')
         serializer = UserSerializer(techniciens, many=True)
         return Response({"results": serializer.data})
+
+
+class HistoriqueInterventionsParInstallationView(generics.ListAPIView):
+    """Afficher l'historique des interventions pour une installation donnée"""
+    serializer_class = FicheInterventionDetailSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        installation_id = self.kwargs.get('installation_id')
+        return FicheIntervention.objects.filter(installation_id=installation_id).order_by('-date_prevue')
+
+
+from django.db.models import Count, Q
+
+class NombreInterventionsParTechnicienView(APIView):
+    """Retourne le nombre total d'interventions par technicien"""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        data = (
+            FicheIntervention.objects.values('technicien__id', 'technicien__first_name', 'technicien__last_name')
+            .annotate(nombre_interventions=Count('id'))
+        )
+
+        result = [
+            {
+                "technicien_id": entry["technicien__id"],
+                "nom": f'{entry["technicien__first_name"]} {entry["technicien__last_name"]}',
+                "nombre_interventions": entry["nombre_interventions"]
+            }
+            for entry in data
+        ]
+
+        return Response(result)
+
+
+class TauxResolutionInterventionsView(APIView):
+    """Retourne le taux de résolution des interventions"""
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        total = FicheIntervention.objects.count()
+        resolues = FicheIntervention.objects.filter(statut='resolue').count()
+
+        taux_resolution = (resolues / total * 100) if total > 0 else 0
+
+        return Response({
+            "total_interventions": total,
+            "interventions_resolues": resolues,
+            "taux_resolution": f"{taux_resolution:.2f} %"
+        })

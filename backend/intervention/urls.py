@@ -6,7 +6,10 @@ from intervention.views import (
     ModifierFicheInterventionView,
     SupprimerFicheInterventionView,
     ChangerStatutFicheInterventionView,
-    AssignerTechnicienView
+    HistoriqueInterventionsParInstallationView,
+    NombreInterventionsParTechnicienView,
+    TauxResolutionInterventionsView
+
 )
 
 urlpatterns = [
@@ -16,5 +19,7 @@ urlpatterns = [
     path('interventions/<int:pk>/modifier/', ModifierFicheInterventionView.as_view(), name='intervention-modifier'),
     path('interventions/<int:pk>/supprimer/', SupprimerFicheInterventionView.as_view(), name='intervention-supprimer'),
     path('interventions/<int:pk>/changer-statut/', ChangerStatutFicheInterventionView.as_view(), name='intervention-changer-statut'),
-    path('interventions/<int:pk>/assigner-technicien/', AssignerTechnicienView.as_view(), name='intervention-assigner-technicien'),
+    path('interventions/historique/<int:installation_id>/', HistoriqueInterventionsParInstallationView.as_view(), name='historique-par-installation'),
+    path('interventions/statistiques/technicien/', NombreInterventionsParTechnicienView.as_view(), name='stats-technicien'),
+    path('interventions/statistiques/taux-resolution/', TauxResolutionInterventionsView.as_view(), name='taux-resolution'),
 ]

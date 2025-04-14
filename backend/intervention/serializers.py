@@ -38,7 +38,6 @@ class FicheInterventionDetailSerializer(serializers.ModelSerializer):
     technicien_details = UserSerializer(source='technicien', read_only=True)
     installation_details = InstallationSerializer(source='installation', read_only=True)
     statut_display = serializers.CharField(source='get_statut_display', read_only=True)
-
     class Meta:
         model = FicheIntervention
         fields = [
@@ -48,6 +47,7 @@ class FicheInterventionDetailSerializer(serializers.ModelSerializer):
             'date_modification', 'statut', 'statut_display',
             'commentaire'
         ]
+        
 
 class FicheInterventionUpdateSerializer(serializers.ModelSerializer):
     """Sérialiseur pour la mise à jour d'une fiche d'intervention"""
@@ -94,11 +94,3 @@ class AssignerTechnicienSerializer(serializers.Serializer):
             raise serializers.ValidationError("Technicien non trouvé")
 
 
-class StatistiquesInterventionSerializer(serializers.Serializer):
-    """Sérialiseur pour les statistiques des interventions"""
-    total_interventions = serializers.IntegerField()
-    interventions_en_attente = serializers.IntegerField()
-    interventions_en_cours = serializers.IntegerField()
-    interventions_terminees = serializers.IntegerField()
-    interventions_annulees = serializers.IntegerField()
-    moyenne_duree_intervention = serializers.DurationField()

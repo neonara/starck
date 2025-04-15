@@ -2,6 +2,11 @@ from rest_framework import serializers
 from .models import Installation
 from django.contrib.auth import get_user_model
 from users.serializers import UserSerializer
+from production.models import ProductionConsommation
+from alarme.models import AlarmeDeclenchee
+from django.utils import timezone
+from django.db.models import Sum
+from decimal import Decimal
 User = get_user_model()
 
 class InstallationSerializer(serializers.ModelSerializer):
@@ -90,3 +95,55 @@ class InstallationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"capacite_kw": "La capacité en kW est requise."})
 
         return data
+
+
+#partie carte geographique
+class InstallationGeoSerializer(serializers.ModelSerializer):
+    production_journaliere_kwh = serializers.SerializerMethodField()
+    production_mensuelle_kwh = serializers.SerializerMethodField()
+    revenus_mensuels_dt = serializers.SerializerMethodField()
+    etat_alarme = serializers.SerializerMethodField()
+    class Meta:
+        model = Installation
+        fields = ['id', 'nom', 'latitude', 'longitude', 'production_journaliere_kwh', 'production_mensuelle_kwh', 'revenus_mensuels_dt', "etat_alarme"]
+
+    def get_production_journaliere_kwh(self, obj):
+        today = timezone.now().date()
+        production = ProductionConsommation.objects.filter(
+            installation=obj,
+            horodatage__date=today
+        ).aggregate(total=Sum('energie_produite_kwh'))['total'] or 0
+        return round(production, 2)
+    def get_production_mensuelle_kwh(self, obj):
+        now = timezone.now()
+        production = ProductionConsommation.objects.filter(
+            installation=obj,
+            horodatage__year=now.year,
+            horodatage__month=now.month
+        ).aggregate(total=Sum('energie_produite_kwh'))['total'] or 0
+        return round(production, 2)
+    
+    def get_revenus_mensuels_dt(self, obj):
+        prix_kwh = Decimal('0.5')  
+        prod = self.get_production_mensuelle_kwh(obj)
+        return round(prod * prix_kwh, 2)
+    
+    def get_etat_alarme(self, installation):
+        alarmes = AlarmeDeclenchee.objects.filter(
+            installation=installation,
+            est_resolue=False
+        ).select_related('code_alarme')
+
+        niveaux = [a.code_alarme.gravite for a in alarmes]
+
+        if 'critique' in niveaux:
+            return "critique"
+        elif 'majeure' in niveaux:
+            return "moyenne"
+        elif 'mineure' in niveaux:
+            return "mineure"
+        else:
+            return "ok"
+
+    
+    

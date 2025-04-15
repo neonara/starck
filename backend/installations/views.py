@@ -1,12 +1,15 @@
 from django.contrib.auth import get_user_model
 from rest_framework import status, generics, permissions
 from rest_framework.response import Response
+from rest_framework.generics import ListAPIView
+
 from rest_framework.views import APIView
 from .models import Installation
 from .serializers import InstallationSerializer
 from users.permissions import IsAdminOrInstallateur
 from rest_framework.permissions import IsAuthenticated
 from users.serializers import UserSerializer
+from .serializers import InstallationGeoSerializer
 User = get_user_model()
 
 class AjouterInstallationView(APIView):
@@ -98,3 +101,12 @@ class StatistiquesInstallationsView(APIView):
         }, status=status.HTTP_200_OK)
 
 
+
+#partie geographique sur carte 
+
+class InstallationGeoDataView(ListAPIView):
+    permission_classes = [IsAuthenticated, IsAdminOrInstallateur]
+    serializer_class = InstallationGeoSerializer
+
+    def get_queryset(self):
+        return Installation.objects.filter(latitude__isnull=False, longitude__isnull=False)

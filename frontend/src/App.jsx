@@ -32,6 +32,7 @@ import NotificationsPage from "./components/notifications/notifications";
 import ListeCodesAlarmes from "./components/Alarmes/Code-alarmes/ListeCodesAlarmes";
 import AjouterCodeAlarmePage from "./components/Alarmes/Code-alarmes/AjouterCodeAlarmePage";
 import ListeAlarmesDeclenchees from "./components/Alarmes/AlarmesDeclenche/ListeAlarmesDeclenchees";
+import InstallationMap from "./components/Installations/InstallationMap";
 function App() {
   return (
     <Router>
@@ -58,6 +59,7 @@ function App() {
        <Route path="/ListeCodesAlarmes" element={<ListeCodesAlarmes/>}/>
        <Route path="/codes-alarmes/ajouter" element={<AjouterCodeAlarmePage />} />
        <Route path="/ListeAlarmesDeclenchees" element={<ListeAlarmesDeclenchees/>} />
+       <Route path="/installationMap" element={<InstallationMap/>} />
 
        
        </Route>

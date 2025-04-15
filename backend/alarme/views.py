@@ -7,7 +7,7 @@ from django.db.models import Count
 from rest_framework.response import Response
 from users.permissions import IsAdminOrInstallateur
 from rest_framework.permissions import IsAuthenticated
-
+from rest_framework.views import APIView
 
 #alarme code (marbouta bel admin)
 class AjouterAlarmeCodeView(generics.CreateAPIView):
@@ -96,3 +96,30 @@ class StatistiquesAlarmesView(generics.GenericAPIView):
             .values('code_alarme__gravite') \
             .annotate(total=Count('id'))
         return Response(stats)
+
+
+
+class StatistiquesAlarmesInstallationView(APIView):
+    permission_classes = [IsAuthenticated, IsAdminOrInstallateur]
+
+    def get(self, request, installation_id):
+        alarmes = AlarmeDeclenchee.objects.filter(
+            installation_id=installation_id,
+            est_resolue=False
+        )
+
+        counts = {"critique": 0, "majeure": 0, "mineure": 0}
+
+        for alarme in alarmes:
+            gravite = alarme.code_alarme.gravite
+            if gravite in counts:
+                counts[gravite] += 1
+
+        total = sum(counts.values())
+
+        return Response({
+            "total": total,
+            "critique": counts["critique"],
+            "majeure": counts["majeure"],
+            "mineure": counts["mineure"]
+        })

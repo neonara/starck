@@ -39,5 +39,11 @@ export const AddUserType = {
     gravite: "",
     description: "",
   };
+  export const InstallationGeoType = {
+    id:"",
+    nom: "",
+    latitude: "", 
+    longitude: "",
+  };
  
   

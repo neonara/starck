@@ -10,12 +10,7 @@ const ReactApexChart = lazy(() => import("react-apexcharts"));
 
 
 
-const initialData = {
-  daily: [120, 150, 100, 210, 180, 190, 220],
-  monthly: [800, 1200, 1400, 1300, 1100, 1500],
-  annual: [15000, 16200, 14800, 15500],
-  total: [58000]
-};
+
 
 const StatCard = ({ icon, label, value }) => (
   <div className="bg-white shadow rounded-lg p-4 flex items-center gap-4 w-full">
@@ -149,7 +144,7 @@ const Dashboard = () => {
     };
     const fetchAlarmStats = async () => {
       try {
-        const res = await ApiService.getStatistiquesAlarmes(); // appel API
+        const res = await ApiService.getStatistiquesAlarmesglobale(); 
         const iconMap = {
           critique: <AlertCircle size={16} />,
           majeure: <Zap size={16} />,
@@ -191,9 +186,12 @@ const Dashboard = () => {
     { name: "En panne", value: installationStats.total_en_panne || 0, color: "#e53935" }
   ];
   return (
-    <div className="pr-0 pl-0 pt-16 flex flex-col gap-0">
+<div className="relative pr-0 pl-0 pt-16 flex flex-col gap-0">
+
       <div className="flex gap-6">
+ 
         <div className="flex flex-col gap-4 w-64">
+
           <StatCard icon={<Users className="text-blue-600" />} label="Total Clients" value={stats.total_clients} />
           <StatCard icon={<Wrench className="text-green-600" />} label="Total Installateurs" value={stats.total_installateurs} />
         </div>

@@ -1,0 +1,40 @@
+# This workflow installs dependencies, caches them, builds the source code, and runs tests using Vite.js
+# Docs: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
+
+name: Vite.js CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    name: Build and Test on Node.js ${{ matrix.node-version }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 22.x]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build Project
+        run: npm run build --if-present
+
+      - name: Run Tests
+        run: npm run test
+        # You could add `--if-present` here if `npm test` is optional: `npm test --if-present`

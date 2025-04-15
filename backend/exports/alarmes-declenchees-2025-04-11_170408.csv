@@ -1,0 +1,3 @@
+installation__nom,code_alarme__code_constructeur,code_alarme__marque,code_alarme__type_alarme,code_alarme__gravite,date_declenchement,est_resolue
+A1,2001,Huawei,DC,majeure,2025-04-11 13:56:39.345519+00:00,True
+A1,2001,Huawei,DC,majeure,2025-04-11 15:05:24.349278+00:00,False

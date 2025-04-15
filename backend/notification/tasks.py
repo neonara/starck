@@ -17,7 +17,7 @@ def send_notification_to_email(
     from django.contrib.auth import get_user_model
     from notification.models import Notification
     from installations.models import Installation
-    from alarme.models import Alarme
+    from alarme.models import AlarmeDeclenchee
 
     User = get_user_model()
 
@@ -36,8 +36,9 @@ def send_notification_to_email(
         alarme = None
         if alarme_id:
             try:
-                alarme = Alarme.objects.get(id=alarme_id)
-            except Alarme.DoesNotExist:
+                alarme = AlarmeDeclenchee.objects.get(id=alarme_id)
+
+            except AlarmeDeclenchee.DoesNotExist:
                 print(f"⚠️ Alarme ID {alarme_id} introuvable")
 
         notif = Notification.objects.create(
@@ -75,3 +76,67 @@ def send_notification_to_email(
 
     except Exception as e:
         print(f" Erreur création + envoi notif : {e}")
+
+
+
+
+
+
+
+
+@shared_task
+def creer_notif_alarme_task(
+    utilisateur_email,
+    titre,
+    message,
+    type_notification,
+    canal,
+    installation_id,
+    alarme_id,
+    priorite
+):
+    from django.contrib.auth import get_user_model
+    from notification.models import Notification
+    from installations.models import Installation
+    from alarme.models import AlarmeDeclenchee
+
+    User = get_user_model()
+
+    try:
+        utilisateur = User.objects.get(email=utilisateur_email)
+        installation = Installation.objects.get(id=installation_id)
+        alarme = AlarmeDeclenchee.objects.get(id=alarme_id)
+
+        notification = Notification.objects.create(
+            utilisateur=utilisateur,
+            titre=titre,
+            message=message,
+            type_notification=type_notification,
+            canal=canal,
+            installation_associee=installation,
+            alarme_associee=alarme,
+            priorite=priorite
+        )
+
+        channel_layer = get_channel_layer()
+        group = f"user_{utilisateur.id}"
+        async_to_sync(channel_layer.group_send)(
+            group,
+            {
+                "type": "send_notification",
+                "message": {
+                    "id": notification.id,
+                    "title": titre,
+                    "content": message,
+                    "type": type_notification,
+                    "canal": canal,
+                    "priorite": priorite,
+                    "envoyee_le": now().strftime('%Y-%m-%d %H:%M'),
+                },
+            }
+        )
+
+        print(f"✅ Notification envoyée à {utilisateur_email}")
+
+    except Exception as e:
+        print(f"❌ Erreur dans creer_notif_alarme_task : {str(e)}")

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
-  Bell, ChevronDown, User, LogOut, Settings, Pencil
+  Bell, ChevronDown, User, LogOut, Settings, Pencil, Globe
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast, Toaster } from 'react-hot-toast';
@@ -77,6 +77,7 @@ const Navbar = () => {
               <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-red-500 animate-ping" />
             )}
           </button>
+          
 
           {notifOpen && (
             <div className="absolute right-0 mt-2 w-80 bg-white border rounded-md shadow-md z-50 text-sm">
@@ -96,6 +97,13 @@ const Navbar = () => {
             </div>
           )}
         </div>
+        <Link
+    to="/installationMap"
+    className="relative rounded-full border p-2 text-gray-500 hover:bg-gray-100"
+    title="Carte des installations"
+  >
+    <Globe className="w-5 h-5" />
+  </Link>
 
         <div className="relative">
           <button

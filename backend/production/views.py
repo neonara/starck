@@ -6,6 +6,8 @@ from .serializers import ProductionConsommationSerializer
 from installations.models import Installation
 from django.utils import timezone
 from django.db.models import Sum
+from django.db.models.functions import TruncHour, TruncDay
+
 from datetime import timedelta
 from users.permissions import IsAdminOrInstallateur
 from rest_framework.permissions import IsAuthenticated
@@ -64,16 +66,45 @@ class StatistiquesProductionView(APIView):
 
         base_qs = ProductionConsommation.objects.filter(installation_id=installation_id)
 
-        jour = base_qs.filter(horodatage__date=today).aggregate(total=Sum('energie_produite_kwh'))['total'] or 0
-        mois = base_qs.filter(horodatage__year=year, horodatage__month=month).aggregate(total=Sum('energie_produite_kwh'))['total'] or 0
-        annee = base_qs.filter(horodatage__year=year).aggregate(total=Sum('energie_produite_kwh'))['total'] or 0
-        totale = base_qs.aggregate(total=Sum('energie_produite_kwh'))['total'] or 0
-        puissance = base_qs.aggregate(max=Sum('puissance_maximale_kw'))['max'] or 0
+        par_heure = (
+            base_qs.filter(horodatage__date=today)
+            .annotate(hour=TruncHour("horodatage"))
+            .values("hour")
+            .annotate(total=Sum("energie_produite_kwh"))
+            .order_by("hour")
+        )
+        prod_journaliere_par_heure = {
+            str(entry["hour"].hour): float(entry["total"]) for entry in par_heure
+        }
+
+        par_jour = (
+            base_qs.filter(horodatage__year=year, horodatage__month=month)
+            .annotate(day=TruncDay("horodatage"))
+            .values("day")
+            .annotate(total=Sum("energie_produite_kwh"))
+            .order_by("day")
+        )
+        prod_mensuelle_par_jour = {
+            entry["day"].strftime("%d"): float(entry["total"]) for entry in par_jour
+        }
+
+        from django.db.models.functions import TruncMonth
+        par_mois = (
+            base_qs.filter(horodatage__year=year)
+            .annotate(month=TruncMonth("horodatage"))
+            .values("month")
+            .annotate(total=Sum("energie_produite_kwh"))
+            .order_by("month")
+        )
+        prod_annuelle_par_mois = {
+            entry["month"].strftime("%b"): float(entry["total"]) for entry in par_mois
+        }
+
+        prod_totale = base_qs.aggregate(total=Sum("energie_produite_kwh"))["total"] or 0
 
         return Response({
-            "production_journaliere": jour,
-            "production_mensuelle": mois,
-            "production_annuelle": annee,
-            "production_totale": totale,
-            "puissance_totale": puissance
+            "prod_journaliere_par_heure": prod_journaliere_par_heure,
+            "prod_mensuelle_par_jour": prod_mensuelle_par_jour,
+            "prod_annuelle_par_mois": prod_annuelle_par_mois,
+            "prod_totale": prod_totale,
         }, status=200)

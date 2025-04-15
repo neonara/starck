@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from installations.models import Installation
-from alarme.models import Alarme  
+from alarme.models import AlarmeDeclenchee
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 User = get_user_model()
@@ -32,7 +32,7 @@ class Notification(models.Model):
     canal = models.CharField(max_length=20, choices=CANAL_CHOICES, verbose_name="Canal")
     envoyee_le = models.DateTimeField(auto_now_add=True, verbose_name="Envoyée le")
     lue_le = models.DateTimeField(null=True, blank=True, verbose_name="Lue le")
-    alarme_associee = models.ForeignKey(Alarme, on_delete=models.SET_NULL, null=True, blank=True, related_name='notifications', verbose_name="Alarme associée")
+    alarme_associee = models.ForeignKey(AlarmeDeclenchee, on_delete=models.SET_NULL, null=True, blank=True, related_name='notifications', verbose_name="Alarme associée")
     installation_associee = models.ForeignKey(Installation, on_delete=models.SET_NULL, null=True, blank=True, related_name='notifications', verbose_name="Installation associée")
     priorite = models.PositiveIntegerField(default=1, validators=[MinValueValidator(1), MaxValueValidator(5)], verbose_name="Priorité")
     

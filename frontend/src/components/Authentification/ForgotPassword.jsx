@@ -14,7 +14,7 @@ export default function ForgotPassword() {
     setError("");
  
     try {
-      await PublicApiService.forgotPassword(email); // ✅ Appel depuis le service public
+      await PublicApiService.forgotPassword(email); 
       setMessage("Un code de vérification a été envoyé à votre email.");
  
       setTimeout(() => {

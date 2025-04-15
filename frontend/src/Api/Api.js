@@ -60,6 +60,8 @@ const ApiService = {
 //dashboard
 
 getUserStats: () => api.get("users/stats/"),
+getInstallationStats: () => api.get("statistiques/"),
+
 
   // Déconnexion
   logout: async () => {
@@ -84,23 +86,53 @@ getUserStats: () => api.get("users/stats/"),
   },
 
   // Installation
-  ajouterInstallation: (installationData) => 
-    api.post("installations/ajouter-installation/", installationData),  
+  ajouterInstallation: (data) =>
+    api.post("installations/ajouter-installation/", data, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }),
 
- modifierInstallation: (id, data) =>
-  api.put(`installations/modifier-installation/${id}/`, data),  
+    getInstallations: (params = {}) => api.get("installations/installations/", { params }),
+    deleteInstallation: (id) => api.delete(`installations/supprimer-installation/${id}/`),
+    getInstallationById: (id) => api.get(`installations/detail-installation/${id}/`),
+    updateInstallation: (id, data) => api.put(`installations/modifier-installation/${id}/`, data),
+    getInstallationStats: () => api.get("installations/statistiques/"),
+    getInstallationsGeoData: () => api.get("installations/geodata/"),
 
-  supprimerInstallation: (installationId) =>
-    api.delete(`installations/supprimer-installation/${installationId}/`),
-  listerInstallations: () => api.get("installations/"),
-  detailsInstallation: (installationId) =>
-    api.get(`installations/${installationId}/`),
-  statistiquesInstallations: () => api.get("installations/statistiques/"),
   // Notifications
   getNotifications: () => api.get("notification/get-my-notifications/"),
   markAsRead: (id) => api.patch(`notification/mark-read/${id}/`),
   markAllAsRead: () => api.patch("notification/mark-all-read/"),
   deleteNotification: (id) => api.delete(`notification/delete/${id}/`),
+
+
+  //code alarme
+  getAlarmeCodes: (params = {}) => api.get("alarme/codes/liste/", { params }),
+addAlarmeCode: (data) => api.post("alarme/codes/ajouter/", data),
+updateAlarmeCode: (id, data) => api.put(`alarme/codes/modifier/${id}/`, data),
+deleteAlarmeCode: (id) => api.delete(`alarme/codes/supprimer/${id}/`),
+getAlarmeCodeById: (id) => api.get(`alarme/codes/detail/${id}/`),
+//Alarme décleché
+getAlarmesDeclenchees: (params = {}) =>
+  api.get("alarme/liste/", { params }),
+
+getAlarmeDeclencheeById: (id) =>
+  api.get(`alarme/detail/${id}/`),
+
+ajouterAlarmeDeclenchee: (data) =>
+  api.post("alarme/ajouter/", data),
+
+modifierAlarmeDeclenchee: (id, data) => api.patch(`alarme/modifier/${id}/`, data),
+
+supprimerAlarmeDeclenchee: (id) =>
+  api.delete(`alarme/supprimer/${id}/`),
+
+
+
+getStatistiquesAlarmes: (id) => api.get(`alarme/stats/${id}/`),
+
+getStatistiquesAlarmesglobale: () => api.get(`alarme/stats/`),
 
   // Historique
   exportHistorique: {
@@ -109,9 +141,14 @@ getUserStats: () => api.get("users/stats/"),
       api.post("historique/creer-export/", { format, installation_id: installationId }),
     creerExportGlobal: (params) =>
       api.post("historique/export-global/", params),
+    exportAlarmeCodes: (format = "csv") =>
+      api.post("historique/export-alarmecodes/", { format }),
+    exportAlarmesDeclenchees: (format = "csv") =>
+      api.post("historique/export-alarmes-declenchees/", { format }),
     deleteExport: (id) => api.delete(`historique/supprimer/${id}/`),
     creerExportGlobalUtilisateurs: (params) =>
       api.post("historique/export-utilisateurs/", params),
+   
   },
 
 

@@ -7,5 +7,7 @@ urlpatterns = [
     path('supprimer/<int:pk>/', SupprimerExportView.as_view()),
     path('export-global/', ExportGlobalInstallationsView.as_view()),
     path("export-utilisateurs/", ExportGlobalUtilisateursView.as_view()), 
+    path("export-alarmecodes/", ExportAlarmeCodesView.as_view(), name="export-alarmecodes"),
+    path('export-alarmes-declenchees/', ExportAlarmesDeclencheesView.as_view(), name='export-alarmes-declenchees'),
 
 ]

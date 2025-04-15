@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { AddUserType } from "../../types/type";
 import ApiService from "../../Api/Api";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
@@ -9,6 +10,7 @@ const UserManagement = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchUsers();
@@ -34,25 +36,25 @@ const UserManagement = () => {
       setError(null);
       setFormData(AddUserType);
       fetchUsers();
+      setTimeout(() => {
+        navigate("/liste-clients");
+      }, 1000);
     } catch (err) {
       setError(err.response?.data?.error || "❌ Échec de l'ajout.");
       setSuccess(null);
     }
   };
 
-// Fonction qui sera appelée lors du logout
 const handleLogout = () => {
   ApiService.logout();
 };
 
   return (
     <div className="w-full px-6 pt-28 pb-16 flex flex-col items-center">
-      {/* TITRE en dehors de la carte */}
       <h2 className="text-3xl font-bold text-gray-800 mb-6 self-start max-w-3xl">
         ➕ Ajouter un utilisateur
       </h2>
 
-      {/* CARTE */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -63,7 +65,6 @@ const handleLogout = () => {
         {success && <p className="text-green-600 mb-4">{success}</p>}
 
         <div className="space-y-6">
-          {/* Email */}
           <div>
             <label className="text-sm text-gray-600 mb-1 block">Adresse Email</label>
             <input
@@ -77,7 +78,6 @@ const handleLogout = () => {
             />
           </div>
 
-          {/* Dropdown Rôle */}
           <div className="relative">
             <label className="text-sm text-gray-600 mb-1 block">Rôle</label>
             <button
@@ -106,7 +106,6 @@ const handleLogout = () => {
             )}
           </div>
 
-          {/* Bouton */}
           <div className="pt-4 text-right">
             <button
               onClick={handleAddUser}

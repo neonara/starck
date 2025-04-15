@@ -1,12 +1,15 @@
 from django.contrib.auth import get_user_model
 from rest_framework import status, generics, permissions
 from rest_framework.response import Response
+from rest_framework.generics import ListAPIView
+
 from rest_framework.views import APIView
 from .models import Installation
 from .serializers import InstallationSerializer
 from users.permissions import IsAdminOrInstallateur
 from rest_framework.permissions import IsAuthenticated
 from users.serializers import UserSerializer
+from .serializers import InstallationGeoSerializer
 User = get_user_model()
 
 class AjouterInstallationView(APIView):
@@ -24,23 +27,12 @@ class AjouterInstallationView(APIView):
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class ModifierInstallationView(generics.UpdateAPIView):
+class ModifierInstallationView(generics.RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated, IsAdminOrInstallateur]
     queryset = Installation.objects.all()
     serializer_class = InstallationSerializer
-
-    def put(self, request, installation_id, *args, **kwargs):
-        try:
-            installation = self.get_queryset().get(id=installation_id)
-        except Installation.DoesNotExist:
-            return Response({"error": "Installation non trouvée."}, status=404)
-
-        serializer = self.get_serializer(installation, data=request.data)
-
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"message": "Installation mise à jour avec succès.", "installation": serializer.data}, status=200)
-        return Response(serializer.errors, status=400)
+    lookup_field = 'id'
+  
 
 class SupprimerInstallationView(APIView):
     permission_classes = [IsAuthenticated, IsAdminOrInstallateur]
@@ -85,10 +77,12 @@ class ListerInstallationsView(APIView):
 
 class DetailsInstallationView(APIView):
     permission_classes = [IsAuthenticated, IsAdminOrInstallateur]
-
-    def get(self, request, installation_id):
+    queryset = Installation.objects.all()
+    serializer_class = InstallationSerializer
+    lookup_field = 'id'
+    def get(self, request, id): 
         try:
-            installation = Installation.objects.get(id=installation_id)
+            installation = Installation.objects.get(id=id)
             serializer = InstallationSerializer(installation)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Installation.DoesNotExist:
@@ -107,3 +101,12 @@ class StatistiquesInstallationsView(APIView):
         }, status=status.HTTP_200_OK)
 
 
+
+#partie geographique sur carte 
+
+class InstallationGeoDataView(ListAPIView):
+    permission_classes = [IsAuthenticated, IsAdminOrInstallateur]
+    serializer_class = InstallationGeoSerializer
+
+    def get_queryset(self):
+        return Installation.objects.filter(latitude__isnull=False, longitude__isnull=False)

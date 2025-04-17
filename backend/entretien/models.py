@@ -26,7 +26,7 @@ class Entretien(models.Model):
         ('normale', 'Normale'),
         ('basse', 'Basse'),
     ]
-
+    titre = models.CharField(max_length=100, blank=True, verbose_name="Titre personnalisé")
     installation = models.ForeignKey(
         Installation, 
         on_delete=models.CASCADE, 
@@ -130,3 +130,6 @@ class Entretien(models.Model):
     def est_en_retard(self):
         """Vérifie si l'entretien est en retard"""
         return self.statut == 'planifie' and timezone.now() > self.date_debut
+    @property
+    def est_termine(self):
+        return self.statut == 'termine'

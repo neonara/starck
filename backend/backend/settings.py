@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'entretien',
     'production',
     'reclamation',
+    'rapports',
     'historique',
 
 ]

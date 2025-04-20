@@ -12,6 +12,7 @@ from .views import (
     SupprimerAlarmeCodeView,
     DetailAlarmeCodeView,
     StatistiquesAlarmeCodesView,
+    StatistiquesAlarmesClientView,
 )
 
 
@@ -32,4 +33,5 @@ urlpatterns = [
     path('modifier/<int:pk>/', ModifierAlarmeView.as_view(), name='modifier-alarme'),
     path('supprimer/<int:pk>/', SupprimerAlarmeView.as_view(), name='supprimer-alarme'),
     path('detail/<int:pk>/', DetailAlarmeView.as_view(), name='detail-alarme'),
+    path("stats-client/", StatistiquesAlarmesClientView.as_view()),
 ]

@@ -30,11 +30,25 @@ class InstallationSerializer(serializers.ModelSerializer):
             'documentation_technique',
             'expiration_garantie',
             'reference_contrat',
-            'client',             
+            'photo_installation',
+            'client',
             'installateur',
         ]
+        
+    def get_photo_installation_url(self, obj):
+        request = self.context.get('request')
+        try:
+            if obj.photo_installation and hasattr(obj.photo_installation, 'url'):
+                return request.build_absolute_uri(obj.photo_installation.url)
+        except Exception as e:
+            print("Erreur image:", e)
+        return None
+    def validate_photo_installation(self, image):
+        if image and image.size > 5 * 1024 * 1024:
+            raise serializers.ValidationError("Image trop lourde (max 5MB).")
+        return image
 
-   
+
 
     def create(self, validated_data):
         client_email = validated_data.pop('client_email').strip().lower()

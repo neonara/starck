@@ -5,7 +5,8 @@ from .views import (
     SupprimerInstallationView,
     ListerInstallationsView,
     DetailsInstallationView,
-    StatistiquesInstallationsView
+    StatistiquesInstallationsView,
+    InstallationClientView
 )
 
 urlpatterns = [
@@ -15,5 +16,6 @@ urlpatterns = [
     path('modifier-installation/<int:id>/', ModifierInstallationView.as_view(), name='modifier-installation'),
     path('supprimer-installation/<int:installation_id>/', SupprimerInstallationView.as_view(), name='supprimer-installation'),
     path('statistiques/', StatistiquesInstallationsView.as_view(), name='statistiques_installations'),
+    path("installation-client/", InstallationClientView.as_view()),
   
 ]

@@ -107,6 +107,7 @@ from production.models import ProductionConsommation
 from datetime import date
 from django.db.models import Sum
 from django.db.models.functions import TruncHour, TruncDay
+from alarme.models import AlarmeDeclenchee
 class InstallationClientView(APIView):
 
     permission_classes = [IsAuthenticated]
@@ -122,7 +123,15 @@ class InstallationClientView(APIView):
             if not installation:
 
                 return Response({"error": "Aucune installation trouvée"}, status=404)
- 
+                    # Déterminer l'état de fonctionnement
+            alarme_critique_active = AlarmeDeclenchee.objects.filter(
+                installation=installation,
+                code_alarme__gravite='critique',
+                est_resolue=False
+            ).exists()
+
+            etat_fonctionnement = 'En panne' if alarme_critique_active else 'Fonctionnelle'
+
             data = {
 
                 "nom": installation.nom,
@@ -130,7 +139,7 @@ class InstallationClientView(APIView):
                 "etat": getattr(installation, "statut", "—"),
                 "latitude": installation.latitude,
                 "longitude": installation.longitude,
-
+                'etat_fonctionnement': etat_fonctionnement,
             }
 
             #photo de l'installation

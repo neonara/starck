@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import ApiService from "../../Api/Api";
 import { toast } from "react-toastify";
+import { useNavigate } from 'react-router-dom';
+
 
 const sectionTitle = "text-xl font-semibold text-gray-800 mb-4 flex justify-between items-center";
 const inputStyle = "w-full px-4 py-2 border border-gray-300 rounded-lg bg-white  focus:outline-none focus:ring-2 focus:ring-blue-500";
@@ -18,7 +20,7 @@ const AjouterInstallation = () => {
   const [installateurs, setInstallateurs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [sections, setSections] = useState({ system: true, location: true, users: true, extra: true });
-
+  const navigate = useNavigate();
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -47,15 +49,22 @@ const AjouterInstallation = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("🟡 Données envoyées au backend :", formData);
+
     setLoading(true);
     const data = new FormData();
     for (const key in formData) {
       if (formData[key]) data.append(key, formData[key]);
     }
+    if (!formData.nom) {
+      toast.error("Le nom de l'installation est requis !");
+      return;
+    }
 
     try {
       const response = await ApiService.ajouterInstallation(data);
       toast.success("✅ " + response.data.message);
+      navigate("/liste-installations");
     } catch (error) {
       const errors = error.response?.data;
       if (errors && typeof errors === "object") {
@@ -77,7 +86,12 @@ const AjouterInstallation = () => {
           <button className="text-sm text-blue-600" onClick={() => toggleSection("system")}>{sections.system ? "Réduire ▲" : "Afficher ▼"}</button>
         </h2>
         {sections.system && (
+          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+            <label className={labelStyle}>Nom de centrale :</label>
+            <input type="text" name="nom" value={formData.nom} onChange={handleChange} required className={inputStyle}/>
+            </div>
             <div>
               <label className={labelStyle}>Type de centrale :</label>
               <select name="type_installation" value={formData.type_installation} onChange={handleChange} required className={inputStyle}>

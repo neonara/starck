@@ -216,7 +216,7 @@ const ListeInstallationPage = () => {
       <div className="flex justify-between items-center mb-4">
         <div className="flex gap-2 items-center">
           <label className="text-sm text-gray-600">Afficher</label>
-          <select value={pageSize} onChange={(e) => setPageSize(Number(e.target.value))} className="border rounded px-2 py-1 text-sm">
+          <select value={pageSize} onChange={(e) => setPageSize(Number(e.target.value))} className="border text-gray-500 rounded px-2 py-1 text-sm">
             {[5, 10, 20].map(size => (
               <option key={size} value={size}>{size}</option>
             ))}
@@ -228,7 +228,7 @@ const ListeInstallationPage = () => {
         <select
   value={statutFilter}
   onChange={(e) => setStatutFilter(e.target.value)}
-  className="border rounded px-2 py-1 text-sm"
+  className="border rounded text-gray-500 px-2 py-1 text-sm"
 >
   <option value="">Tous les statuts</option>
   <option value="active">Actif</option>
@@ -240,7 +240,7 @@ const ListeInstallationPage = () => {
 <select
   value={villeFilter}
   onChange={(e) => setVilleFilter(e.target.value)}
-  className="border rounded px-2 py-1 text-sm"
+  className="border rounded text-gray-500 px-2 py-1 text-sm"
 >
   <option value="">Toutes les villes</option>
   {villesDisponibles.map((ville) => (
@@ -254,7 +254,7 @@ const ListeInstallationPage = () => {
             placeholder="🔍 Rechercher..."
             value={globalFilter ?? ""}
             onChange={(e) => setGlobalFilter(e.target.value)}
-            className="border px-3 py-1 rounded w-64 text-sm"
+            className="border text-gray-500px-3 py-1 rounded w-64 text-sm"
           />
           <div className="relative">
             <button onClick={() => setShowExportOptions(!showExportOptions)} className="flex items-center gap-2 px-3 py-1 border rounded text-sm text-gray-700 hover:bg-gray-100">

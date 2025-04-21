@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import ApiService from "../../Api/Api";
 import { toast } from "react-toastify";
 import { useNavigate } from 'react-router-dom';
+import { geocodeAdresse } from "../utils/geocode"; 
 
 
 const sectionTitle = "text-xl font-semibold text-gray-800 mb-4 flex justify-between items-center";
@@ -13,14 +14,17 @@ const AjouterInstallation = () => {
     nom: "", client_email: "", installateur_email: "", type_installation: "",
     statut: "active", date_installation: "", capacite_kw: "", latitude: "",
     longitude: "", adresse: "", ville: "", code_postal: "", pays: "",
-    expiration_garantie: "", reference_contrat: "", documentation_technique: null
+    expiration_garantie: "", reference_contrat: "", documentation_technique: null,
+    photo_installation: null
   });
 
+  const [photoPreview, setPhotoPreview] = useState(null);
   const [clients, setClients] = useState([]);
   const [installateurs, setInstallateurs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [sections, setSections] = useState({ system: true, location: true, users: true, extra: true });
   const navigate = useNavigate();
+
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -35,12 +39,35 @@ const AjouterInstallation = () => {
     fetchUsers();
   }, []);
 
+const handleAdresseChange = async (e) => {
+  const adresse = e.target.value;
+  setFormData({ ...formData, adresse });
+
+  if (adresse.length > 5) {
+    const coords = await geocodeAdresse(adresse);
+    if (coords) {
+      setFormData(prev => ({
+        ...prev,
+        latitude: coords.latitude,
+        longitude: coords.longitude
+      }));
+    }
+  }
+};
+
+
   const handleChange = (e) => {
     const { name, value, type, files } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "file" ? files[0] : value
-    }));
+    if (type === "file" && name === "photo_installation") {
+      const file = files[0];
+      setFormData((prev) => ({ ...prev, [name]: file }));
+      setPhotoPreview(URL.createObjectURL(file));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: type === "file" ? files[0] : value
+      }));
+    }
   };
 
   const toggleSection = (key) => {
@@ -49,6 +76,8 @@ const AjouterInstallation = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("🟡 Données envoyées au backend :", formData);
+
     console.log("🟡 Données envoyées au backend :", formData);
 
     setLoading(true);
@@ -60,10 +89,15 @@ const AjouterInstallation = () => {
       toast.error("Le nom de l'installation est requis !");
       return;
     }
+    if (!formData.nom) {
+      toast.error("Le nom de l'installation est requis !");
+      return;
+    }
 
     try {
       const response = await ApiService.ajouterInstallation(data);
       toast.success("✅ " + response.data.message);
+      navigate("/liste-installations");
       navigate("/liste-installations");
     } catch (error) {
       const errors = error.response?.data;
@@ -88,6 +122,10 @@ const AjouterInstallation = () => {
         {sections.system && (
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className={labelStyle}>Nom de centrale :</label>
+              <input type="text" name="nom" value={formData.nom} onChange={handleChange} required className={inputStyle}/>
+            </div>
             <div>
             <label className={labelStyle}>Nom de centrale :</label>
             <input type="text" name="nom" value={formData.nom} onChange={handleChange} required className={inputStyle}/>
@@ -133,7 +171,7 @@ const AjouterInstallation = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <input name="latitude" placeholder="Latitude" value={formData.latitude} onChange={handleChange} className={inputStyle} required />
             <input name="longitude" placeholder="Longitude" value={formData.longitude} onChange={handleChange} className={inputStyle} required />
-            <input name="adresse" placeholder="Adresse" value={formData.adresse} onChange={handleChange} className={inputStyle} />
+            <input name="adresse" placeholder="Adresse" value={formData.adresse} onChange={handleAdresseChange} className={inputStyle} />
             <input name="ville" placeholder="Ville" value={formData.ville} onChange={handleChange} className={inputStyle} />
             <input name="code_postal" placeholder="Code postal" value={formData.code_postal} onChange={handleChange} className={inputStyle} />
             <input name="pays" placeholder="Pays" value={formData.pays} onChange={handleChange} className={inputStyle} />
@@ -176,6 +214,11 @@ const AjouterInstallation = () => {
             <input type="date" name="expiration_garantie" value={formData.expiration_garantie} onChange={handleChange} className={inputStyle} />
             <input name="reference_contrat" value={formData.reference_contrat} onChange={handleChange} placeholder="Référence contrat" className={inputStyle} />
             <input type="file" name="documentation_technique" onChange={handleChange} accept=".pdf,.doc,.docx" className={inputStyle} />
+            <div>
+              <label className={labelStyle}>Photo de l'installation :</label>
+              <input type="file" name="photo_installation" accept="image/*" onChange={handleChange} className={inputStyle} />
+              {photoPreview && <img src={photoPreview} alt="Preview" className="mt-2 rounded-lg h-32 object-cover" />}
+            </div>
           </div>
         )}
       </section>

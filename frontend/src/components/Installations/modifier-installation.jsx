@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import ApiService from "../../Api/Api";
 import toast from "react-hot-toast";
-import { MapPin, Cpu, User, ChevronsUpDown, ArrowUpRight } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import { motion } from "framer-motion";
 
 const inputStyle = "input border border-gray-300 px-3 py-2 rounded-lg bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500";
@@ -25,9 +25,12 @@ const EditInstallation = () => {
     expiration_garantie: "",
     reference_contrat: "",
     client_email: "",
-    installateur_email: ""
+    installateur_email: "",
+    photo_installation: null,
+    documentation_technique: null
   });
 
+  const [photoPreview, setPhotoPreview] = useState(null);
   const [clients, setClients] = useState([]);
   const [installateurs, setInstallateurs] = useState([]);
 
@@ -55,9 +58,12 @@ const EditInstallation = () => {
           expiration_garantie: data.expiration_garantie || "",
           reference_contrat: data.reference_contrat || "",
           client_email: data.client?.email || "",
-          installateur_email: data.installateur?.email || ""
+          installateur_email: data.installateur?.email || "",
+          photo_installation: null,
+          documentation_technique: null
         });
 
+        setPhotoPreview(data.photo_installation_url || null);
         setClients(resClients.data.results || []);
         setInstallateurs(resInstallateurs.data.results || []);
       } catch (err) {
@@ -69,20 +75,73 @@ const EditInstallation = () => {
     fetchData();
   }, [id]);
 
+  const geocodeAdresse = async (adresse) => {
+    try {
+      const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(adresse)}`);
+      const data = await response.json();
+      if (data && data.length > 0) {
+        const { lat, lon } = data[0];
+        setForm((prev) => ({
+          ...prev,
+          latitude: parseFloat(lat).toFixed(6),
+          longitude: parseFloat(lon).toFixed(6),
+        }));
+        toast.success("📍 Coordonnées récupérées avec succès !");
+      } else {
+        toast.error("❌ Adresse non trouvée");
+      }
+    } catch (error) {
+      console.error("Erreur géocodage :", error);
+      toast.error("Erreur lors de la récupération des coordonnées");
+    }
+  };
+
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    const { name, value, type, files } = e.target;
+
+    if (type === "file") {
+      const file = files?.[0];
+      setForm((prev) => ({ ...prev, [name]: file }));
+
+      if (name === "photo_installation" && file && file.type.startsWith("image/")) {
+        setPhotoPreview(URL.createObjectURL(file));
+      }
+    } else {
+      setForm((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await ApiService.updateInstallation(id, form);
+      const data = new FormData();
+      for (const key in form) {
+        if (form[key]) {
+          if (key === "capacite_kw") {
+            data.append(key, parseFloat(form[key]).toFixed(2));
+          } else {
+            data.append(key, form[key]);
+          }
+        }
+      }
+
+      await ApiService.updateInstallation(id, data);
       toast.success("✅ Installation mise à jour");
       navigate("/liste-installations");
     } catch (err) {
-      console.error("Erreur update :", err);
-      toast.error("❌ Erreur mise à jour");
+      if (err.response?.data) {
+        console.error("🔥 Erreur serveur :", err.response.data);
+        const errorData = err.response.data;
+        for (const field in errorData) {
+          const message = Array.isArray(errorData[field])
+            ? errorData[field].join(" - ")
+            : errorData[field];
+          toast.error(`${field} : ${message}`);
+        }
+      } else {
+        console.error("Erreur inattendue :", err);
+        toast.error("Erreur inattendue lors de la mise à jour");
+      }
     }
   };
 
@@ -104,7 +163,12 @@ const EditInstallation = () => {
           <motion.div animate={{ opacity: 1 }} initial={{ opacity: 0 }} transition={{ duration: 0.4 }} className="bg-gray-50 p-6 rounded-xl shadow">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <input name="nom" value={form.nom} onChange={handleChange} placeholder="Nom" className={inputStyle} required />
-              <input name="adresse" value={form.adresse} onChange={handleChange} placeholder="Adresse" className={inputStyle} />
+              <div className="flex gap-2 col-span-2">
+                <input name="adresse" value={form.adresse} onChange={handleChange} placeholder="Adresse" className={`${inputStyle} flex-1`} />
+                <button type="button" onClick={() => geocodeAdresse(form.adresse)} className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700">
+                  📍 Trouver coord.
+                </button>
+              </div>
               <input name="latitude" value={form.latitude} onChange={handleChange} placeholder="Latitude" className={inputStyle} />
               <input name="longitude" value={form.longitude} onChange={handleChange} placeholder="Longitude" className={inputStyle} />
             </div>
@@ -141,6 +205,19 @@ const EditInstallation = () => {
               </select>
               <input type="date" name="date_installation" value={form.date_installation} onChange={handleChange} className={inputStyle} />
               <input name="reference_contrat" value={form.reference_contrat} onChange={handleChange} placeholder="Référence contrat" className={inputStyle} />
+
+              <div>
+                <label className="text-sm text-gray-600">Photo de l'installation</label>
+                <input type="file" name="photo_installation" onChange={handleChange} accept="image/*" className={inputStyle} />
+                {photoPreview && (
+                  <img src={photoPreview} alt="Aperçu" className="mt-2 rounded-lg h-32 object-cover border" />
+                )}
+              </div>
+
+              <div>
+                <label className="text-sm text-gray-600">Documentation technique</label>
+                <input type="file" name="documentation_technique" onChange={handleChange} accept=".pdf,.doc,.docx" className={inputStyle} />
+              </div>
             </div>
           </motion.div>
 

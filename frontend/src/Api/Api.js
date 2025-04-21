@@ -47,6 +47,7 @@ api.interceptors.request.use(async (req) => {
 
 const ApiService = {
   // Utilisateur
+  
   addUser: (userData) => api.post("users/register/", userData),
   getProfile: () => api.get("users/profile/"),
   updateProfile: (userData) => api.patch("users/update-profile/", userData),
@@ -56,6 +57,7 @@ const ApiService = {
   updateUser: (id, userData) => api.patch(`users/usersdetail/${id}/`, userData),
   getClients: () => api.get("users/clients/"),
   getInstallateurs: () => api.get("users/installateurs/"),
+  getTechnicien: () => api.get("users/techniciens/"),
 
 //dashboard
 
@@ -96,6 +98,15 @@ getInstallationStats: () => api.get("statistiques/"),
     getInstallations: (params = {}) => api.get("installations/installations/", { params }),
     deleteInstallation: (id) => api.delete(`installations/supprimer-installation/${id}/`),
     getInstallationById: (id) => api.get(`installations/detail-installation/${id}/`),
+    updateInstallation: (id, data) =>
+      api.put(`installations/modifier-installation/${id}/`, data, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }),
+        //getInstallationStats: () => api.get("installations/statistiques/"),
+
+    
     updateInstallation: (id, data) => api.put(`installations/modifier-installation/${id}/`, data),
     getInstallationStats: () => api.get("installations/statistiques/"),
     getInstallationsGeoData: () => api.get("installations/geodata/"),
@@ -157,6 +168,64 @@ ajouterDonnees: (prodData) => api.post("ajouter_prod/", prodData),
 listeProduction: () => api.get("list_prod/"), 
 statistiquesProduction: (installationId) => api.get(`production/statistiques/${installationId}/`),  // Statistiques pour une installation
 statistiquesGlobales: () => api.get("production/statistiques/globales/"),  // Statistiques globales
+
+
+// Interventions
+getInterventions: (params = {}) => api.get("intervention/interventions/", { params }),
+createIntervention: (data) => api.post("intervention/interventions/creer/", data),
+getInterventionDetail: (id) => api.get(`intervention/interventions/${id}/`),
+updateIntervention: (id, data) => api.put(`intervention/interventions/${id}/modifier/`, data),
+deleteIntervention: (id) => api.delete(`intervention/interventions/${id}/supprimer/`),
+changeInterventionStatus: (id, status) => api.patch(`intervention/interventions/${id}/changer-statut/`, { status }),
+
+//Entretien
+getAllEntretiens: (params = {}) => api.get("entretien/entretiens/", { params }),
+createEntretien: (data) => api.post("entretien/entretiens/", data),
+getEntretien: (id) => api.get(`entretien/entretiens/${id}/`),
+updateEntretien: (id, data) => api.put(`entretien/entretiens/${id}/`, data),
+deleteEntretien: (id) => api.delete(`entretien/entretiens/${id}/`),
+getEntretienCalendar: (params) => api.get("entretien/entretiens/calendar/", { params }),
+getEntretienStats: () => api.get("entretien/entretien/statistiques/"),
+
+//Reclamation
+getReclamations: (params = {}) => api.get("reclamation/reclamations/", { params }),
+updateReclamation: (id, data) => api.put(`reclamation/reclamations/${id}/`, data),
+
+//client
+getInstallationClient:(params = {}) => api.get("installations/installation-client/", { params }),
+statistiquesInstallationClient: () => api.get("production/statistiques-installation-client/"),
+getStatistiquesAlarmesClient: () => api.get("alarme/stats-client/"),
+
+
+
+//Rapports
+rapports: {
+  getRapportProductionMensuelle: (installationId, mois) =>
+    api.get(`rapports/rapports/production-mensuelle/?installation_id=${installationId}&mois=${mois}`),
+ 
+  exportRapportProduction: (params) =>
+    api.post("rapports/rapports/export-production/", params),
+
+  exportRapportProductionPDF: (params) =>
+    api.post("rapports/rapports/export-production-pdf/", params, {
+      responseType: "blob",
+    }),
+
+  getRapportConsommationMensuelle: (installationId, mois) =>
+    api.get(`rapports/rapports/consommation-mensuelle/?installation_id=${installationId}&mois=${mois}`),
+  
+  exportRapportConsommation: (params) =>
+    api.post("rapports/rapports/export-consommation/", params, {
+      responseType: "blob",
+    }),
+
+  exportRapportConsommationPDF: (params) =>
+    api.post("rapports/rapports/export-consommation-pdf/", params, {
+      responseType: "blob",
+    }),
+},
+
+
 };
 
 export default ApiService;

@@ -47,8 +47,11 @@ INSTALLED_APPS = [
     'installations',
     'alarme',
     'notification',
-
+    'intervention',
+    'entretien',
     'production',
+    'reclamation',
+    'rapports',
     'historique',
 
 ]
@@ -61,6 +64,10 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
 
 
 
@@ -119,7 +126,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'solar_db',  
         'USER': 'postgres',
-        'PASSWORD': 'youta',
+        'PASSWORD': 'root',
         'HOST': 'localhost',
         'PORT': '5432',
 
@@ -195,6 +202,9 @@ CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 broker_connection_retry_on_startup = True
+default_app_config = 'entretien.apps.EntretienConfig'
+
+
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 

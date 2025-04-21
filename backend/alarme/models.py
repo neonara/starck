@@ -26,6 +26,7 @@ class AlarmeCode(models.Model):
     type_alarme = models.CharField(max_length=50, choices=TYPE_ALARME_CHOICES)
     code_constructeur = models.CharField(max_length=50)
     gravite = models.CharField(max_length=20, choices=GRAVITE_CHOICES)
+    est_resolue = models.BooleanField(default=False)
     description = models.TextField()
 
     def __str__(self):

@@ -108,3 +108,26 @@ class StatistiquesProductionView(APIView):
             "prod_annuelle_par_mois": prod_annuelle_par_mois,
             "prod_totale": prod_totale,
         }, status=200)
+
+class StatistiquesInstallationClientView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        installation = Installation.objects.filter(client=request.user).first()
+        if not installation:
+            return Response({"error": "Aucune installation trouvée."}, status=404)
+
+        qs = ProductionConsommation.objects.filter(installation=installation)
+        today = timezone.now().date()
+
+        stats = {
+            "production_jour": qs.filter(horodatage__date=today).aggregate(Sum("energie_produite_kwh"))["energie_produite_kwh__sum"] or 0,
+            "production_mois": qs.filter(horodatage__month=today.month, horodatage__year=today.year).aggregate(Sum("energie_produite_kwh"))["energie_produite_kwh__sum"] or 0,
+            "production_totale": qs.aggregate(Sum("energie_produite_kwh"))["energie_produite_kwh__sum"] or 0,
+
+            "consommation_jour": qs.filter(horodatage__date=today).aggregate(Sum("energie_consomme_kwh"))["energie_consomme_kwh__sum"] or 0,
+            "consommation_mois": qs.filter(horodatage__month=today.month, horodatage__year=today.year).aggregate(Sum("energie_consomme_kwh"))["energie_consomme_kwh__sum"] or 0,
+            "consommation_totale": qs.aggregate(Sum("energie_consomme_kwh"))["energie_consomme_kwh__sum"] or 0,
+        }
+
+        return Response(stats)

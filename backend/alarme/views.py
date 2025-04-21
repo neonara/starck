@@ -7,6 +7,9 @@ from django.db.models import Count
 from rest_framework.response import Response
 from users.permissions import IsAdminOrInstallateur
 from rest_framework.permissions import IsAuthenticated
+from installations.models import Installation
+from rest_framework.views import APIView
+
 from rest_framework.views import APIView
 
 #alarme code (marbouta bel admin)
@@ -48,6 +51,12 @@ class StatistiquesAlarmeCodesView(generics.GenericAPIView):
     def get(self, request, *args, **kwargs):
         stats = AlarmeCode.objects.values('marque', 'type_alarme').annotate(total=Count('id'))
         return Response(stats)
+    
+
+
+
+
+
 
 
 
@@ -95,6 +104,24 @@ class StatistiquesAlarmesView(generics.GenericAPIView):
         stats = AlarmeDeclenchee.objects.filter(est_resolue=False) \
             .values('code_alarme__gravite') \
             .annotate(total=Count('id'))
+        return Response(stats)
+    
+class StatistiquesAlarmesClientView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        installation = Installation.objects.filter(client=request.user).first()
+        if not installation:
+            return Response({"mineures": 0, "majeures": 0, "critiques": 0})
+
+        alertes = AlarmeDeclenchee.objects.filter(installation=installation, est_resolue=False)
+
+        stats = {
+            "mineures": alertes.filter(code_alarme__gravite="mineure").count(),
+            "majeures": alertes.filter(code_alarme__gravite="majeure").count(),
+            "critiques": alertes.filter(code_alarme__gravite="critique").count(),
+        }
+
         return Response(stats)
 
 

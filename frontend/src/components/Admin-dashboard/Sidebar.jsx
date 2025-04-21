@@ -51,8 +51,8 @@ const Sidebar = () => {
     <div
       className={`${
         isSidebarOpen ? 'w-64' : 'w-16'
-      } bg-white dark:bg-gray-800 border-r dark:border-gray-700 
-      transition-all duration-300 ease-in-out h-screen fixed top-0 left-0 z-40 overflow-x-hidden`}
+      } bg-white border-r border-gray-200
+  transition-all duration-300 ease-in-out h-screen fixed top-0 left-0 z-40 overflow-x-hidden`}
     >
       <div className="flex items-center gap-2 px-4 pt-6">
         <img src="/assets/logo.jpg" alt="Logo" className="w-6 h-6" />

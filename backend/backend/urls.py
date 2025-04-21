@@ -27,5 +27,9 @@ urlpatterns = [
     path('alarme/', include('alarme.urls')),
     path('notification/', include('notification.urls')),
     path('production/', include('production.urls')),
+    path('intervention/', include('intervention.urls')),
+    path('entretien/', include('entretien.urls')),
+    path('reclamation/', include('reclamation.urls')),
+    path('rapports/', include('rapports.urls')),
     path('historique/', include('historique.urls')),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

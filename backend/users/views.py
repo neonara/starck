@@ -184,7 +184,7 @@ class CompleteRegistrationView(APIView):
             return Response({"error": "Utilisateur non trouvé."}, status=status.HTTP_404_NOT_FOUND)
 
 class GetUserProfileView(APIView):
-    permission_classes = [IsAuthenticated, IsAdminOrInstallateur]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         user = request.user  

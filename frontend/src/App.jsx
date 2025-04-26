@@ -67,8 +67,6 @@ import RapportAlarmesClientPage from "./components/Rapports/RapportAlarmesClient
 import ListeInterventionsClient from "./components/Intervention/ListeInterventionsClient";
 import DetailleInterventionClient from "./components/Intervention/DetailleInterventionClient";
 
-//Technicien 
-import MesEntretiens from "./components/Utilisateurs/Technicien/MesEntretiens";
 //Installateur
 import ListeUtilisateursPage from "./Installateur/ListeUtilisateursPage";
 import ListeMesInstallationsPage from "./Installateur/ListeMesInstallationsPage.jsx";
@@ -78,6 +76,8 @@ import ListeMesEntretiensInstallateurPage from "./Installateur/ListeMesEntretien
 import CalendrierEntretiensInstallateur from "./Installateur/CalendrierEntretiensInstallateur.jsx";
 import ListeAlarmesInstallateur from "./Installateur/ListeAlarmesInstallateur.jsx";
 import ListeReclamationsInstallateur from "./Installateur/ListeReclamationsInstallateur.jsx";
+//Technicien 
+import MesEntretiens from "./components/Utilisateurs/Technicien/MesEntretiens";
 function App() {
   return (
     <Router>
@@ -170,6 +170,7 @@ function App() {
        <Route path="/ListeReclamationsInstallateur" element={<ListeReclamationsInstallateur/>} />
        
 
+       <Route path="/MesEntretiens" element={<MesEntretiens />} />
        </Route>
   </Routes>
 </Router>

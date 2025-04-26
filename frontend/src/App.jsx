@@ -58,6 +58,8 @@ import ModifierReclamationPage from "./components/Reclamation/ModifierReclamatio
 import RapportProductionPage from "./components/Rapports/RapportProductionPage";
 import RapportConsommationPage from"./components/Rapports/RapportConsommationPage";
 import InstallationMap from "./components/Installations/InstallationMap";
+//Technicien 
+import MesEntretiens from "./components/Utilisateurs/Technicien/MesEntretiens";
 function App() {
   return (
     <Router>
@@ -111,6 +113,7 @@ function App() {
        
        <Route path="/rapport_production" element={<RapportProductionPage />} />
        <Route path="/rapport_consommation" element={<RapportConsommationPage />} />
+       <Route path="/MesEntretiens" element={<MesEntretiens />} />
        </Route>
   </Routes>
 </Router>

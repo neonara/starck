@@ -133,3 +133,20 @@ class Entretien(models.Model):
     @property
     def est_termine(self):
         return self.statut == 'termine'
+    
+
+
+
+
+
+
+class RappelEntretien(models.Model):
+    entretien = models.OneToOneField(
+        'Entretien', on_delete=models.CASCADE, related_name='rappel')
+    technicien = models.ForeignKey(
+        User, on_delete=models.CASCADE, limit_choices_to={"role": "technicien"})
+    rappel_datetime = models.DateTimeField(help_text="Date et heure exacte du rappel")
+    cree_le = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Rappel pour entretien {self.entretien_id} à {self.rappel_datetime}"

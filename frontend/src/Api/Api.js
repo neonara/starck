@@ -107,8 +107,8 @@ getInstallationStats: () => api.get("statistiques/"),
         //getInstallationStats: () => api.get("installations/statistiques/"),
 
     
-    updateInstallation: (id, data) => api.put(`installations/modifier-installation/${id}/`, data),
-    getInstallationStats: () => api.get("installations/statistiques/"),
+    //updateInstallation: (id, data) => api.put(`installations/modifier-installation/${id}/`, data),
+    //getInstallationStats: () => api.get("installations/statistiques/"),
     getInstallationsGeoData: () => api.get("installations/geodata/"),
 
   // Notifications
@@ -280,7 +280,6 @@ getAlarmesInstallateur: () => api.get("alarme/liste/installateur/"),
 getReclamationsInstallateur: () =>api.get("reclamation/reclamations/installateur/"),
 getStatistiquesAlarmesInstallateur: () =>api.get("alarme/statistiques-installateur/"),
 
-getInstallationsByInstallateur: () =>api.get("installations/mes-installations/"),
 };
 
 export default ApiService;

@@ -12,3 +12,19 @@ def notifier_technicien_entretien(entretien):
             installation_associee=entretien.installation,
             priorite=2  # ou 3 si urgent
         )
+
+
+
+
+
+def notifier_rappel_entretien(entretien):
+    if entretien.technicien:
+        Notification.objects.create(
+            utilisateur=entretien.technicien,
+            type_notification='maintenance', 
+            titre="🔔 Rappel d'entretien",
+            message=f"Rappel : entretien '{entretien.get_type_entretien_display()}' pour l'installation {entretien.installation.nom}.",
+            canal='in_app',
+            installation_associee=entretien.installation,
+            priorite=1  
+        )

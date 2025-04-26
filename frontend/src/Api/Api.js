@@ -186,6 +186,12 @@ updateEntretien: (id, data) => api.put(`entretien/entretiens/${id}/`, data),
 deleteEntretien: (id) => api.delete(`entretien/entretiens/${id}/`),
 getEntretienCalendar: (params) => api.get("entretien/entretiens/calendar/", { params }),
 getEntretienStats: () => api.get("entretien/entretien/statistiques/"),
+//technicien
+//entretien
+ajouterRappelEntretien: (entretienId, rappel_datetime) =>
+  api.post(`entretien/entretiens/${entretienId}/rappel/`, { rappel_datetime }),
+getMesEntretiens: () => api.get("entretien/entretiens/mes-entretiens/"),
+
 
 //Reclamation
 getReclamations: (params = {}) => api.get("reclamation/reclamations/", { params }),

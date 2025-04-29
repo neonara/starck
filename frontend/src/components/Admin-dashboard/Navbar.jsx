@@ -24,7 +24,9 @@ const Navbar = () => {
         setUser({
           name: `${res.data.first_name} ${res.data.last_name}`,
           email: res.data.email,
+          role: res.data.role,
         });
+        
       } catch (err) {
         console.error("Erreur chargement profil :", err);
       }
@@ -97,13 +99,24 @@ const Navbar = () => {
             </div>
           )}
         </div>
-        <Link
-    to="/installationMap"
+        {user && user.role && (
+  <button
+    onClick={() => {
+      if (user.role === "admin") {
+        navigate("/installationMap"); 
+      } else if (user.role === "installateur") {
+        navigate("/MapInstallateur"); 
+      } else {
+        toast.error("Accès non autorisé à la carte 🌐");
+      }
+    }}
     className="relative rounded-full border p-2 text-gray-500 hover:bg-gray-100"
     title="Carte des installations"
   >
     <Globe className="w-5 h-5" />
-  </Link>
+  </button>
+)}
+
 
         <div className="relative">
           <button

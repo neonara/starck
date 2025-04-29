@@ -6,6 +6,8 @@ from .views import (
     EntretienStatistiquesView,
     RappelEntretienAPIView,
     MesEntretiensAPIView, 
+    MesEntretiensInstallateurAPIView,
+    EntretienCalendarInstallateurAPIView
 )
 
 urlpatterns = [
@@ -16,5 +18,9 @@ urlpatterns = [
     path('entretiens/<int:entretien_id>/rappel/', RappelEntretienAPIView.as_view(), name='ajouter-rappel'),
     path('entretiens/mes-entretiens/', MesEntretiensAPIView.as_view(), name='mes-entretiens'),
 
+    path('entretiens/mes-entretiens-installateur/', MesEntretiensInstallateurAPIView.as_view(), name='mes-entretiens-installateur'),  # ➡️ ici
+path('entretiens/calendar-installateur/', EntretienCalendarInstallateurAPIView.as_view(), name='entretien-calendar-installateur'),
 
 ]
+
+

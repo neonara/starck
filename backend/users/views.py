@@ -13,13 +13,12 @@ from .tasks import send_verification_email
 from .tasks import send_registration_link
 from .serializers import (
     UserProfileSerializer, UserSerializer, UserUpdateSerializer)
-from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.core.cache import cache
 from django_filters.rest_framework import DjangoFilterBackend
 
-from .permissions import IsAdminOrInstallateur
-
+from .permissions import IsAdminOrInstallateur,IsInstallateur
+from installations.models import Installation
 
 User = get_user_model()
 
@@ -473,17 +472,27 @@ class UserListView(generics.ListAPIView):
 class UserDetailView(generics.RetrieveUpdateDestroyAPIView):
     """
     Voir, modifier ou supprimer un utilisateur.
-    Seuls les admins peuvent accéder à cette vue.
+    Admin : accès complet.
+    Installateur : accès à ses clients et à tous les techniciens.
     """
     queryset = User.objects.all()
     serializer_class = UserUpdateSerializer
     permission_classes = [IsAuthenticated, IsAdminOrInstallateur]
 
     def get_queryset(self):
-        if self.request.user.role != 'admin':
-            return User.objects.none()
-        return User.objects.all()
+        user = self.request.user
 
+        if user.role == 'admin':
+            return User.objects.all()
+        
+        elif user.role == 'installateur':
+            clients_ids = Installation.objects.filter(installateur=user).values_list('client_id', flat=True)
+
+            techniciens_ids = User.objects.filter(role='technicien').values_list('id', flat=True)
+
+            return User.objects.filter(id__in=list(clients_ids) + list(techniciens_ids))
+
+        return User.objects.none()
 
     def perform_cache_invalidation(self):
         cache.delete("user_list") 
@@ -532,8 +541,7 @@ class ClientsListView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        # Filtrer les utilisateurs ayant le rôle "client"
-        clients = User.objects.filter(role='client')  # Assurez-vous que le rôle 'client' existe
+        clients = User.objects.filter(role='client')  
         serializer = UserSerializer(clients, many=True)
         return Response({"results": serializer.data})
     
@@ -541,15 +549,33 @@ class InstallateursListView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        # Filtrer les utilisateurs ayant le rôle "installateur"
-        installateurs = User.objects.filter(role='installateur')  # Assurez-vous que le rôle 'installateur' existe
+        installateurs = User.objects.filter(role='installateur')  
         serializer = UserSerializer(installateurs, many=True)
         return Response({"results": serializer.data})
 class TechniciensListView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        # Filtrer les utilisateurs ayant le rôle ""
         techniciens = User.objects.filter(role='technicien') 
         serializer = UserSerializer(techniciens, many=True)
         return Response({"results": serializer.data})
+    
+
+
+
+#liste des client lies juste a un installateur specifique 
+
+class MyClientsListView(APIView):
+    permission_classes = [IsAuthenticated, IsInstallateur]
+
+    def get(self, request):
+        user = request.user
+
+        installations = Installation.objects.filter(installateur=user)
+
+        client_ids = installations.values_list('client_id', flat=True).distinct()
+
+        clients = User.objects.filter(id__in=client_ids, role='client')
+
+        serializer = UserSerializer(clients, many=True)
+        return Response({"results": serializer.data}, status=status.HTTP_200_OK)

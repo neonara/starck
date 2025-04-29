@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import ApiService from "../../Api/Api";
+import ApiService from "../Api/Api";
 import {
   useReactTable,
   getCoreRowModel,
@@ -14,7 +14,6 @@ import {
   FaSortDown,
   FaEdit,
   FaTrash,
-  FaDownload,
   FaPlus,
 } from "react-icons/fa";
 import toast, { Toaster } from "react-hot-toast";
@@ -26,76 +25,34 @@ const statusColors = {
   annulee: "bg-red-100 text-red-700",
 };
 
-const ListeInterventionPage = () => {
+const ListeMesInterventionsPage = () => {
   const [data, setData] = useState([]);
   const [pageSize, setPageSize] = useState(5);
   const [globalFilter, setGlobalFilter] = useState("");
-  const [showExportOptions, setShowExportOptions] = useState(false);
-  const [statutFilter, setStatutFilter] = useState("");
-  const [technicienFilter, setTechnicienFilter] = useState("");
-  const [techniciensDisponibles, setTechniciensDisponibles] = useState([]);
 
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchInterventions = async () => {
+    const fetchMyInterventions = async () => {
       try {
-        const params = {
-          statut: statutFilter || undefined,
-          technicien_id: technicienFilter || undefined,
-        };
-
-        const res = await ApiService.getInterventions({ params });
+        const res = await ApiService.getMesInterventions(); 
         const interventions = res.data.results || res.data;
 
         if (Array.isArray(interventions)) {
           setData(interventions);
-
-          const uniqueTechs = [
-            ...new Map(
-              interventions
-                .map((interv) => {
-                  const tech = interv.technicien_details || interv.technicien;
-                  if (typeof tech === "object" && tech !== null) {
-                    return [
-                      tech.id,
-                      {
-                        id: tech.id,
-                        nom: `${tech.first_name || ""} ${tech.last_name || ""}`.trim() || tech.email,
-                      },
-                    ];
-                  }
-                  return null;
-                })
-                .filter(Boolean)
-            ).values(),
-          ];
-          setTechniciensDisponibles(uniqueTechs);
         } else {
           console.error("Les données reçues ne sont pas un tableau:", interventions);
           setData([]);
-          setTechniciensDisponibles([]);
         }
       } catch (err) {
-        console.error("Erreur lors du chargement des interventions", err);
+        console.error("Erreur chargement interventions", err);
         toast.error("Erreur de chargement ❌");
         setData([]);
-        setTechniciensDisponibles([]);
       }
     };
 
-    fetchInterventions();
-  }, [ statutFilter, technicienFilter]);
-
-  const handleExportClick = async (format) => {
-    setShowExportOptions(false);
-    try {
-      await ApiService.exportInterventions({ format });
-      toast.success(`Export ${format.toUpperCase()} lancé ✅`);
-    } catch (err) {
-      toast.error("Erreur lors de l'export ❌");
-    }
-  };
+    fetchMyInterventions();
+  }, []);
 
   const columns = useMemo(
     () => [
@@ -103,8 +60,7 @@ const ListeInterventionPage = () => {
         header: "INSTALLATION",
         accessorKey: "installation",
         cell: (info) => {
-          const installation =
-            info.row.original.installation_details || info.row.original.installation;
+          const installation = info.row.original.installation_details || info.row.original.installation;
           return typeof installation === "object" ? installation.nom || "—" : "—";
         },
       },
@@ -153,7 +109,7 @@ const ListeInterventionPage = () => {
             </button>
             <button
               onClick={async () => {
-                const confirmed = window.confirm("Supprimer l'intervention ?");
+                const confirmed = window.confirm("Supprimer cette intervention ?");
                 if (!confirmed) return;
 
                 try {
@@ -185,36 +141,25 @@ const ListeInterventionPage = () => {
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     onGlobalFilterChange: setGlobalFilter,
-    filterFns: {
-      fuzzy: (row, columnId, value) => {
-        const searchValue = value.toLowerCase();
-        const rowData = row.original;
+    globalFilterFn: (row, columnId, value) => {
+      const searchValue = value.toLowerCase();
+      const rowData = row.original;
 
-        // Recherche dans l'installation
-        const installation = rowData.installation_details || rowData.installation;
-        if (installation?.nom?.toLowerCase().includes(searchValue)) return true;
+      const installation = rowData.installation_details || rowData.installation;
+      if (installation?.nom?.toLowerCase().includes(searchValue)) return true;
 
-        // Recherche dans le technicien
-        const tech = rowData.technicien_details || rowData.technicien;
-        if (tech) {
-          const techName = `${tech.first_name || ''} ${tech.last_name || ''}`.trim().toLowerCase();
-          if (techName.includes(searchValue)) return true;
-          if (tech.email?.toLowerCase().includes(searchValue)) return true;
-        }
-
-        // Recherche dans la date
-        if (rowData.date_prevue) {
-          const date = new Date(rowData.date_prevue).toLocaleDateString().toLowerCase();
-          if (date.includes(searchValue)) return true;
-        }
-
-        // Recherche dans le statut
-        if (rowData.statut?.toLowerCase().includes(searchValue)) return true;
-
-        return false;
+      const tech = rowData.technicien_details || rowData.technicien;
+      if (tech) {
+        const techName = `${tech.first_name || ""} ${tech.last_name || ""}`.trim().toLowerCase();
+        if (techName.includes(searchValue)) return true;
+        if (tech.email?.toLowerCase().includes(searchValue)) return true;
       }
+
+      if (rowData.statut?.toLowerCase().includes(searchValue)) return true;
+      if (rowData.date_prevue && new Date(rowData.date_prevue).toLocaleDateString().toLowerCase().includes(searchValue)) return true;
+
+      return false;
     },
-    globalFilterFn: 'fuzzy'
   });
 
   useEffect(() => {
@@ -225,9 +170,7 @@ const ListeInterventionPage = () => {
     <div className="pt-24 px-6 w-full">
       <Toaster />
 
-      {/* Header avec filtres et actions */}
       <div className="flex justify-between items-center mb-4">
-        {/* Choix nombre d'éléments */}
         <div className="flex gap-2 items-center">
           <label className="text-sm text-gray-600">Afficher</label>
           <select
@@ -236,31 +179,12 @@ const ListeInterventionPage = () => {
             className="border text-gray-500 rounded px-2 py-1 text-sm"
           >
             {[5, 10, 20].map((size) => (
-              <option key={size} value={size}>
-                {size}
-              </option>
+              <option key={size} value={size}>{size}</option>
             ))}
           </select>
-          <span className="text-sm text-gray-600">Technicien  </span>
         </div>
 
-        {/* Filtres et actions */}
         <div className="flex gap-4 items-center">
-          
-
-          <select
-            value={technicienFilter}
-            onChange={(e) => setTechnicienFilter(e.target.value)}
-            className="border text-gray-500 rounded px-2 py-1 text-sm"
-          >
-            <option value="">Tous les techniciens</option>
-            {techniciensDisponibles.map((tech) => (
-              <option key={tech.id} value={tech.id}>
-                {tech.nom}
-              </option>
-            ))}
-          </select>
-
           <input
             type="text"
             placeholder="🔍 Rechercher..."
@@ -268,31 +192,6 @@ const ListeInterventionPage = () => {
             onChange={(e) => setGlobalFilter(e.target.value)}
             className="border px-3 py-1 rounded w-64 text-sm"
           />
-
-          <div className="relative">
-            <button
-              onClick={() => setShowExportOptions(!showExportOptions)}
-              className="flex items-center gap-2 px-3 py-1 border rounded text-sm text-gray-700 hover:bg-gray-100"
-            >
-              <FaDownload /> Télécharger
-            </button>
-            {showExportOptions && (
-              <div className="absolute right-0 mt-2 w-40 bg-white border rounded shadow z-50">
-                <button
-                  onClick={() => handleExportClick("csv")}
-                  className="block w-full px-4 py-2 text-left hover:bg-gray-100"
-                >
-                  Exporter en CSV
-                </button>
-                <button
-                  onClick={() => handleExportClick("xlsx")}
-                  className="block w-full px-4 py-2 text-left hover:bg-gray-100"
-                >
-                  Exporter en Excel
-                </button>
-              </div>
-            )}
-          </div>
 
           <button
             onClick={() => navigate("/ajouter-intervention")}
@@ -303,7 +202,6 @@ const ListeInterventionPage = () => {
         </div>
       </div>
 
-      {/* Tableau */}
       <div className="overflow-x-auto w-full mt-4">
         <div className="bg-white rounded-xl shadow p-6 w-full">
           <table className="w-full table-auto text-sm text-left text-gray-800">
@@ -317,10 +215,7 @@ const ListeInterventionPage = () => {
                       className="px-4 py-2 cursor-pointer whitespace-nowrap"
                     >
                       <div className="flex items-center gap-1">
-                        {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
+                        {flexRender(header.column.columnDef.header, header.getContext())}
                         {header.column.getIsSorted() === "asc" ? (
                           <FaSortUp />
                         ) : header.column.getIsSorted() === "desc" ? (
@@ -336,8 +231,8 @@ const ListeInterventionPage = () => {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {table.getRowModel().rows.map((row) => (
-                <tr 
-                  key={row.id} 
+                <tr
+                  key={row.id}
                   className="hover:bg-gray-100 cursor-pointer"
                   onClick={(e) => {
                     if (!e.target.closest('button')) {
@@ -355,11 +250,9 @@ const ListeInterventionPage = () => {
             </tbody>
           </table>
 
-          {/* Pagination */}
           <div className="flex justify-between items-center mt-4 text-sm text-gray-700">
             <div>
-              Page {table.getState().pagination.pageIndex + 1} sur{" "}
-              {table.getPageCount()}
+              Page {table.getState().pagination.pageIndex + 1} sur {table.getPageCount()}
             </div>
             <div className="flex gap-2">
               <button
@@ -378,10 +271,11 @@ const ListeInterventionPage = () => {
               </button>
             </div>
           </div>
+
         </div>
       </div>
     </div>
   );
 };
 
-export default ListeInterventionPage;
+export default ListeMesInterventionsPage;

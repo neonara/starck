@@ -231,6 +231,14 @@ rapports: {
     }),
 },
 
+//Installateur
+getMyClients: () => api.get("users/myclients/"),
+getInstallationsByInstallateur: () => api.get("installations/mes-installations/"),
+getInstallationsGeoDataInstallateur: () => api.get("installations/mes-installations-geo/"),
+getMesInterventions: (params) => api.get("intervention/interventions/mes-interventions/", { params }),
+getMesEntretiensInstallateur: () => api.get("entretien/entretiens/mes-entretiens-installateur/"),
+getCalendarEntretiensInstallateur: (params) => api.get("entretien/entretiens/calendar-installateur/", { params }),
+getAlarmesInstallateur: () => api.get("alarme/liste/installateur/"),
 
 };
 

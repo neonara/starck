@@ -8,7 +8,8 @@ from intervention.views import (
     ChangerStatutFicheInterventionView,
     HistoriqueInterventionsParInstallationView,
     NombreInterventionsParTechnicienView,
-    TauxResolutionInterventionsView
+    TauxResolutionInterventionsView,
+    ListeMesFichesInterventionView
 
 )
 
@@ -22,4 +23,6 @@ urlpatterns = [
     path('interventions/historique/<int:installation_id>/', HistoriqueInterventionsParInstallationView.as_view(), name='historique-par-installation'),
     path('interventions/statistiques/technicien/', NombreInterventionsParTechnicienView.as_view(), name='stats-technicien'),
     path('interventions/statistiques/taux-resolution/', TauxResolutionInterventionsView.as_view(), name='taux-resolution'),
+    path('interventions/mes-interventions/', ListeMesFichesInterventionView.as_view(), name='mes-fiches-intervention'),
+
 ]

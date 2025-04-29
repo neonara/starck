@@ -9,8 +9,8 @@ from users.permissions import IsAdminOrInstallateur
 from rest_framework.permissions import IsAuthenticated
 from installations.models import Installation
 from rest_framework.views import APIView
+from users.permissions import IsInstallateur
 
-from rest_framework.views import APIView
 
 #alarme code (marbouta bel admin)
 class AjouterAlarmeCodeView(generics.CreateAPIView):
@@ -63,7 +63,7 @@ class StatistiquesAlarmeCodesView(generics.GenericAPIView):
 
 
 
-#Alarme declenche (marbouta be installation)
+#Alarme declenche (marbouta bel installation)
 class AjouterAlarmeView(generics.CreateAPIView):
     permission_classes = [IsAuthenticated, IsAdminOrInstallateur]
     queryset = AlarmeDeclenchee.objects.all()
@@ -150,3 +150,22 @@ class StatistiquesAlarmesInstallationView(APIView):
             "majeure": counts["majeure"],
             "mineure": counts["mineure"]
         })
+    
+
+
+#partie alarme installateur
+class ListeAlarmesInstallateurView(APIView):
+    """
+    Liste des alarmes déclenchées associées à un installateur (via ses installations).
+    """
+    permission_classes = [IsAuthenticated, IsInstallateur]
+
+    def get(self, request):
+        user = request.user
+
+        alarmes = AlarmeDeclenchee.objects.select_related("installation", "code_alarme") \
+            .filter(installation__installateur=user) \
+            .order_by("-date_declenchement")
+
+        serializer = AlarmeDeclencheeSerializer(alarmes, many=True)
+        return Response(serializer.data)

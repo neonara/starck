@@ -35,6 +35,13 @@ class EnvoyerReclamationView(APIView):
             return Response({"message": "Réclamation envoyée avec succès."}, status=status.HTTP_201_CREATED)
  
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+class MesReclamationsView(generics.ListAPIView):
+    serializer_class = ReclamationSerializer
+    permission_classes = [permissions.IsAuthenticated, IsClient]  # Client connecté
+
+    def get_queryset(self):
+        return Reclamation.objects.filter(client=self.request.user).order_by('-date_envoi')
+    
 class ReclamationListView(generics.ListAPIView):
     serializer_class = ReclamationSerializer
     permission_classes = [permissions.IsAuthenticated, IsAdmin]

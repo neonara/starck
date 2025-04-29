@@ -2,7 +2,7 @@
 from notification.models import Notification
 from django.contrib.auth import get_user_model
 from installations.models import Installation
-from alarme.models import Alarme
+from alarme.models import AlarmeDeclenchee
 
 def save_notification(
     email,
@@ -18,7 +18,7 @@ def save_notification(
     try:
         user = User.objects.get(email=email)
         installation = Installation.objects.get(id=installation_id) if installation_id else None
-        alarme = Alarme.objects.get(id=alarme_id) if alarme_id else None
+        alarme = AlarmeDeclenchee.objects.get(id=alarme_id) if alarme_id else None
 
         Notification.objects.create(
             utilisateur=user,

@@ -6,7 +6,7 @@ from rest_framework.generics import ListAPIView
 from rest_framework.views import APIView
 from .models import Installation
 from .serializers import InstallationSerializer
-from users.permissions import IsAdminOrInstallateur
+from users.permissions import IsAdminOrInstallateur,IsInstallateur
 from rest_framework.permissions import IsAuthenticated
 from users.serializers import UserSerializer
 from .serializers import InstallationGeoSerializer
@@ -110,7 +110,6 @@ from production.models import ProductionConsommation
 from datetime import date
 from django.db.models import Sum
 from django.db.models.functions import TruncHour, TruncDay
-from alarme.models import AlarmeDeclenchee
 class InstallationClientView(APIView):
 
     permission_classes = [IsAuthenticated]
@@ -152,7 +151,6 @@ class InstallationClientView(APIView):
                 data["photo_installation_url"] = None
 
  
-            # Entretien
 
             dernier_entretien = Entretien.objects.filter(installation=installation).order_by('-date_debut').first()
 
@@ -258,3 +256,46 @@ class InstallationGeoDataView(ListAPIView):
 
     def get_queryset(self):
         return Installation.objects.filter(latitude__isnull=False, longitude__isnull=False)
+    
+
+
+
+
+#installation par installateur
+class ListerMesInstallationsView(APIView):
+    """
+    Liste des installations associées à l'installateur connecté.
+    """
+    permission_classes = [IsAuthenticated,IsInstallateur]
+
+    def get(self, request):
+        user = request.user
+
+        if user.role != 'installateur':
+            return Response({"error": "Accès non autorisé."}, status=status.HTTP_403_FORBIDDEN)
+
+        installations = Installation.objects.filter(installateur=user)
+
+        serializer = InstallationSerializer(installations, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+
+
+class InstallationGeoDataInstallateurView(ListAPIView):
+    """
+    Liste des installations (géolocalisées) associées à l'installateur connecté.
+    """
+    permission_classes = [IsAuthenticated, IsInstallateur]
+    serializer_class = InstallationGeoSerializer  
+
+    def get_queryset(self):
+        user = self.request.user
+
+        if user.role != 'installateur':
+            return Installation.objects.none()
+
+        return Installation.objects.filter(
+            installateur=user,
+            latitude__isnull=False,
+            longitude__isnull=False
+        )

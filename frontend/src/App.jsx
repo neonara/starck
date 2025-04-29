@@ -60,6 +60,16 @@ import RapportConsommationPage from"./components/Rapports/RapportConsommationPag
 import InstallationMap from "./components/Installations/InstallationMap";
 //Technicien 
 import MesEntretiens from "./components/Utilisateurs/Technicien/MesEntretiens";
+//Installateur
+import ListeUtilisateursPage from "./Installateur/ListeUtilisateursPage";
+import ListeMesInstallationsPage from "./Installateur/ListeMesInstallationsPage.jsx";
+import InstallationMapInstallateur from "./Installateur/InstallationMapInstallateur.jsx";
+import ListeMesInterventionsPage from "./Installateur/ListeMesInterventionsPage.jsx";
+import ListeMesEntretiensInstallateurPage from "./Installateur/ListeMesEntretiensInstallateur.jsx";
+import CalendrierEntretiensInstallateur from "./Installateur/CalendrierEntretiensInstallateur.jsx";
+import ListeAlarmesInstallateur from "./Installateur/ListeAlarmesInstallateur.jsx";
+
+
 function App() {
   return (
     <Router>
@@ -114,6 +124,17 @@ function App() {
        <Route path="/rapport_production" element={<RapportProductionPage />} />
        <Route path="/rapport_consommation" element={<RapportConsommationPage />} />
        <Route path="/MesEntretiens" element={<MesEntretiens />} />
+       <Route path="/ListeUtilisateurs" element={<ListeUtilisateursPage />} />
+       <Route path="/MesInstallation" element={<ListeMesInstallationsPage />} />
+       
+       <Route path="/MapInstallateur" element={<InstallationMapInstallateur />} />
+       
+       <Route path="/Mesintervention" element={<ListeMesInterventionsPage />} />
+       <Route path="/MesEntrentientinstallateur" element={<ListeMesEntretiensInstallateurPage/>} />
+       <Route path="/Calendrier-En-Insta" element={<CalendrierEntretiensInstallateur/>} />
+       <Route path="/ListeAlarmesInstallateur" element={<ListeAlarmesInstallateur/>} />
+
+       
        </Route>
   </Routes>
 </Router>

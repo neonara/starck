@@ -71,7 +71,15 @@ const ModifierReclamationPage = () => {
 <div className="p-6 max-w-xl mx-auto mt-24 bg-white shadow rounded">
 <Toaster />
 <h2 className="text-xl font-semibold mb-4">Modifier la réclamation</h2>
- 
+<div className="mb-4">
+  <label className="block text-sm font-medium text-gray-700">Installation</label>
+  <input
+    type="text"
+    value={reclamation.installation_nom || "Non lié"}
+    disabled
+    className="mt-1 block w-full rounded border-gray-300 shadow-sm text-sm bg-gray-100"
+  />
+</div>
       <div className="mb-4">
 <label className="block text-sm font-medium text-gray-700">Sujet</label>
 <input

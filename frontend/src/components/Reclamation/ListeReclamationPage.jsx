@@ -60,6 +60,11 @@ const ListeReclamationsPage = () => {
   };
  
   const columns = useMemo(() => [
+    {
+      header: "Installation",
+      accessorKey: "installation_nom", 
+      cell: (info) => info.getValue() || "Non lié"
+    },
     { header: "Client", accessorKey: "client_email" },
     { header: "Sujet", accessorKey: "sujet" },
     { header: "Message", accessorKey: "message" },
@@ -198,6 +203,7 @@ const ListeReclamationsPage = () => {
             {selectedReclamation && (
 <div className="space-y-3 text-gray-700 text-sm">
 <p><strong>Client :</strong> {selectedReclamation.client_email}</p>
+<p><strong>Installation :</strong> {selectedReclamation.installation_nom || "Non lié"}</p>
 <p><strong>Sujet :</strong> {selectedReclamation.sujet}</p>
 <p><strong>Message :</strong> {selectedReclamation.message}</p>
 <p><strong>Date :</strong> {format(new Date(selectedReclamation.date_envoi), "dd/MM/yyyy HH:mm")}</p>

@@ -196,6 +196,9 @@ getMesEntretiens: () => api.get("entretien/entretiens/mes-entretiens/"),
 //Reclamation
 getReclamations: (params = {}) => api.get("reclamation/reclamations/", { params }),
 updateReclamation: (id, data) => api.put(`reclamation/reclamations/${id}/`, data),
+envoyerReclamation: (data) => api.post("reclamation/reclamations/envoyer/", data),
+getMesReclamations: () => api.get("reclamation/mes-reclamations/"),
+
 
 //client
 getInstallationClient:(params = {}) => api.get("installations/installation-client/", { params }),

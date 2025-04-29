@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import {LayoutGrid, Users, Server, ChevronLeft, ChevronRight, CalendarCheck, Zap, AlertCircle, BarChart3} from 'lucide-react';
+import {
+  LayoutGrid, Users, Server, ChevronLeft, ChevronRight, CalendarCheck
+} from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useUser } from '../../context/UserContext'; 
 
@@ -50,46 +52,29 @@ const Sidebar = () => {
     { label: "Rapports", icon: CalendarCheck, children: [
         { label: "Rapport de production", path: "/rapport_production" },
         { label: "Rapport de consommation", path: "/rapport_consommation" },
-
-        { label: "Rapports d’historique des alarmes", path: "/rapport_alarme" },
-
       ]
     },
   ];
 
   // Menu Client
   const clientMenuItems = [
-    {
-      label: "Mon tableau de bord",
-      icon: LayoutGrid,
-      path: "/client-dashboard",
+    { label: "Mon tableau de bord", icon: LayoutGrid, path: "/client-dashboard" },
+    { label: "Ma production", icon: Server, children: [
+        { label: "Journalière", path: "/client-prod-journalier" },
+        { label: "Mensuelle", path: "/client-prod-mensuelle" },
+        { label: "Totale", path: "/client-prod-totale" },
+      ]
     },
-
-    {
-      label: "Mes interventions",
-      icon: CalendarCheck,
-      path: "/client-mes-interventions",
+    { label: "Ma consommation", icon: Server, children: [
+        { label: "Consommation Totale", path: "/client-consommation" },
+      ]
     },
-   
-    {
-      label: "Réclamations",
-      icon: AlertCircle,
-      children: [
-        { label: "Créer réclamations", path: "/client-reclamations" },
-        { label: "Mes réclamations", path: "/liste-reclamations" },
-      ],
-    },
-    {
-      label: "Rapports",
-      icon: BarChart3,
-      children: [
-        { label: "Rapport Production", path: "/rapports-production" },
-        { label: "Rapport Consommation", path: "/rapports-consommation" },
-        { label: "Rapport Historique Alarme", path: "/rapports-alarme" },
-      ],
+    { label: "Mes équipements", icon: Server, path: "/client-equipements" },
+    { label: "Réclamations", icon: CalendarCheck, children: [
+        { label: "Mes réclamations", path: "/client-reclamations" },
+      ]
     },
   ];
-    
 
   // Menu Installateur
   const installateurMenuItems = [
@@ -106,6 +91,8 @@ const Sidebar = () => {
         { label: "Liste des Entretiens", path: "/MesEntrentientinstallateur" },
         { label: "Calendrier des Entretiens", path: "/Calendrier-En-Insta" },
 
+        { label: "Rapports d’historique des alarmes", path: "/rapport_alarme" },
+
       ]
     },
     { label: "Gestion des interventions", icon: Server, children: [
@@ -118,11 +105,8 @@ const Sidebar = () => {
     { label: "Alarme Active", path: "/ListeAlarmesInstallateur" },
   ]
 },
-{ label: "Reclamations", icon: CalendarCheck, children: [
-  { label: "Liste des reclamations", path: "/ListeReclamationsInstallateur" },
-]
-},
   ];
+
   const menuItems =
     userRole === "admin" ? adminMenuItems :
     userRole === "client" ? clientMenuItems :
@@ -138,7 +122,7 @@ const Sidebar = () => {
 
       <div className="pt-6 px-2">
         <ul className="space-y-2">
-          {menuItems.map(({ label, icon: Icon, path, children }) => (
+          {menuItems.map(({ label, path, children }) => (
             <li key={label}>
               {children ? (
                 <>

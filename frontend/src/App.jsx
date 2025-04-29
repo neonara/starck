@@ -78,6 +78,9 @@ import ListeAlarmesInstallateur from "./Installateur/ListeAlarmesInstallateur.js
 import ListeReclamationsInstallateur from "./Installateur/ListeReclamationsInstallateur.jsx";
 //Technicien 
 import MesEntretiens from "./components/Utilisateurs/Technicien/MesEntretiens";
+
+
+
 function App() {
   return (
     <Router>
@@ -171,6 +174,17 @@ function App() {
        
 
        <Route path="/MesEntretiens" element={<MesEntretiens />} />
+       <Route path="/ListeUtilisateurs" element={<ListeUtilisateursPage />} />
+       <Route path="/MesInstallation" element={<ListeMesInstallationsPage />} />
+       
+       <Route path="/MapInstallateur" element={<InstallationMapInstallateur />} />
+       
+       <Route path="/Mesintervention" element={<ListeMesInterventionsPage />} />
+       <Route path="/MesEntrentientinstallateur" element={<ListeMesEntretiensInstallateurPage/>} />
+       <Route path="/Calendrier-En-Insta" element={<CalendrierEntretiensInstallateur/>} />
+       <Route path="/ListeAlarmesInstallateur" element={<ListeAlarmesInstallateur/>} />
+
+       
        </Route>
   </Routes>
 </Router>

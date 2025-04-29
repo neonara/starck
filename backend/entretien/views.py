@@ -23,7 +23,7 @@ from .tasks import rappel_mail_entretien_task
 
 from django.utils.dateparse import parse_datetime
 from .utils import notifier_technicien_entretien 
-
+from users.permissions import IsAdminOrInstallateur,IsInstallateur
 User = get_user_model()
 
 class EntretienListCreateAPIView(generics.ListCreateAPIView):
@@ -74,7 +74,7 @@ class EntretienListCreateAPIView(generics.ListCreateAPIView):
 
 
 class EntretienDetailAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated,IsAdminOrInstallateur]
 
     def get_object(self, pk):
         return get_object_or_404(Entretien.objects.select_related('installation', 'technicien', 'cree_par'), pk=pk)
@@ -108,7 +108,7 @@ class EntretienDetailAPIView(APIView):
 
 class EntretienCalendarAPIView(APIView):
     """Vue spéciale pour les calendriers"""
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated,IsAdminOrInstallateur]
 
     def get(self, request):
         start_date = request.query_params.get('start_date')
@@ -138,7 +138,7 @@ class EntretienCalendarAPIView(APIView):
         
         return Response(data)
 class MesEntretiensAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated,IsTechnicien]
  
     def get(self, request):
         entretiens = Entretien.objects.filter(technicien=request.user)
@@ -261,3 +261,57 @@ class MesEntretiensAPIView(APIView):
 
         serializer = EntretienSerializer(entretiens, many=True)
         return Response(serializer.data)
+
+
+
+#entretient partie installateur
+class MesEntretiensInstallateurAPIView(APIView):
+    permission_classes = [IsAuthenticated, IsInstallateur]
+
+    def get(self, request):
+        user = request.user
+        
+        entretiens = Entretien.objects.filter(
+            installation__installateur=user
+        ).select_related('installation', 'technicien')
+
+        serializer = EntretienSerializer(entretiens, many=True)
+        return Response(serializer.data)
+    
+
+class EntretienCalendarInstallateurAPIView(APIView):
+    """Vue calendrier pour l'installateur connecté"""
+    permission_classes = [IsAuthenticated, IsInstallateur]
+
+    def get(self, request):
+        start_date = request.query_params.get('start_date')
+        end_date = request.query_params.get('end_date')
+
+        if not start_date or not end_date:
+            return Response(
+                {"error": "Les paramètres start_date et end_date sont requis"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        entretiens = Entretien.objects.filter(
+            installation__installateur=request.user,
+            date_debut__gte=start_date,
+            date_debut__lte=end_date
+        ).select_related('installation', 'technicien')
+
+        data = [
+            {
+                'id': e.id,
+                'title': f"{e.installation.nom} - {e.get_type_entretien_display()}",
+                'start': e.date_debut,
+                'end': e.date_fin if e.date_fin else e.date_debut + timedelta(minutes=e.duree_estimee),
+                'status': e.statut,
+                'priority': e.priorite,
+                'technicien': e.technicien.get_full_name() if e.technicien else None,
+                'installation_id': e.installation_id,
+            }
+            for e in entretiens
+        ]
+
+        return Response(data)
+

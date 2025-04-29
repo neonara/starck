@@ -115,7 +115,6 @@ const Navbar = () => {
             </div>
           )}
         </div>
-        
         {user && user.role && (
   <button
     onClick={() => {

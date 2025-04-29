@@ -1,16 +1,15 @@
 from django.urls import path
 from .views import (
+    EntretienCalendarInstallateurAPIView,
     EntretienListCreateAPIView,
     EntretienDetailAPIView,
     EntretienCalendarAPIView,
     EntretienStatistiquesView,
-<<<<<<< HEAD
     EntretiensClientAPIView,
-    EntretienClientDetailView
-=======
-    RappelEntretienAPIView,
-    MesEntretiensAPIView, 
->>>>>>> dccae55 (rappell notifcation entretien technicien)
+    EntretienClientDetailView,
+    MesEntretiensAPIView,
+    MesEntretiensInstallateurAPIView,
+    RappelEntretienAPIView
 )
 
 urlpatterns = [
@@ -18,14 +17,15 @@ urlpatterns = [
     path('entretiens/<int:pk>/', EntretienDetailAPIView.as_view(), name='entretien-detail'),
     path('entretiens/calendar/', EntretienCalendarAPIView.as_view(), name='entretien-calendar'),
     path("entretien/statistiques/", EntretienStatistiquesView.as_view(), name="entretien-statistiques"),
-<<<<<<< HEAD
 
     path("client/entretiens/", EntretiensClientAPIView.as_view(), name="entretiens-client"),
     path("client/entretiens/<int:pk>/", EntretienClientDetailView.as_view(), name="detail-entretien-client"),
-=======
     path('entretiens/<int:entretien_id>/rappel/', RappelEntretienAPIView.as_view(), name='ajouter-rappel'),
     path('entretiens/mes-entretiens/', MesEntretiensAPIView.as_view(), name='mes-entretiens'),
 
->>>>>>> dccae55 (rappell notifcation entretien technicien)
+    path('entretiens/mes-entretiens-installateur/', MesEntretiensInstallateurAPIView.as_view(), name='mes-entretiens-installateur'),  # ➡️ ici
+path('entretiens/calendar-installateur/', EntretienCalendarInstallateurAPIView.as_view(), name='entretien-calendar-installateur'),
 
 ]
+
+

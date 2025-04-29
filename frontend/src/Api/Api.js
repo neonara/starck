@@ -277,8 +277,6 @@ getMesInterventions: (params) => api.get("intervention/interventions/mes-interve
 getMesEntretiensInstallateur: () => api.get("entretien/entretiens/mes-entretiens-installateur/"),
 getCalendarEntretiensInstallateur: (params) => api.get("entretien/entretiens/calendar-installateur/", { params }),
 getAlarmesInstallateur: () => api.get("alarme/liste/installateur/"),
-getReclamationsInstallateur: () =>api.get("reclamation/reclamations/installateur/"),
-getStatistiquesAlarmesInstallateur: () =>api.get("alarme/statistiques-installateur/"),
 
 };
 

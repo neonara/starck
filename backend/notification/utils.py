@@ -19,6 +19,7 @@ def save_notification(
         user = User.objects.get(email=email)
         installation = Installation.objects.get(id=installation_id) if installation_id else None
         alarme = AlarmeDeclenchee.objects.get(id=alarme_id) if alarme_id else None
+        alarme = AlarmeDeclenchee.objects.get(id=alarme_id) if alarme_id else None
 
         Notification.objects.create(
             utilisateur=user,

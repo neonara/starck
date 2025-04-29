@@ -13,7 +13,7 @@ const Navbar = () => {
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [hasNewNotif, setHasNewNotif] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0); 
+  const [unreadCount, setUnreadCount] = useState(0); // au lieu de hasNewNotif
   const [user, setUser] = useState({ name: "", email: "" });
   const navigate = useNavigate();
 
@@ -65,13 +65,10 @@ const Navbar = () => {
     return () => socket.close();
   }, [user.email]);
   console.log("UnreadCount =", unreadCount);
- 
-  
   useEffect(() => {
     const count = notifications.filter((n) => !n.is_read).length;
     setUnreadCount(count);
   }, [notifications]);
-  
   
   return (
     <nav className="fixed top-0 left-64 right-0 z-50 bg-white shadow-sm px-6 py-3 flex justify-between items-center">
@@ -79,7 +76,24 @@ const Navbar = () => {
 
       <div className="flex items-center gap-4 relative">
         <div className="relative">
-       
+        <button
+  onClick={() => {
+    setNotifications((prev) =>
+      prev.map((notif) => ({ ...notif, is_read: true }))
+    );
+    navigate("/notification");
+  }}
+  className="relative rounded-full border p-2 text-gray-500 hover:bg-gray-100"
+>
+  <Bell className="w-5 h-5" />
+
+  {unreadCount > 0 && (
+  <div className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center animate-bounce">
+      {unreadCount}
+    </div>
+  )}
+</button>
+
 
 
           
@@ -115,6 +129,7 @@ const Navbar = () => {
             </div>
           )}
         </div>
+        
         {user && user.role && (
   <button
     onClick={() => {

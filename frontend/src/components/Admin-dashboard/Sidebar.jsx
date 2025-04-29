@@ -1,7 +1,5 @@
 import { useState } from 'react';
-import {
-  LayoutGrid, Users, Server, ChevronLeft, ChevronRight, CalendarCheck
-} from 'lucide-react';
+import {LayoutGrid, Users, Server, ChevronLeft, ChevronRight, CalendarCheck, Zap, AlertCircle, BarChart3} from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useUser } from '../../context/UserContext'; 
 
@@ -75,6 +73,11 @@ const Sidebar = () => {
       ]
     },
   ];
+  
+ 
+
+ 
+    
 
   // Menu Installateur
   const installateurMenuItems = [

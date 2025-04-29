@@ -206,7 +206,10 @@ getReclamations: (params = {}) => api.get("reclamation/reclamations/", { params 
 updateReclamation: (id, data) => api.put(`reclamation/reclamations/${id}/`, data),
 envoyerReclamation: (data) => api.post("reclamation/reclamations/envoyer/", data),
 getMesReclamations: () => api.get("reclamation/mes-reclamations/"),
+<<<<<<< HEAD
 deleteReclamation: (id) => api.delete(`reclamation/reclamations/${id}/supprimer/`),
+=======
+>>>>>>> 38b6c1b (resolution conflicts merge)
 
 
 //client

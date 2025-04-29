@@ -53,10 +53,13 @@ import StatistiquesEntretiens from "./components/Entretien/StatistiquesEntretien
 //Reclamations
 import ListeReclamationsPage from "./components/Reclamation/ListeReclamationPage";
 import ModifierReclamationPage from "./components/Reclamation/ModifierReclamationPage";
+import ReclamationClient from "./components/Client-dashboard/ReclamationClient";
 
 //Rapports
 import RapportProductionPage from "./components/Rapports/RapportProductionPage";
 import RapportConsommationPage from"./components/Rapports/RapportConsommationPage";
+import InstallationMap from "./components/Installations/InstallationMap";
+import HistoriqueReclamationsClient from "./components/Client-dashboard/HistoriqueReclamationsClient";
 import InstallationMap from "./components/Installations/InstallationMap";
 //Technicien 
 import MesEntretiens from "./components/Utilisateurs/Technicien/MesEntretiens";
@@ -103,6 +106,9 @@ function App() {
        <Route path="/installationMap" element={<InstallationMap/>} />
 
        
+       <Route path="/installationMap" element={<InstallationMap/>} />
+
+       
        <Route path="/liste-interventions" element={<ListeInterventions/>} />
        <Route path="/ajouter-intervention" element={<AjouterInterventionPage />} />
        <Route path="/modifier-intervention/:id" element={<ModifierInterventionPage />} />
@@ -123,6 +129,12 @@ function App() {
        
        <Route path="/rapport_production" element={<RapportProductionPage />} />
        <Route path="/rapport_consommation" element={<RapportConsommationPage />} />
+       
+       
+       <Route path="/client-reclamations" element={<ReclamationClient />} />
+       <Route path="/liste-reclamations" element={<HistoriqueReclamationsClient />} />
+       
+       
        <Route path="/MesEntretiens" element={<MesEntretiens />} />
        <Route path="/ListeUtilisateurs" element={<ListeUtilisateursPage />} />
        <Route path="/MesInstallation" element={<ListeMesInstallationsPage />} />

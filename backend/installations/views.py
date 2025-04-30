@@ -120,13 +120,10 @@ class InstallationClientView(APIView):
         try:
 
             user = request.user
-
-            installation = Installation.objects.filter(client=user).first()
- 
+            installation = Installation.objects.filter(client=user).first() 
             if not installation:
 
                 return Response({"error": "Aucune installation trouvée"}, status=404)
-                    # Déterminer l'état de fonctionnement
             alarme_critique_active = AlarmeDeclenchee.objects.filter(
                 installation=installation,
                 code_alarme__gravite='critique',
@@ -138,11 +135,19 @@ class InstallationClientView(APIView):
             data = {
 
                 "nom": installation.nom,
-                "ville": getattr(installation, "ville", "—"),
-                "etat": getattr(installation, "statut", "—"),
+                "adresse": installation.adresse,
+                "ville": installation.ville,
+                "code_postal": installation.code_postal,
+                "pays": installation.pays,
                 "latitude": installation.latitude,
                 "longitude": installation.longitude,
-                'etat_fonctionnement': etat_fonctionnement,
+                "type_installation": installation.type_installation,
+                "statut": installation.statut,
+                "capacite_kw": installation.capacite_kw,
+                "date_installation": installation.date_installation,
+                "expiration_garantie": installation.expiration_garantie,
+                "reference_contrat": installation.reference_contrat,
+                "etat_fonctionnement": etat_fonctionnement,
             }
 
             #photo de l'installation

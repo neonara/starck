@@ -11,5 +11,5 @@ class ReclamationSerializer(serializers.ModelSerializer):
 
     def get_installation_nom(self, obj):
         if obj.installation is not None:
-            return obj.installation.nom   # ⚡ Assure-toi que le modèle Installation a un champ "titre"
+            return obj.installation.nom  
         return None

@@ -82,7 +82,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'email', 'role', 'new_password', 'confirm_new_password', 'old_password']
+        fields = ['first_name', 'last_name', 'email', 'role', 'phone_number' , 'new_password', 'confirm_new_password', 'old_password']
         read_only_fields = ['role']  
 
     def validate_email(self, value):

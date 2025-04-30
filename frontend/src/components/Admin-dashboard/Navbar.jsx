@@ -157,11 +157,7 @@ const Navbar = () => {
                     <Pencil className="w-4 h-4" /> Mon profil
                   </Link>
                 </li>
-                <li>
-                  <Link to="/update-profile" className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100">
-                    <Settings className="w-4 h-4" /> Paramètres
-                  </Link>
-                </li>
+
               </ul>
 
               <div className="border-t">

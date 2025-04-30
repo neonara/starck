@@ -11,14 +11,14 @@ const statusColors = {
 };
 
 const HistoriqueReclamationsClient = () => {
-  const [reclamations, setReclamations] = useState([]); // ✅ tableau vide au départ
+  const [reclamations, setReclamations] = useState([]); 
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchReclamations = async () => {
       try {
         const res = await ApiService.getMesReclamations();
-        setReclamations(Array.isArray(res.data) ? res.data : res.data.results || []); // ✅ corriger ici
+        setReclamations(Array.isArray(res.data) ? res.data : res.data.results || []);
       } catch (error) {
         console.error(error);
         toast.error("Erreur lors du chargement ❌");

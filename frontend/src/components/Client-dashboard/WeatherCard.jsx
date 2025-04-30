@@ -22,13 +22,11 @@ const WeatherCard = ({ todayWeather, weather }) => {
 
   return (
 <div className="w-full min-h-[450px] bg-white rounded-2xl shadow p-4 flex flex-col justify-between">
-{/* Date de mise à jour */}
       <div className="text-xs text-gray-400 flex justify-between">
         <p>Mis à jour le: {dayjs.unix(weather.city.sunrise).format('YYYY/MM/DD')}</p>
         <span className="text-gray-500 text-xs">🔄</span>
       </div>
 
-      {/* Température actuelle */}
       <div className="flex items-center justify-between mt-2">
         <div className="flex flex-col">
           <p className="text-3xl font-bold">{Math.round(todayWeather.main.temp)}°C</p>
@@ -49,7 +47,6 @@ const WeatherCard = ({ todayWeather, weather }) => {
         </div>
       </div>
 
-      {/* Mini graphique température */}
       <div className="mt-4 text-gray-600">
         <ReactApexChart
           type="line"
@@ -77,7 +74,6 @@ const WeatherCard = ({ todayWeather, weather }) => {
         />
       </div>
 
-      {/* Prévision 4 jours */}
       <div className="grid grid-cols-4 gap-2 mt-2 text-center text-xs text-gray-600">
         {dailyForecasts.map((day, index) => (
           <div key={index} className="flex flex-col text-gray-600 items-center">

@@ -233,6 +233,32 @@ rapports: {
     api.post("rapports/rapports/export-consommation-pdf/", params, {
       responseType: "blob",
     }),
+
+  getRapportAlarmesMensuelles: (installationId, mois) =>
+    api.get(`rapports/rapports/alarme-mensuelle/`, {
+    params: { installation_id: installationId, mois },
+  }),
+
+  exportRapportAlarmesExcel: (params) =>
+    api.post("rapports/rapports/export-alarmes-excel/", params, {
+      responseType: "blob"
+    }),
+  
+  exportRapportAlarmesPDF: (params) =>
+    api.post("rapports/rapports/export-alarmes-pdf/", params, { responseType: "blob" }),
+
+  getProductionClient: (mois) => api.get(`rapports/client/rapport/production?mois=${mois}`),
+  getConsommation: (mois) => api.get(`rapports/client/rapport/consommation?mois=${mois}`),
+  getAlarmes: (mois) => api.get(`rapports/client/rapport/alarmes?mois=${mois}`),
+
+  exportProductionExcel: (mois) => api.post(`rapports/client/export/production/excel`, { mois }, { responseType: "blob" }),
+  exportConsommationExcel: (mois) => api.post(`rapports/client/export/consommation/excel`, { mois }, { responseType: "blob" }),
+  exportAlarmesExcel: (mois) => api.post(`rapports/client/export/alarmes/excel`, { mois }, { responseType: "blob" }),
+
+  exportProductionPDF: (mois) => api.post(`rapports/client/export/production/pdf`, { mois }, { responseType: "blob" }),
+  exportConsommationPDF: (mois) => api.post(`rapports/client/export/consommation/pdf`, { mois }, { responseType: "blob" }),
+  exportAlarmesPDF: (mois) => api.post(`rapports/client/export/alarmes/pdf`, { mois }, { responseType: "blob" }),
+    
 },
 
 //Installateur

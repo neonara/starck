@@ -81,7 +81,6 @@ const RapportProductionPage = () => {
 <div className="p-8 text-gray-800">
 <h2 className="text-2xl font-bold mb-6">Rapport de Production Mensuelle</h2>
  
-      {/* Formulaire */}
 <form
         onSubmit={handleSubmit}
         className="mb-6 flex flex-wrap items-center gap-4"
@@ -114,10 +113,8 @@ const RapportProductionPage = () => {
 </button>
 </form>
  
-      {/* Résultats */}
       {donnees.length > 0 && (
 <div className="grid md:grid-cols-2 gap-8">
-          {/* Tableau */}
 <div>
 <h3 className="text-lg font-semibold mb-2">Tableau de production</h3>
 <div className="overflow-x-auto">
@@ -142,7 +139,6 @@ const RapportProductionPage = () => {
 </div>
 </div>
  
-          {/* Graphique */}
 <div>
 <h3 className="text-lg font-semibold mb-2">Graphique de production</h3>
 <Chart
@@ -167,7 +163,6 @@ const RapportProductionPage = () => {
             />
 </div>
  
-          {/* Boutons d’export */}
 <div className="md:col-span-2 flex justify-end gap-4 mt-4">
 <button
               type="button"

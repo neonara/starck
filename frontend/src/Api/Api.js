@@ -244,7 +244,9 @@ getMesEntretiensInstallateur: () => api.get("entretien/entretiens/mes-entretiens
 getCalendarEntretiensInstallateur: (params) => api.get("entretien/entretiens/calendar-installateur/", { params }),
 getAlarmesInstallateur: () => api.get("alarme/liste/installateur/"),
 getReclamationsInstallateur: () =>api.get("reclamation/reclamations/installateur/"),
+getStatistiquesAlarmesInstallateur: () =>api.get("alarme/statistiques-installateur/"),
 
+getInstallationsByInstallateur: () =>api.get("installations/mes-installations/"),
 };
 
 export default ApiService;

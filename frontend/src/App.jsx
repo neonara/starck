@@ -71,7 +71,6 @@ import ListeMesEntretiensInstallateurPage from "./Installateur/ListeMesEntretien
 import CalendrierEntretiensInstallateur from "./Installateur/CalendrierEntretiensInstallateur.jsx";
 import ListeAlarmesInstallateur from "./Installateur/ListeAlarmesInstallateur.jsx";
 import ListeReclamationsInstallateur from "./Installateur/ListeReclamationsInstallateur.jsx";
-
 function App() {
   return (
     <Router>
@@ -146,6 +145,7 @@ function App() {
        <Route path="/ListeAlarmesInstallateur" element={<ListeAlarmesInstallateur/>} />
        
        <Route path="/ListeReclamationsInstallateur" element={<ListeReclamationsInstallateur/>} />
+       
 
        </Route>
   </Routes>

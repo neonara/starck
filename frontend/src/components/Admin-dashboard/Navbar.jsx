@@ -13,7 +13,7 @@ const Navbar = () => {
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [hasNewNotif, setHasNewNotif] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0); // au lieu de hasNewNotif
+  const [unreadCount, setUnreadCount] = useState(0); 
   const [user, setUser] = useState({ name: "", email: "" });
   const navigate = useNavigate();
 
@@ -65,12 +65,14 @@ const Navbar = () => {
     return () => socket.close();
   }, [user.email]);
   console.log("UnreadCount =", unreadCount);
+ 
+  
   useEffect(() => {
     const count = notifications.filter((n) => !n.is_read).length;
     setUnreadCount(count);
   }, [notifications]);
   
-
+  
   return (
     <nav className="fixed top-0 left-64 right-0 z-50 bg-white shadow-sm px-6 py-3 flex justify-between items-center">
       <div className="flex items-center gap-2" />

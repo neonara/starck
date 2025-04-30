@@ -169,3 +169,35 @@ class ListeAlarmesInstallateurView(APIView):
 
         serializer = AlarmeDeclencheeSerializer(alarmes, many=True)
         return Response(serializer.data)
+
+
+
+
+class StatistiquesAlarmesInstallateurView(APIView):
+    """
+    Statistiques globales des alarmes pour l'installateur connecté.
+    """
+    permission_classes = [IsAuthenticated, IsInstallateur]
+
+    def get(self, request):
+        user = request.user
+
+        alarmes = AlarmeDeclenchee.objects.filter(
+            installation__installateur=user,
+            est_resolue=False
+        )
+
+        counts = {
+            "critique": alarmes.filter(code_alarme__gravite="critique").count(),
+            "majeure": alarmes.filter(code_alarme__gravite="majeure").count(),
+            "mineure": alarmes.filter(code_alarme__gravite="mineure").count(),
+        }
+
+        total = sum(counts.values())
+
+        return Response({
+            "total": total,
+            "critique": counts["critique"],
+            "majeure": counts["majeure"],
+            "mineure": counts["mineure"]
+        })

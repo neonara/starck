@@ -299,3 +299,27 @@ class InstallationGeoDataInstallateurView(ListAPIView):
             latitude__isnull=False,
             longitude__isnull=False
         )
+    
+
+class StatistiquesInstallateurView(APIView):
+    """
+    Retourne le nombre total d'installations liées à l'installateur connecté,
+    ainsi que des stats supplémentaires si besoin.
+    """
+    permission_classes = [IsAuthenticated, IsInstallateur]
+
+    def get(self, request):
+        user = request.user
+
+        if user.role != 'installateur':
+            return Response({"error": "Accès non autorisé."}, status=status.HTTP_403_FORBIDDEN)
+
+        total_installations = Installation.objects.filter(installateur=user).count()
+        total_en_panne = Installation.objects.filter(installateur=user, statut='fault').count()
+        total_normales = Installation.objects.filter(installateur=user, statut='active').count()
+
+        return Response({
+            "total_installations": total_installations,
+            "total_en_panne": total_en_panne,
+            "total_normales": total_normales
+        }, status=status.HTTP_200_OK)

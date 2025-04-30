@@ -196,7 +196,8 @@ class GetUserProfileView(APIView):
             "email": user.email,
             "first_name": user.first_name if user.first_name else "Non défini",
             "last_name": user.last_name if user.last_name else "Non défini",
-            "role": user.role
+            "role": user.role,
+            "phone_number": user.phone_number if user.phone_number else ""
         }
 
         cache.set(cache_key, user_data, timeout=600)

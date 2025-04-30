@@ -3,7 +3,9 @@ from .views import (
     EntretienListCreateAPIView,
     EntretienDetailAPIView,
     EntretienCalendarAPIView,
-    EntretienStatistiquesView
+    EntretienStatistiquesView,
+    EntretiensClientAPIView,
+    EntretienClientDetailView
 )
 
 urlpatterns = [
@@ -11,4 +13,8 @@ urlpatterns = [
     path('entretiens/<int:pk>/', EntretienDetailAPIView.as_view(), name='entretien-detail'),
     path('entretiens/calendar/', EntretienCalendarAPIView.as_view(), name='entretien-calendar'),
     path("entretien/statistiques/", EntretienStatistiquesView.as_view(), name="entretien-statistiques"),
+
+    path("client/entretiens/", EntretiensClientAPIView.as_view(), name="entretiens-client"),
+    path("client/entretiens/<int:pk>/", EntretienClientDetailView.as_view(), name="detail-entretien-client"),
+
 ]

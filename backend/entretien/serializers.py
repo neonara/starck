@@ -7,25 +7,34 @@ class EntretienSerializer(serializers.ModelSerializer):
     installation_details = InstallationSerializer(source='installation', read_only=True)
     technicien_details = UserSerializer(source='technicien', read_only=True)
     createur_details = UserSerializer(source='cree_par', read_only=True)
-    
+    installation_nom = serializers.CharField(source='installation.nom', read_only=True)
+    technicien_nom = serializers.SerializerMethodField()
+    type_display = serializers.CharField(source='get_type_entretien_display', read_only=True)
+    statut_display = serializers.CharField(source='get_statut_display', read_only=True)
     class Meta:
         model = Entretien
         fields = [
             'id',
-            'installation', 'installation_details',
-            'type_entretien',
+            'installation', 'installation_details', 'installation_nom',
+            'type_entretien', 'type_display',
             'date_debut', 'date_fin', 'duree_estimee',
-            'statut', 'priorite',
-            'technicien', 'technicien_details',
+            'statut', 'statut_display',
+            'priorite',
+            'technicien', 'technicien_details', 'technicien_nom',
             'notes', 'rapport',
             'cree_par', 'createur_details',
             'cree_le', 'modifie_le',
         ]
+
         extra_kwargs = {
             'installation': {'write_only': True},
             'technicien': {'write_only': True},
             'cree_par': {'write_only': True, 'required': False},
         }
+    def get_technicien_nom(self, obj):
+        if obj.technicien:
+            return f"{obj.technicien.first_name} {obj.technicien.last_name}"
+        return "Non assigné"
 
     def validate_technicien(self, value):
         if value and value.role != 'technicien':

@@ -214,3 +214,25 @@ class TauxResolutionInterventionsView(APIView):
             "interventions_resolues": resolues,
             "taux_resolution": f"{taux_resolution:.2f} %"
         })
+    
+
+from rest_framework import generics, permissions
+
+class ListeFicheInterventionClientView(generics.ListAPIView):
+    """
+    Retourne les fiches d'intervention liées aux installations du client connecté
+    """
+    serializer_class = FicheInterventionDetailSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return FicheIntervention.objects.filter(installation__client=user).order_by('-date_prevue')
+    
+class DetailFicheInterventionClientView(generics.RetrieveAPIView):
+    serializer_class = FicheInterventionDetailSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return FicheIntervention.objects.filter(installation__client=user)

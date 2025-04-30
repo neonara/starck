@@ -168,3 +168,21 @@ class EntretienStatistiquesView(APIView):
             "par_mois": dict_mois,
             "par_technicien": dict_technicien
         })
+    
+class EntretiensClientAPIView(generics.ListAPIView):
+    """Liste des entretiens liés aux installations du client connecté"""
+    serializer_class = EntretienSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return Entretien.objects.filter(installation__client=user).select_related('installation', 'technicien').order_by('-date_debut')
+
+from rest_framework import generics, permissions
+
+class EntretienClientDetailView(generics.RetrieveAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = EntretienSerializer
+
+    def get_queryset(self):
+        return Entretien.objects.filter(installation__client=self.request.user).select_related('installation', 'technicien')

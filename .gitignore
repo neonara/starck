@@ -4,3 +4,5 @@ __pycache__/
 *.pyc__pycache__/
 *.py[cod]
 .env.local
+node_modules/
+frontend/

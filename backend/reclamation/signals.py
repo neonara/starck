@@ -10,7 +10,7 @@ User = get_user_model()
 @receiver(post_save, sender=Reclamation)
 def send_notification_to_admins(sender, instance, created, **kwargs):
     if created:
-        admins = User.objects.filter(is_staff=True)  # tous les admins du système
+        admins = User.objects.filter(is_staff=True) 
         for admin in admins:
             save_notification(
                 email=admin.email,

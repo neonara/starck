@@ -67,7 +67,7 @@ const ModifierClientPage = () => {
 
     <div className="w-full max-w-5xl mx-20">
       <div className="bg-white rounded-xl shadow p-6 relative">
-        <h2 className="text-xl font-semibold mb-4">Informations personnelles</h2>
+        <h2 className="text-xl font-semibold  mb-4">Informations personnelles</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 text-sm text-gray-700">
           <div>
@@ -98,7 +98,7 @@ const ModifierClientPage = () => {
 
       <button
         onClick={() => setIsEditing(true)}
-        className="absolute top-6 right-6 px-4 py-2 flex items-center gap-2 rounded-full border text-sm hover:bg-gray-100"
+        className="absolute top-5 right-1 px-2 py-2 flex items-center gap-2 rounded-full border text-sm hover:bg-gray-100"
       >
         ✏️ Modifier
       </button>
@@ -106,7 +106,6 @@ const ModifierClientPage = () => {
   </div>
 
 
-      {/* ---- MODAL ÉDITION ---- */}
       {isEditing && (
         <div className="fixed inset-0 bg-black bg-opacity-30 z-50 flex items-center justify-center">
           <form
@@ -169,19 +168,7 @@ const ModifierClientPage = () => {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-1">Installation associée</label>
-                <select
-                  name="installation"
-                  value={form.installation}
-                  onChange={handleChange}
-                  className="w-full border px-3 py-2 rounded"
-                >
-                  <option value="Installation A">Installation A</option>
-                  <option value="Installation B">Installation B</option>
-                  <option value="Installation C">Installation C</option>
-                </select>
-              </div>
+              
 
               <div>
                 <label className="block text-sm font-medium mb-1">Dernière connexion</label>

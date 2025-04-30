@@ -12,9 +12,10 @@ from users.permissions import  IsAdminOrInstallateur
 from rest_framework.permissions import IsAuthenticated
 from installations.models import Installation  
 from datetime import datetime
+from alarme.models import AlarmeCode
+from alarme.models import AlarmeDeclenchee
 
-
-#  Simule des données 
+ 
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -33,7 +34,6 @@ class ExportInstallationsView(APIView):
         except Installation.DoesNotExist:
             return Response({"error": "Installation introuvable"}, status=404)
 
-        # Préparation des données
         data = {
             "Nom": installation.nom,
             "Type": installation.type_installation,
@@ -86,8 +86,8 @@ class ExportGlobalInstallationsView(APIView):
     permission_classes = [IsAuthenticated, IsAdminOrInstallateur]
 
     def post(self, request):
-      print("🔐 Utilisateur connecté :", request.user)
-      print("🎭 Rôle :", request.user.role)
+      print(" Utilisateur connecté :", request.user)
+      print("Rôle :", request.user.role)
 
 
     def post(self, request):
@@ -111,7 +111,6 @@ class ExportGlobalInstallationsView(APIView):
             except ValueError:
                 return Response({"error": "Format de date invalide. Utilisez YYYY-MM-DD."}, status=400)
 
-        # Appliquer les filtres
         installations = Installation.objects.filter(**filtres).values(
             'nom',
             'type_installation',
@@ -184,3 +183,89 @@ class ExportGlobalUtilisateursView(APIView):
             e.delete()
 
         return Response({"message": f"Export {format_export.upper()} généré ✅"}, status=201)
+
+
+
+
+class ExportAlarmeCodesView(APIView):
+    permission_classes = [IsAuthenticated, IsAdminOrInstallateur]
+
+    def post(self, request):
+        format_export = request.data.get("format", "csv").lower()
+
+        codes = AlarmeCode.objects.values(
+            "code_constructeur",
+            "marque",
+            "type_alarme",
+            "gravite",
+            "description"
+        )
+
+        df = pd.DataFrame(list(codes))
+        now_str = now().strftime('%Y-%m-%d_%H%M%S')
+        filename = f"export-codes-alarme-{now_str}.{format_export}"
+
+        if format_export == "xlsx":
+            buffer = BytesIO()
+            df.to_excel(buffer, index=False)
+            buffer.seek(0)
+            contenu = ContentFile(buffer.read())
+        else:
+            buffer = StringIO()
+            df.to_csv(buffer, index=False)
+            buffer.seek(0)
+            contenu = ContentFile(buffer.read().encode("utf-8"))
+
+        export = Exportation(nom=filename)
+        export.fichier.save(filename, contenu)
+        export.save()
+
+        anciens = Exportation.objects.order_by('-date_creation')[10:]
+        for e in anciens:
+            e.fichier.delete()
+            e.delete()
+
+        return Response({"message": f"Export {format_export.upper()} réussi ✅"}, status=201)
+
+
+class ExportAlarmesDeclencheesView(APIView):
+    permission_classes = [IsAuthenticated, IsAdminOrInstallateur]
+
+    def post(self, request):
+        format_export = request.data.get("format", "csv").lower()
+
+        alarmes = AlarmeDeclenchee.objects.select_related("installation", "code_alarme").values(
+            "installation__nom",
+            "code_alarme__code_constructeur",
+            "code_alarme__marque",
+            "code_alarme__type_alarme",
+            "code_alarme__gravite",
+            "date_declenchement",
+            "est_resolue"
+        )
+
+        df = pd.DataFrame(list(alarmes))
+        now_str = now().strftime('%Y-%m-%d_%H%M%S')
+        filename = f"alarmes-declenchees-{now_str}.{format_export}"
+
+        if format_export == "xlsx":
+            buffer = BytesIO()
+            df.to_excel(buffer, index=False)
+            buffer.seek(0)
+            content = ContentFile(buffer.read())
+        else:
+            buffer = StringIO()
+            df.to_csv(buffer, index=False)
+            buffer.seek(0)
+            content = ContentFile(buffer.read().encode("utf-8"))
+
+        export = Exportation(nom=filename)
+        export.fichier.save(filename, content)
+        export.save()
+
+        anciens = Exportation.objects.order_by('-date_creation')[10:]
+        for e in anciens:
+            e.fichier.delete()
+            e.delete()
+
+        return Response({"message": "✅ Export réussi"}, status=201)

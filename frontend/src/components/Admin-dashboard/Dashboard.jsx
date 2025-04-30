@@ -6,24 +6,11 @@ import { AlertCircle, AlertTriangle, Info, Zap, Users, Wrench } from "lucide-rea
 
 const ReactApexChart = lazy(() => import("react-apexcharts"));
 
-const dataInstallations = [
-  { name: "Normales", value: 200, color: "#29b6f6" },
-  { name: "En panne", value: 60, color: "#e53935" }
-];
 
-const dataAlarms = [
-  { name: "Critique", value: 7, color: "#e53935", icon: <AlertCircle size={16} /> },
-  { name: "Majeur", value: 10, color: "#fb8c00", icon: <Zap size={16} /> },
-  { name: "Mineur", value: 60, color: "#fdd835", icon: <AlertTriangle size={16} /> },
-  { name: "Avertis.", value: 30, color: "#29b6f6", icon: <Info size={16} /> }
-];
 
-const initialData = {
-  daily: [120, 150, 100, 210, 180, 190, 220],
-  monthly: [800, 1200, 1400, 1300, 1100, 1500],
-  annual: [15000, 16200, 14800, 15500],
-  total: [58000]
-};
+
+
+
 
 const StatCard = ({ icon, label, value }) => (
   <div className="bg-white shadow rounded-lg p-4 flex items-center gap-4 w-full">
@@ -38,8 +25,7 @@ const StatCard = ({ icon, label, value }) => (
 const ProductionChart = ({ productionData }) => {
   const [view, setView] = useState("daily");
 
-  // Vérification que productionData et ses propriétés sont définis
-  const data = productionData || initialData; // Si productionData est undefined, utiliser initialData comme fallback
+  const data = productionData || initialData; 
 
   const [series, setSeries] = useState([
     { name: "Objectif", data: data.daily },
@@ -112,7 +98,13 @@ const ProductionChart = ({ productionData }) => {
 };
 const Dashboard = () => {
   const [stats, setStats] = useState({ total_clients: 0, total_installateurs: 0 });
-  const [productionData, setProductionData] = useState(null);  // Valeur initiale à null
+  const [productionData, setProductionData] = useState(null); 
+  const [dataAlarms, setDataAlarms] = useState([]);
+
+  const [installationStats, setInstallationStats] = useState({
+    total_normales: 0,
+    total_en_panne: 0,
+  });
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -123,13 +115,21 @@ const Dashboard = () => {
         console.error("Erreur lors de la récupération des statistiques", error);
       }
     };
+    const fetchInstallationStats = async () => {
+      try {
+        const res = await ApiService.getInstallationStats();
+        setInstallationStats(res.data);
+      } catch (err) {
+        console.error("Erreur récupération stats installations", err);
+      }
+    };
+    
 
     const fetchGlobalStats = async () => {
       try {
         const response = await ApiService.statistiquesGlobales();
         const globalData = response.data;
 
-        // Formater les données pour qu'elles soient compatibles avec le graphique
         const formattedData = {
           daily: [globalData.production_journaliere],
           monthly: [globalData.production_mensuelle],
@@ -137,25 +137,61 @@ const Dashboard = () => {
           total: [globalData.production_totale]
         };
 
-        setProductionData(formattedData);  // Mettre à jour productionData avec les données récupérées
+        setProductionData(formattedData);  
       } catch (error) {
         console.error("Erreur lors de la récupération des statistiques globales", error);
       }
     };
-
+    const fetchAlarmStats = async () => {
+      try {
+        const res = await ApiService.getStatistiquesAlarmesglobale(); 
+        const iconMap = {
+          critique: <AlertCircle size={16} />,
+          majeure: <Zap size={16} />,
+          mineure: <AlertTriangle size={16} />,
+        };
+        const colorMap = {
+          critique: "#e53935",
+          majeure: "#fb8c00",
+          mineure: "#fdd835",
+        };
+    
+        const formatted = res.data.map((item) => {
+          const key = item.code_alarme__gravite;
+          return {
+            name: key.charAt(0).toUpperCase() + key.slice(1),
+            value: item.total,
+            color: colorMap[key] || "#ccc",
+            icon: iconMap[key] || <Info size={16} />,
+          };
+        });
+    
+        setDataAlarms(formatted);
+      } catch (error) {
+        console.error("Erreur chargement statistiques alarmes", error);
+      }
+    };
+    
     fetchStats();
     fetchGlobalStats();
+    fetchInstallationStats(); 
+    fetchAlarmStats(); 
   }, []);
 
-  // Afficher un état de chargement si productionData est undefined
   if (!productionData) {
     return <div>Chargement des statistiques...</div>;
   }
-
+  const dataInstallations = [
+    { name: "Normales", value: installationStats.total_normales || 0, color: "#29b6f6" },
+    { name: "En panne", value: installationStats.total_en_panne || 0, color: "#e53935" }
+  ];
   return (
-    <div className="pr-0 pl-0 pt-16 flex flex-col gap-0">
+<div className="relative pr-0 pl-0 pt-16 flex flex-col gap-0">
+
       <div className="flex gap-6">
+ 
         <div className="flex flex-col gap-4 w-64">
+
           <StatCard icon={<Users className="text-blue-600" />} label="Total Clients" value={stats.total_clients} />
           <StatCard icon={<Wrench className="text-green-600" />} label="Total Installateurs" value={stats.total_installateurs} />
         </div>

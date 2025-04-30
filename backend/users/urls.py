@@ -4,7 +4,7 @@ from .views import (
     RegisterAdminView, RegisterUserView, CompleteRegistrationView,
     GetUserProfileView, GetUserByTokenView, VerifyAdminView,
     LoginView, UpdateProfileView, ForgotPasswordView, ResetPasswordView,
-    LogoutView, UserListView, UserDetailView, UserStatsView,ClientsListView, InstallateursListView
+    LogoutView, UserListView, UserDetailView, UserStatsView,ClientsListView, InstallateursListView, TechniciensListView, MyClientsListView
 )
 
 urlpatterns = [
@@ -27,4 +27,6 @@ urlpatterns = [
     
     path('clients/', ClientsListView.as_view(), name='clients-list'),
     path('installateurs/', InstallateursListView.as_view(), name='installateurs-list'),
+    path('techniciens/', TechniciensListView.as_view(), name='techniciens-list'),
+    path('myclients/', MyClientsListView.as_view(), name='my-clients-list'),
 ]

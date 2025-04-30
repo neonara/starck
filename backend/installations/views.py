@@ -1,12 +1,15 @@
 from django.contrib.auth import get_user_model
 from rest_framework import status, generics, permissions
 from rest_framework.response import Response
+from rest_framework.generics import ListAPIView
+
 from rest_framework.views import APIView
 from .models import Installation
 from .serializers import InstallationSerializer
-from users.permissions import IsAdminOrInstallateur
+from users.permissions import IsAdminOrInstallateur,IsInstallateur
 from rest_framework.permissions import IsAuthenticated
 from users.serializers import UserSerializer
+from .serializers import InstallationGeoSerializer
 User = get_user_model()
 
 class AjouterInstallationView(APIView):
@@ -24,23 +27,12 @@ class AjouterInstallationView(APIView):
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class ModifierInstallationView(generics.UpdateAPIView):
+class ModifierInstallationView(generics.RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated, IsAdminOrInstallateur]
     queryset = Installation.objects.all()
     serializer_class = InstallationSerializer
-
-    def put(self, request, installation_id, *args, **kwargs):
-        try:
-            installation = self.get_queryset().get(id=installation_id)
-        except Installation.DoesNotExist:
-            return Response({"error": "Installation non trouvée."}, status=404)
-
-        serializer = self.get_serializer(installation, data=request.data)
-
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"message": "Installation mise à jour avec succès.", "installation": serializer.data}, status=200)
-        return Response(serializer.errors, status=400)
+    lookup_field = 'id'
+  
 
 class SupprimerInstallationView(APIView):
     permission_classes = [IsAuthenticated, IsAdminOrInstallateur]
@@ -85,10 +77,12 @@ class ListerInstallationsView(APIView):
 
 class DetailsInstallationView(APIView):
     permission_classes = [IsAuthenticated, IsAdminOrInstallateur]
-
-    def get(self, request, installation_id):
+    queryset = Installation.objects.all()
+    serializer_class = InstallationSerializer
+    lookup_field = 'id'
+    def get(self, request, id): 
         try:
-            installation = Installation.objects.get(id=installation_id)
+            installation = Installation.objects.get(id=id)
             serializer = InstallationSerializer(installation)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Installation.DoesNotExist:
@@ -106,4 +100,202 @@ class StatistiquesInstallationsView(APIView):
             "total_en_panne": total_en_panne
         }, status=status.HTTP_200_OK)
 
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from installations.models import Installation
+from alarme.models import AlarmeDeclenchee
+from entretien.models import Entretien
+from production.models import ProductionConsommation
+from datetime import date
+from django.db.models import Sum
+from django.db.models.functions import TruncHour, TruncDay
+class InstallationClientView(APIView):
 
+    permission_classes = [IsAuthenticated]
+ 
+    def get(self, request):
+
+        try:
+
+            user = request.user
+
+            installation = Installation.objects.filter(client=user).first()
+ 
+            if not installation:
+
+                return Response({"error": "Aucune installation trouvée"}, status=404)
+                    # Déterminer l'état de fonctionnement
+            alarme_critique_active = AlarmeDeclenchee.objects.filter(
+                installation=installation,
+                code_alarme__gravite='critique',
+                est_resolue=False
+            ).exists()
+
+            etat_fonctionnement = 'En panne' if alarme_critique_active else 'Fonctionnelle'
+
+            data = {
+
+                "nom": installation.nom,
+                "ville": getattr(installation, "ville", "—"),
+                "etat": getattr(installation, "statut", "—"),
+                "latitude": installation.latitude,
+                "longitude": installation.longitude,
+                'etat_fonctionnement': etat_fonctionnement,
+            }
+
+            #photo de l'installation
+            if installation.photo_installation:
+                data["photo_installation_url"] = request.build_absolute_uri(installation.photo_installation.url)
+            else:
+                data["photo_installation_url"] = None
+
+ 
+
+            dernier_entretien = Entretien.objects.filter(installation=installation).order_by('-date_debut').first()
+
+            prochain_entretien = Entretien.objects.filter(installation=installation, date_debut__gt=date.today()).order_by('date_debut').first()
+ 
+            data["dernier_controle"] = getattr(dernier_entretien, "date_debut", None)
+
+            data["prochaine_visite"] = getattr(prochain_entretien, "date_debut", None)
+ 
+            # Production aujourd’hui
+
+            prod_jour = ProductionConsommation.objects.filter(
+
+                installation=installation,
+
+                horodatage__date=date.today()
+
+            ).aggregate(total=Sum('energie_produite_kwh'))['total'] or 0
+ 
+            # Production du mois
+
+            prod_mois = ProductionConsommation.objects.filter(
+
+                installation=installation,
+
+                horodatage__month=date.today().month
+
+            ).aggregate(total=Sum('energie_produite_kwh'))['total'] or 0
+ 
+            data["production_jour"] = round(prod_jour, 2)
+
+            data["production_mois"] = round(prod_mois, 2)
+ 
+            # Consommation aujourd’hui
+
+            conso_jour = ProductionConsommation.objects.filter(
+
+                installation=installation,
+
+                horodatage__date=date.today()
+
+            ).aggregate(total=Sum('energie_consomme_kwh'))['total'] or 0
+ 
+            data["consommation_jour"] = round(conso_jour, 2)
+ 
+            # Alertes actives
+
+            alertes = AlarmeDeclenchee.objects.filter(installation=installation, est_resolue=False)
+            data["alertes"] = {
+                "mineures": alertes.filter(code_alarme__gravite="mineure").count(),
+                "critiques": alertes.filter(code_alarme__gravite="critique").count()
+            }
+ 
+            # Graphe production par heure
+
+            prod_par_heure = ProductionConsommation.objects.filter(
+
+                installation=installation,
+
+                horodatage__date=date.today()
+
+            ).annotate(heure=TruncHour('horodatage')).values('heure').annotate(total=Sum('energie_produite_kwh'))
+ 
+            data["production_journaliere"] = {
+
+                item['heure'].strftime("%H:%M"): round(item['total'], 2) for item in prod_par_heure
+
+            }
+ 
+            # Graphe production par jour
+
+            prod_par_jour = ProductionConsommation.objects.filter(
+
+                installation=installation,
+
+                horodatage__month=date.today().month
+
+            ).annotate(jour=TruncDay('horodatage')).values('jour').annotate(total=Sum('energie_produite_kwh'))
+ 
+            data["production_mensuelle"] = {
+
+                item['jour'].strftime("%d"): round(item['total'], 2) for item in prod_par_jour
+
+            }
+ 
+            return Response(data)
+ 
+        except Exception as e:
+
+            import traceback
+
+            traceback.print_exc()
+
+            return Response({"error": str(e)}, status=500)
+ 
+
+
+#partie geographique sur carte 
+
+class InstallationGeoDataView(ListAPIView):
+    permission_classes = [IsAuthenticated, IsAdminOrInstallateur]
+    serializer_class = InstallationGeoSerializer
+
+    def get_queryset(self):
+        return Installation.objects.filter(latitude__isnull=False, longitude__isnull=False)
+    
+
+
+
+
+#installation par installateur
+class ListerMesInstallationsView(APIView):
+    """
+    Liste des installations associées à l'installateur connecté.
+    """
+    permission_classes = [IsAuthenticated,IsInstallateur]
+
+    def get(self, request):
+        user = request.user
+
+        if user.role != 'installateur':
+            return Response({"error": "Accès non autorisé."}, status=status.HTTP_403_FORBIDDEN)
+
+        installations = Installation.objects.filter(installateur=user)
+
+        serializer = InstallationSerializer(installations, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+
+
+class InstallationGeoDataInstallateurView(ListAPIView):
+    """
+    Liste des installations (géolocalisées) associées à l'installateur connecté.
+    """
+    permission_classes = [IsAuthenticated, IsInstallateur]
+    serializer_class = InstallationGeoSerializer  
+
+    def get_queryset(self):
+        user = self.request.user
+
+        if user.role != 'installateur':
+            return Installation.objects.none()
+
+        return Installation.objects.filter(
+            installateur=user,
+            latitude__isnull=False,
+            longitude__isnull=False
+        )

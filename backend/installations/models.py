@@ -43,7 +43,8 @@ class Installation(models.Model):
     
     date_creation = models.DateTimeField(auto_now_add=True, null=True, blank=True, verbose_name="Date de création")
     date_mise_a_jour = models.DateTimeField(auto_now=True, verbose_name="Date de mise à jour")
-    
+    photo_installation = models.ImageField(upload_to='installations/photos/', null=True, blank=True, verbose_name="Photo de l'installation")
+
     class Meta:
         ordering = ['-date_installation']
         verbose_name = "Installation"

@@ -10,7 +10,7 @@ import {
   flexRender,
 } from "@tanstack/react-table";
 import { Dialog } from "@headlessui/react";
-import { FaSort, FaSortUp, FaSortDown, FaEdit } from "react-icons/fa";
+import { FaSort, FaSortUp, FaSortDown, FaEdit,FaTrash } from "react-icons/fa";
 import toast, { Toaster } from "react-hot-toast";
 import { format } from "date-fns";
  
@@ -58,7 +58,19 @@ const ListeReclamationsPage = () => {
       toast.error("Erreur lors de la mise à jour ❌");
     }
   };
- 
+  const handleDelete = async (id) => {
+    const confirmed = window.confirm("Voulez-vous vraiment supprimer cette réclamation ?");
+    if (!confirmed) return;
+  
+    try {
+      await ApiService.deleteReclamation(id);
+      toast.success("Réclamation supprimée ✅");
+      setData((prev) => prev.filter((r) => r.id !== id));
+    } catch (err) {
+      toast.error("Erreur lors de la suppression ❌");
+    }
+  };
+  
   const columns = useMemo(() => [
     {
       header: "Installation",
@@ -89,12 +101,20 @@ const ListeReclamationsPage = () => {
     {
       header: "Action",
       cell: ({ row }) => (
-<button
+        <div className="flex gap-2">
+        <button
           onClick={() => navigate(`/reclamations/${row.original.id}/edit`)}
           className="text-blue-500 hover:text-blue-700"
->
-<FaEdit />
-</button>
+        >
+          <FaEdit />
+        </button>
+        <button
+          onClick={() => handleDelete(row.original.id)}
+          className="text-red-500 hover:text-red-700"
+        >
+          <FaTrash />
+        </button>
+      </div>
       ),
     },
   ], [navigate]);

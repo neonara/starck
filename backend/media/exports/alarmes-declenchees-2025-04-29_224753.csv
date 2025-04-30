@@ -1,0 +1,13 @@
+installation__nom,code_alarme__code_constructeur,code_alarme__marque,code_alarme__type_alarme,code_alarme__gravite,date_declenchement,est_resolue
+A1,2001,Huawei,DC,majeure,2025-04-26 12:37:14.074551+00:00,False
+A1,545,Huawei,AC,critique,2025-04-28 18:22:39.061690+00:00,False
+A1,545,Huawei,AC,critique,2025-04-28 18:25:21.504944+00:00,False
+A2,545,Huawei,AC,critique,2025-04-29 09:30:43.104696+00:00,False
+A2,545,Huawei,AC,critique,2025-04-29 09:31:08.370549+00:00,False
+A1,545,Huawei,AC,critique,2025-04-29 09:31:18.104988+00:00,True
+A1,545,Huawei,AC,critique,2025-04-29 09:57:14.800513+00:00,True
+A1,545,Huawei,AC,critique,2025-04-28 18:25:44.192859+00:00,True
+A1,545,Huawei,AC,critique,2025-04-29 22:19:44.794862+00:00,False
+A1,545,Huawei,AC,critique,2025-04-29 22:19:18.461775+00:00,True
+A1,545,Huawei,AC,critique,2025-04-29 22:36:36.705211+00:00,False
+A1,545,Huawei,AC,critique,2025-04-29 22:47:29.927225+00:00,True

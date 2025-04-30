@@ -56,27 +56,39 @@ const Sidebar = () => {
 
   // Menu Client
   const clientMenuItems = [
-    { label: "Mon tableau de bord", icon: LayoutGrid, path: "/client-dashboard" },
-    { label: "Ma production", icon: Server, children: [
-        { label: "Journalière", path: "/client-prod-journalier" },
-        { label: "Mensuelle", path: "/client-prod-mensuelle" },
-        { label: "Totale", path: "/client-prod-totale" },
-      ]
+    {
+      label: "Mon tableau de bord",
+      icon: LayoutGrid,
+      path: "/client-dashboard",
     },
-    { label: "Ma consommation", icon: Server, children: [
-        { label: "Consommation Totale", path: "/client-consommation" },
-      ]
+ 
+    {
+      label: "Mes interventions",
+      icon: CalendarCheck,
+      path: "/client-mes-interventions",
     },
-    { label: "Mes équipements", icon: Server, path: "/client-equipements" },
-    { label: "Réclamations", icon: CalendarCheck, children: [
-        { label: "Mes réclamations", path: "/client-reclamations" },
-      ]
+    {
+      label: "Mes entretiens",
+      icon: CalendarCheck,
+      path: "/client-mes-entretien",
+    },
+    {
+      label: "Réclamations",
+      icon: AlertCircle,
+      children: [
+        { label: "Créer réclamations", path: "/client-reclamations" },
+        { label: "Mes réclamations", path: "/liste-reclamations" },
+      ],
+    },
+    {
+      label: "Rapports",
+      icon: BarChart3,
+      children: [
+        { label: "Rapport de production", path: "/rapport_production_client" },
+        { label: "Rapport de consommation", path: "/rapport_consommation_client" },
+      ],
     },
   ];
-  
- 
-
- 
     
 
   // Menu Installateur
@@ -106,8 +118,11 @@ const Sidebar = () => {
     { label: "Alarme Active", path: "/ListeAlarmesInstallateur" },
   ]
 },
+{ label: "Reclamations", icon: CalendarCheck, children: [
+  { label: "Liste des reclamations", path: "/ListeReclamationsInstallateur" },
+]
+},
   ];
-
   const menuItems =
     userRole === "admin" ? adminMenuItems :
     userRole === "client" ? clientMenuItems :

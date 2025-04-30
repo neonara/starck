@@ -207,9 +207,13 @@ updateReclamation: (id, data) => api.put(`reclamation/reclamations/${id}/`, data
 envoyerReclamation: (data) => api.post("reclamation/reclamations/envoyer/", data),
 getMesReclamations: () => api.get("reclamation/mes-reclamations/"),
 <<<<<<< HEAD
+<<<<<<< HEAD
 deleteReclamation: (id) => api.delete(`reclamation/reclamations/${id}/supprimer/`),
 =======
 >>>>>>> 38b6c1b (resolution conflicts merge)
+=======
+deleteReclamation: (id) => api.delete(`reclamation/reclamations/${id}/supprimer/`),
+>>>>>>> 2dda4f0 (interface installateur)
 
 
 //client
@@ -280,6 +284,7 @@ getMesInterventions: (params) => api.get("intervention/interventions/mes-interve
 getMesEntretiensInstallateur: () => api.get("entretien/entretiens/mes-entretiens-installateur/"),
 getCalendarEntretiensInstallateur: (params) => api.get("entretien/entretiens/calendar-installateur/", { params }),
 getAlarmesInstallateur: () => api.get("alarme/liste/installateur/"),
+getReclamationsInstallateur: () =>api.get("reclamation/reclamations/installateur/"),
 
 };
 

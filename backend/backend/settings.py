@@ -126,7 +126,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'solar_db',  
         'USER': 'postgres',
-        'PASSWORD': 'root',
+        'PASSWORD': 'youta',
         'HOST': 'localhost',
         'PORT': '5432',
 

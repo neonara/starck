@@ -183,8 +183,9 @@ function App() {
        <Route path="/MesEntrentientinstallateur" element={<ListeMesEntretiensInstallateurPage/>} />
        <Route path="/Calendrier-En-Insta" element={<CalendrierEntretiensInstallateur/>} />
        <Route path="/ListeAlarmesInstallateur" element={<ListeAlarmesInstallateur/>} />
-
        
+       <Route path="/ListeReclamationsInstallateur" element={<ListeReclamationsInstallateur/>} />
+
        </Route>
   </Routes>
 </Router>

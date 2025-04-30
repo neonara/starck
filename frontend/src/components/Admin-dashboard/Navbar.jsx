@@ -77,24 +77,7 @@ const Navbar = () => {
 
       <div className="flex items-center gap-4 relative">
         <div className="relative">
-        <button
-  onClick={() => {
-    setNotifications((prev) =>
-      prev.map((notif) => ({ ...notif, is_read: true }))
-    );
-    navigate("/notification");
-  }}
-  className="relative rounded-full border p-2 text-gray-500 hover:bg-gray-100"
->
-  <Bell className="w-5 h-5" />
-
-  {unreadCount > 0 && (
-  <div className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center animate-bounce">
-      {unreadCount}
-    </div>
-  )}
-</button>
-
+       
 
 
           

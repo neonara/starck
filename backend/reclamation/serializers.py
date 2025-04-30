@@ -7,9 +7,13 @@ class ReclamationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Reclamation
-        fields = ['id', 'client_email', 'sujet', 'message', 'date_envoi', 'statut', 'installation_nom']
+        fields = ['id', 'client_email', 'sujet', 'message', 'date_envoi', 'statut', 'installation_nom', 'installation']
 
     def get_installation_nom(self, obj):
         if obj.installation is not None:
-            return obj.installation.nom   # ⚡ Assure-toi que le modèle Installation a un champ "titre"
+            return obj.installation.nom   
         return None
+
+
+
+

@@ -10,6 +10,7 @@ const typeIcons = {
   performance: <CheckCircle className="text-green-500 w-5 h-5" />,
   system: <Info className="text-gray-500 w-5 h-5" />,
   autre: <Bell className="text-black w-5 h-5" />,
+  reclamation: <Bell className="text-purple-500 w-5 h-5" />,
 };
 
 export default function NotificationsPage() {
@@ -38,7 +39,6 @@ export default function NotificationsPage() {
       const data = JSON.parse(event.data);
       const notif = data.message;
 
-      // 🎉 Toast si alarme
       if (notif?.type === "alarme") {
         toast.error(`🚨 ${notif.title}: ${notif.content}`);
       } else {

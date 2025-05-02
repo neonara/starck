@@ -168,19 +168,7 @@ const ModifierClientPage = () => {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-1">Installation associée</label>
-                <select
-                  name="installation"
-                  value={form.installation}
-                  onChange={handleChange}
-                  className="w-full border px-3 py-2 rounded"
-                >
-                  <option value="Installation A">Installation A</option>
-                  <option value="Installation B">Installation B</option>
-                  <option value="Installation C">Installation C</option>
-                </select>
-              </div>
+              
 
               <div>
                 <label className="block text-sm font-medium mb-1">Dernière connexion</label>

@@ -13,6 +13,7 @@ const Navbar = () => {
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [hasNewNotif, setHasNewNotif] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0); 
   const [user, setUser] = useState({ name: "", email: "" });
   const navigate = useNavigate();
 
@@ -24,7 +25,9 @@ const Navbar = () => {
         setUser({
           name: `${res.data.first_name} ${res.data.last_name}`,
           email: res.data.email,
+          role: res.data.role,
         });
+        
       } catch (err) {
         console.error("Erreur chargement profil :", err);
       }
@@ -32,39 +35,54 @@ const Navbar = () => {
     fetchProfile();
   }, []);
 
+
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
     if (!token) return;
-
+  
     const socket = new WebSocket(`ws://localhost:8000/ws/notifications/?token=${token}`);
-
+  
     socket.onopen = () => console.log("WebSocket connecté");
-
     socket.onmessage = (e) => {
       try {
         const data = JSON.parse(e.data);
         const message = data.message || { title: "❓", content: "Notification inconnue" };
-
+    
+        console.log("Nouvelle notification reçue ✅", message);
+    
         toast.success(message.content || "🔔 Nouvelle notification !");
-        setNotifications((prev) => [...prev, message]);
-        setHasNewNotif(true);
+        setNotifications((prev) => [...prev, { ...message, is_read: false }]); // ⚡ ajouter is_read false
       } catch (err) {
         console.error("Erreur de parsing :", err);
       }
     };
-
-    socket.onerror = (err) => console.error(" Erreur WebSocket :", err);
-    socket.onclose = () => console.log(" WebSocket fermé");
-
+    
+    
+  
+    socket.onerror = (err) => console.error("Erreur WebSocket :", err);
+    socket.onclose = () => console.log("WebSocket fermé");
+  
     return () => socket.close();
   }, [user.email]);
-
+  console.log("UnreadCount =", unreadCount);
+ 
+  
+  useEffect(() => {
+    const count = notifications.filter((n) => !n.is_read).length;
+    setUnreadCount(count);
+  }, [notifications]);
+  
+  
   return (
     <nav className="fixed top-0 left-64 right-0 z-50 bg-white shadow-sm px-6 py-3 flex justify-between items-center">
       <div className="flex items-center gap-2" />
 
       <div className="flex items-center gap-4 relative">
         <div className="relative">
+       
+
+
+          
           <button
           onClick={() => {
             setHasNewNotif(false); 
@@ -97,13 +115,25 @@ const Navbar = () => {
             </div>
           )}
         </div>
-        <Link
-    to="/installationMap"
+        
+        {user && user.role && (
+  <button
+    onClick={() => {
+      if (user.role === "admin") {
+        navigate("/installationMap"); 
+      } else if (user.role === "installateur") {
+        navigate("/MapInstallateur"); 
+      } else {
+        toast.error("Accès non autorisé à la carte 🌐");
+      }
+    }}
     className="relative rounded-full border p-2 text-gray-500 hover:bg-gray-100"
     title="Carte des installations"
   >
     <Globe className="w-5 h-5" />
-  </Link>
+  </button>
+)}
+
 
         <div className="relative">
           <button
@@ -127,11 +157,7 @@ const Navbar = () => {
                     <Pencil className="w-4 h-4" /> Mon profil
                   </Link>
                 </li>
-                <li>
-                  <Link to="/update-profile" className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100">
-                    <Settings className="w-4 h-4" /> Paramètres
-                  </Link>
-                </li>
+
               </ul>
 
               <div className="border-t">

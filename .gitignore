@@ -3,3 +3,5 @@ backend/backend/__pycache__s
 __pycache__/
 *.pyc__pycache__/
 *.py[cod]
+frontend/
+node_module/

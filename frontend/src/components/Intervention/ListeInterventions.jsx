@@ -1,4 +1,3 @@
-// src/pages/interventions/ListeInterventionPage.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import ApiService from "../../Api/Api";

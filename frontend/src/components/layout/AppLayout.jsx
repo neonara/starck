@@ -10,8 +10,8 @@ const AppLayout = () => {
       <div className="pl-64 bg-white">
         <Navbar />
 
-        <main className="w-full px-6 py-8 bg-white">
-          <div className="max-w-6xl w-full mx-auto">
+        <main className="w-full py-8 bg-white">
+          <div className="max-w-8xl w-full mx-auto">
             <Outlet />
           </div>
         </main>

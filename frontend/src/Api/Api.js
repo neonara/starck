@@ -177,6 +177,14 @@ getInterventionDetail: (id) => api.get(`intervention/interventions/${id}/`),
 updateIntervention: (id, data) => api.put(`intervention/interventions/${id}/modifier/`, data),
 deleteIntervention: (id) => api.delete(`intervention/interventions/${id}/supprimer/`),
 changeInterventionStatus: (id, status) => api.patch(`intervention/interventions/${id}/changer-statut/`, { status }),
+getInterventionsClient: () => {
+  return api.get("intervention/client/interventions/");
+},
+getInterventionDetailClient: (id) => {
+  return api.get(`intervention/client/interventions/${id}/`);
+},
+
+
 
 //Entretien
 getAllEntretiens: (params = {}) => api.get("entretien/entretiens/", { params }),
@@ -186,10 +194,20 @@ updateEntretien: (id, data) => api.put(`entretien/entretiens/${id}/`, data),
 deleteEntretien: (id) => api.delete(`entretien/entretiens/${id}/`),
 getEntretienCalendar: (params) => api.get("entretien/entretiens/calendar/", { params }),
 getEntretienStats: () => api.get("entretien/entretien/statistiques/"),
+//technicien
+//entretien
+ajouterRappelEntretien: (entretienId, rappel_datetime) =>
+  api.post(`entretien/entretiens/${entretienId}/rappel/`, { rappel_datetime }),
+getMesEntretiens: () => api.get("entretien/entretiens/mes-entretiens/"),
+
 
 //Reclamation
 getReclamations: (params = {}) => api.get("reclamation/reclamations/", { params }),
 updateReclamation: (id, data) => api.put(`reclamation/reclamations/${id}/`, data),
+envoyerReclamation: (data) => api.post("reclamation/reclamations/envoyer/", data),
+getMesReclamations: () => api.get("reclamation/mes-reclamations/"),
+deleteReclamation: (id) => api.delete(`reclamation/reclamations/${id}/supprimer/`),
+
 
 //client
 getInstallationClient:(params = {}) => api.get("installations/installation-client/", { params }),
@@ -223,9 +241,46 @@ rapports: {
     api.post("rapports/rapports/export-consommation-pdf/", params, {
       responseType: "blob",
     }),
+
+  getRapportAlarmesMensuelles: (installationId, mois) =>
+    api.get(`rapports/rapports/alarme-mensuelle/`, {
+    params: { installation_id: installationId, mois },
+  }),
+
+  exportRapportAlarmesExcel: (params) =>
+    api.post("rapports/rapports/export-alarmes-excel/", params, {
+      responseType: "blob"
+    }),
+  
+  exportRapportAlarmesPDF: (params) =>
+    api.post("rapports/rapports/export-alarmes-pdf/", params, { responseType: "blob" }),
+
+  getProductionClient: (mois) => api.get(`rapports/client/rapport/production?mois=${mois}`),
+  getConsommation: (mois) => api.get(`rapports/client/rapport/consommation?mois=${mois}`),
+  getAlarmes: (mois) => api.get(`rapports/client/rapport/alarmes?mois=${mois}`),
+
+  exportProductionExcel: (mois) => api.post(`rapports/client/export/production/excel`, { mois }, { responseType: "blob" }),
+  exportConsommationExcel: (mois) => api.post(`rapports/client/export/consommation/excel`, { mois }, { responseType: "blob" }),
+  exportAlarmesExcel: (mois) => api.post(`rapports/client/export/alarmes/excel`, { mois }, { responseType: "blob" }),
+
+  exportProductionPDF: (mois) => api.post(`rapports/client/export/production/pdf`, { mois }, { responseType: "blob" }),
+  exportConsommationPDF: (mois) => api.post(`rapports/client/export/consommation/pdf`, { mois }, { responseType: "blob" }),
+  exportAlarmesPDF: (mois) => api.post(`rapports/client/export/alarmes/pdf`, { mois }, { responseType: "blob" }),
+    
 },
 
+//Installateur
+getMyClients: () => api.get("users/myclients/"),
+getInstallationsByInstallateur: () => api.get("installations/mes-installations/"),
+getInstallationsGeoDataInstallateur: () => api.get("installations/mes-installations-geo/"),
+getMesInterventions: (params) => api.get("intervention/interventions/mes-interventions/", { params }),
+getMesEntretiensInstallateur: () => api.get("entretien/entretiens/mes-entretiens-installateur/"),
+getCalendarEntretiensInstallateur: (params) => api.get("entretien/entretiens/calendar-installateur/", { params }),
+getAlarmesInstallateur: () => api.get("alarme/liste/installateur/"),
+getReclamationsInstallateur: () =>api.get("reclamation/reclamations/installateur/"),
+getStatistiquesAlarmesInstallateur: () =>api.get("alarme/statistiques-installateur/"),
 
+getInstallationsByInstallateur: () =>api.get("installations/mes-installations/"),
 };
 
 export default ApiService;

@@ -3,5 +3,11 @@ backend/backend/__pycache__s
 __pycache__/
 *.pyc__pycache__/
 *.py[cod]
+<<<<<<< HEAD
 frontend/
 node_module/
+=======
+.env.local
+node_modules/
+frontend/
+>>>>>>> eada9807ade87ede52d436a2546d304de5195170

@@ -278,7 +278,10 @@ getMesEntretiensInstallateur: () => api.get("entretien/entretiens/mes-entretiens
 getCalendarEntretiensInstallateur: (params) => api.get("entretien/entretiens/calendar-installateur/", { params }),
 getAlarmesInstallateur: () => api.get("alarme/liste/installateur/"),
 getReclamationsInstallateur: () =>api.get("reclamation/reclamations/installateur/"),
+<<<<<<< HEAD
 getStatistiquesAlarmesInstallateur: () =>api.get("alarme/statistiques-installateur/"),
+=======
+>>>>>>> eada9807ade87ede52d436a2546d304de5195170
 
 getInstallationsByInstallateur: () =>api.get("installations/mes-installations/"),
 };

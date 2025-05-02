@@ -50,11 +50,67 @@ const Sidebar = () => {
     { label: "Rapports", icon: CalendarCheck, children: [
         { label: "Rapport de production", path: "/rapport_production" },
         { label: "Rapport de consommation", path: "/rapport_consommation" },
+      ]
+    },
+  ];
+
+  // Menu Client
+  const clientMenuItems = [
+    {
+      label: "Mon tableau de bord",
+      icon: LayoutGrid,
+      path: "/client-dashboard",
+    },
+ 
+    {
+      label: "Mes interventions",
+      icon: CalendarCheck,
+      path: "/client-mes-interventions",
+    },
+    {
+      label: "Mes entretiens",
+      icon: CalendarCheck,
+      path: "/client-mes-entretien",
+    },
+    {
+      label: "Réclamations",
+      icon: AlertCircle,
+      children: [
+        { label: "Créer réclamations", path: "/client-reclamations" },
+        { label: "Mes réclamations", path: "/liste-reclamations" },
+      ],
+    },
+    {
+      label: "Rapports",
+      icon: BarChart3,
+      children: [
+        { label: "Rapport de production", path: "/rapport_production_client" },
+        { label: "Rapport de consommation", path: "/rapport_consommation_client" },
+      ],
+    },
+  ];
+    
+
+  // Menu Installateur
+  const installateurMenuItems = [
+    { label: "Tableaux de bord", icon: LayoutGrid, path: "/installateur-dashboard" },
+    { label: "Gestion des utilisateurs", icon: Users, children: [
+        { label: "Utilisateurs ", path: "/ListeUtilisateurs" },
+      ]
+    },
+    { label: "Gestion des installations", icon: Server, children: [
+        { label: "Mes Installations", path: "/MesInstallation" },
+      ]
+    },
+    { label: "Gestion des Entretiens", icon: CalendarCheck, children: [
+        { label: "Liste des Entretiens", path: "/MesEntrentientinstallateur" },
+        { label: "Calendrier des Entretiens", path: "/Calendrier-En-Insta" },
 
         { label: "Rapports d’historique des alarmes", path: "/rapport_alarme" },
 
       ]
     },
+<<<<<<< HEAD
   ];
 
   // Menu Client
@@ -129,6 +185,29 @@ const Sidebar = () => {
     userRole === "installateur" ? installateurMenuItems :
     [];
 
+=======
+    { label: "Gestion des interventions", icon: Server, children: [
+      { label: "Liste des Interventions", path: "/Mesintervention" },
+    ]
+  },
+  { label: "Gestion des Alarmes", icon: Server, children: [
+    { label: "Redéfinir l'alarme", path: "/codes-alarmes/ajouter" },
+    { label: "Code Alarme", path: "/ListeCodesAlarmes" },
+    { label: "Alarme Active", path: "/ListeAlarmesInstallateur" },
+  ]
+},
+{ label: "Reclamations", icon: CalendarCheck, children: [
+  { label: "Liste des reclamations", path: "/ListeReclamationsInstallateur" },
+]
+},
+  ];
+  const menuItems =
+    userRole === "admin" ? adminMenuItems :
+    userRole === "client" ? clientMenuItems :
+    userRole === "installateur" ? installateurMenuItems :
+    [];
+
+>>>>>>> eada9807ade87ede52d436a2546d304de5195170
   return (
     <div className={` ${isSidebarOpen ? 'w-64' : 'w-16'} bg-white border-r border-gray-200 transition-all duration-300 ease-in-out h-screen fixed top-0 left-0 z-40 overflow-x-hidden`}>
       <div className="flex items-center gap-2 px-4 pt-6">

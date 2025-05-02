@@ -60,6 +60,7 @@ import RapportProductionPage from "./components/Rapports/RapportProductionPage";
 import RapportConsommationPage from"./components/Rapports/RapportConsommationPage";
 import InstallationMap from "./components/Installations/InstallationMap";
 import HistoriqueReclamationsClient from "./components/Client-dashboard/HistoriqueReclamationsClient";
+<<<<<<< HEAD
 import RapportAlarmesPage from "./components/Rapports/RapportAlarmesPage";
 import RapportProductionClientPage from "./components/Rapports/RapportProductionClientPage";
 import RapportConsommationClientPage from "./components/Rapports/RapportConsommationClientPage";
@@ -67,6 +68,8 @@ import RapportAlarmesClientPage from "./components/Rapports/RapportAlarmesClient
 import ListeInterventionsClient from "./components/Intervention/ListeInterventionsClient";
 import DetailleInterventionClient from "./components/Intervention/DetailleInterventionClient";
 
+=======
+>>>>>>> eada9807ade87ede52d436a2546d304de5195170
 //Technicien 
 import MesEntretiens from "./components/Utilisateurs/Technicien/MesEntretiens";
 //Installateur
@@ -78,6 +81,10 @@ import ListeMesEntretiensInstallateurPage from "./Installateur/ListeMesEntretien
 import CalendrierEntretiensInstallateur from "./Installateur/CalendrierEntretiensInstallateur.jsx";
 import ListeAlarmesInstallateur from "./Installateur/ListeAlarmesInstallateur.jsx";
 import ListeReclamationsInstallateur from "./Installateur/ListeReclamationsInstallateur.jsx";
+<<<<<<< HEAD
+=======
+
+>>>>>>> eada9807ade87ede52d436a2546d304de5195170
 function App() {
   return (
     <Router>
@@ -134,13 +141,17 @@ function App() {
        
        <Route path="/rapport_production" element={<RapportProductionPage />} />
        <Route path="/rapport_consommation" element={<RapportConsommationPage />} />
+<<<<<<< HEAD
        <Route path="/rapport_alarme" element={<RapportAlarmesPage />} />
+=======
+>>>>>>> eada9807ade87ede52d436a2546d304de5195170
        
        
        <Route path="/client-reclamations" element={<ReclamationClient />} />
        <Route path="/liste-reclamations" element={<HistoriqueReclamationsClient />} />
        
        
+<<<<<<< HEAD
        <Route path="/rapports-production" element={<RapportProductionClientPage />} />
        <Route path="/rapports-consommation" element={<RapportConsommationClientPage />} />
        <Route path="/rapports-alarme" element={<RapportAlarmesClientPage />} />
@@ -156,6 +167,8 @@ function App() {
        <Route path="//rapports-alarme" element={<RapportAlarmesClientPage />} />
        
        
+=======
+>>>>>>> eada9807ade87ede52d436a2546d304de5195170
        <Route path="/MesEntretiens" element={<MesEntretiens />} />
        <Route path="/ListeUtilisateurs" element={<ListeUtilisateursPage />} />
        <Route path="/MesInstallation" element={<ListeMesInstallationsPage />} />
@@ -168,7 +181,10 @@ function App() {
        <Route path="/ListeAlarmesInstallateur" element={<ListeAlarmesInstallateur/>} />
        
        <Route path="/ListeReclamationsInstallateur" element={<ListeReclamationsInstallateur/>} />
+<<<<<<< HEAD
        
+=======
+>>>>>>> eada9807ade87ede52d436a2546d304de5195170
 
        </Route>
   </Routes>

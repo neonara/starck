@@ -2,7 +2,7 @@
 from notification.models import Notification
 from django.contrib.auth import get_user_model
 from installations.models import Installation
-from alarme.models import  AlarmeDeclenchee
+from alarme.models import AlarmeDeclenchee
 
 def save_notification(
     email,

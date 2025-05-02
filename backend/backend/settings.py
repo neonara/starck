@@ -126,7 +126,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'solar_db',  
         'USER': 'postgres',
-        'PASSWORD': 'root',
+        'PASSWORD': 'youta',
         'HOST': 'localhost',
         'PORT': '5432',
 
@@ -180,8 +180,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
-
+#TIME_ZONE = 'UTC'
+TIME_ZONE = 'Africa/Tunis' 
 USE_I18N = True
 
 USE_TZ = True

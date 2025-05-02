@@ -9,6 +9,9 @@ from intervention.serializers import (
     FicheInterventionUpdateSerializer
 )
 from django.contrib.auth import get_user_model
+from users.serializers import UserSerializer
+from users.permissions import IsAdminOrInstallateur,IsInstallateur
+from rest_framework.permissions import IsAuthenticated
 
 User = get_user_model()
 
@@ -48,7 +51,7 @@ class ListeFicheInterventionView(generics.ListAPIView):
 
 class CreerFicheInterventionView(generics.CreateAPIView):
     serializer_class = FicheInterventionCreateSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated,IsAdminOrInstallateur]
 
     def create(self, request, *args, **kwargs):
         try:
@@ -80,7 +83,7 @@ class DetailFicheInterventionView(generics.RetrieveAPIView):
     """Récupérer les détails d'une fiche d'intervention avec ses statistiques"""
     queryset = FicheIntervention.objects.all()
     serializer_class = FicheInterventionDetailSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated,IsAdminOrInstallateur]
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -96,12 +99,10 @@ class DetailFicheInterventionView(generics.RetrieveAPIView):
             "temps_moyen_entre": None,
         }
 
-        # Temps depuis la dernière intervention
         derniere = interventions_passees.order_by('-date_prevue').first()
         if derniere:
             stats["temps_depuis_derniere"] = (instance.date_prevue - derniere.date_prevue).days
 
-        # Temps moyen entre toutes les interventions
         if interventions_passees.count() > 0:
             dates = list(interventions_passees.values_list('date_prevue', flat=True).order_by('date_prevue'))
             dates.append(instance.date_prevue)
@@ -117,7 +118,7 @@ class ModifierFicheInterventionView(generics.UpdateAPIView):
     """Modifier une fiche d'intervention existante"""
     queryset = FicheIntervention.objects.all()
     serializer_class = FicheInterventionUpdateSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated,IsAdminOrInstallateur]
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
@@ -133,7 +134,7 @@ class ModifierFicheInterventionView(generics.UpdateAPIView):
 class SupprimerFicheInterventionView(generics.DestroyAPIView):
     """Supprimer une fiche d'intervention"""
     queryset = FicheIntervention.objects.all()
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated,IsAdminOrInstallateur]
 
 class ChangerStatutFicheInterventionView(APIView):
     """Changer le statut d'une fiche d'intervention"""
@@ -157,7 +158,7 @@ class ChangerStatutFicheInterventionView(APIView):
 
 
 class TechniciensListView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated,IsAdminOrInstallateur]
 
     def get(self, request):
         techniciens = User.objects.filter(groups__name='Techniciens')
@@ -168,7 +169,7 @@ class TechniciensListView(APIView):
 class HistoriqueInterventionsParInstallationView(generics.ListAPIView):
     """Afficher l'historique des interventions pour une installation donnée"""
     serializer_class = FicheInterventionDetailSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated,IsAdminOrInstallateur]
 
     def get_queryset(self):
         installation_id = self.kwargs.get('installation_id')
@@ -179,7 +180,7 @@ from django.db.models import Count, Q
 
 class NombreInterventionsParTechnicienView(APIView):
     """Retourne le nombre total d'interventions par technicien"""
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated,IsAdminOrInstallateur]
 
     def get(self, request):
         data = (
@@ -201,7 +202,7 @@ class NombreInterventionsParTechnicienView(APIView):
 
 class TauxResolutionInterventionsView(APIView):
     """Retourne le taux de résolution des interventions"""
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated,IsAdminOrInstallateur]
 
     def get(self, request):
         total = FicheIntervention.objects.count()
@@ -216,6 +217,7 @@ class TauxResolutionInterventionsView(APIView):
         })
     
 
+<<<<<<< HEAD
 from rest_framework import generics, permissions
 
 class ListeFicheInterventionClientView(generics.ListAPIView):
@@ -236,3 +238,23 @@ class DetailFicheInterventionClientView(generics.RetrieveAPIView):
     def get_queryset(self):
         user = self.request.user
         return FicheIntervention.objects.filter(installation__client=user)
+=======
+
+
+#liste intervention installateur 
+
+class ListeMesFichesInterventionView(generics.ListAPIView):
+    """
+    Liste des fiches d'intervention pour les installations de l'installateur connecté.
+    """
+    serializer_class = FicheInterventionDetailSerializer
+    permission_classes = [IsAuthenticated, IsInstallateur]
+
+    def get_queryset(self):
+        user = self.request.user
+
+        if user.role != 'installateur':
+            return FicheIntervention.objects.none()
+
+        return FicheIntervention.objects.filter(installation__installateur=user).order_by('-date_prevue')
+>>>>>>> eada9807ade87ede52d436a2546d304de5195170

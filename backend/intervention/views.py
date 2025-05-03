@@ -12,7 +12,9 @@ from django.contrib.auth import get_user_model
 from users.serializers import UserSerializer
 from users.permissions import IsAdminOrInstallateur,IsInstallateur
 from rest_framework.permissions import IsAuthenticated
+from django.core.cache import cache
 
+from django.db.models import Count, Q
 User = get_user_model()
 
 class ListeFicheInterventionView(generics.ListAPIView):
@@ -176,46 +178,60 @@ class HistoriqueInterventionsParInstallationView(generics.ListAPIView):
         return FicheIntervention.objects.filter(installation_id=installation_id).order_by('-date_prevue')
 
 
-from django.db.models import Count, Q
+
+
 
 class NombreInterventionsParTechnicienView(APIView):
-    """Retourne le nombre total d'interventions par technicien"""
-    permission_classes = [permissions.IsAuthenticated,IsAdminOrInstallateur]
+    permission_classes = [permissions.IsAuthenticated, IsAdminOrInstallateur]
 
     def get(self, request):
-        data = (
+        cache_key = "stats:interventions_par_technicien"
+        data = cache.get(cache_key)
+        if data:
+            return Response(data)
+
+        raw_data = (
             FicheIntervention.objects.values('technicien__id', 'technicien__first_name', 'technicien__last_name')
             .annotate(nombre_interventions=Count('id'))
         )
 
-        result = [
+        data = [
             {
                 "technicien_id": entry["technicien__id"],
                 "nom": f'{entry["technicien__first_name"]} {entry["technicien__last_name"]}',
                 "nombre_interventions": entry["nombre_interventions"]
             }
-            for entry in data
+            for entry in raw_data
         ]
 
-        return Response(result)
+        cache.set(cache_key, data, timeout=3600)
+        return Response(data)
+
+
 
 
 class TauxResolutionInterventionsView(APIView):
-    """Retourne le taux de résolution des interventions"""
-    permission_classes = [permissions.IsAuthenticated,IsAdminOrInstallateur]
+    permission_classes = [permissions.IsAuthenticated, IsAdminOrInstallateur]
 
     def get(self, request):
+        cache_key = "stats:taux_resolution_intervention"
+        data = cache.get(cache_key)
+        if data:
+            return Response(data)
+
         total = FicheIntervention.objects.count()
         resolues = FicheIntervention.objects.filter(statut='resolue').count()
-
         taux_resolution = (resolues / total * 100) if total > 0 else 0
 
-        return Response({
+        data = {
             "total_interventions": total,
             "interventions_resolues": resolues,
             "taux_resolution": f"{taux_resolution:.2f} %"
-        })
-    
+        }
+
+        cache.set(cache_key, data, timeout=3600)
+        return Response(data)
+
 
 
 

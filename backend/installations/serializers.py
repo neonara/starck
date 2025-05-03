@@ -14,7 +14,7 @@ class InstallationSerializer(serializers.ModelSerializer):
     installateur_email = serializers.EmailField(write_only=True, required=False)
     client = UserSerializer(read_only=True)
     installateur = UserSerializer(read_only=True)
-    
+    photo_installation_url = serializers.SerializerMethodField() 
     class Meta:
         model = Installation
         fields = [
@@ -37,14 +37,15 @@ class InstallationSerializer(serializers.ModelSerializer):
             'reference_contrat',
             'photo_installation',
             'client',
+            'photo_installation_url',
             'installateur',
         ]
         
     def get_photo_installation_url(self, obj):
-        request = self.context.get('request')
+      request = self.context.get('request', None)
+      if request and obj.photo_installation and hasattr(obj.photo_installation, 'url'):
         try:
-            if obj.photo_installation and hasattr(obj.photo_installation, 'url'):
-                return request.build_absolute_uri(obj.photo_installation.url)
+            return request.build_absolute_uri(obj.photo_installation.url)
         except Exception as e:
             print("Erreur image:", e)
         return None

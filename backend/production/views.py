@@ -6,10 +6,11 @@ from .serializers import ProductionConsommationSerializer
 from installations.models import Installation
 from django.utils import timezone
 from django.db.models import Sum
-from django.db.models.functions import TruncHour, TruncDay
+from django.db.models.functions import TruncHour, TruncDay,TruncMonth
+
 
 from datetime import timedelta
-from users.permissions import IsAdminOrInstallateur
+from users.permissions import IsAdminOrInstallateur, IsInstallateur
 from rest_framework.permissions import IsAuthenticated
 
 
@@ -131,3 +132,34 @@ class StatistiquesInstallationClientView(APIView):
         }
 
         return Response(stats)
+    
+
+#production installateur 
+class StatistiquesInstallateurProductionView(APIView):
+    permission_classes = [IsAuthenticated, IsInstallateur]
+
+    def get(self, request):
+        user = request.user
+        today = timezone.now().date()
+        year = today.year
+        month = today.month
+
+        qs = ProductionConsommation.objects.filter(installation__installateur=user)
+
+        par_heure = qs.filter(horodatage__date=today).annotate(hour=TruncHour("horodatage")).values("hour").annotate(total=Sum("energie_produite_kwh"))
+        prod_journaliere = {entry["hour"].strftime("%Hh"): float(entry["total"]) for entry in par_heure}
+
+        par_jour = qs.filter(horodatage__year=year, horodatage__month=month).annotate(day=TruncDay("horodatage")).values("day").annotate(total=Sum("energie_produite_kwh"))
+        prod_mensuelle = {entry["day"].strftime("%d"): float(entry["total"]) for entry in par_jour}
+
+        par_mois = qs.filter(horodatage__year=year).annotate(month=TruncMonth("horodatage")).values("month").annotate(total=Sum("energie_produite_kwh"))
+        prod_annuelle = {entry["month"].strftime("%b"): float(entry["total"]) for entry in par_mois}
+
+        prod_totale = qs.aggregate(total=Sum("energie_produite_kwh"))["total"] or 0
+
+        return Response({
+            "prod_journaliere": prod_journaliere,
+            "prod_mensuelle": prod_mensuelle,
+            "prod_annuelle": prod_annuelle,
+            "prod_totale": prod_totale
+        }, status=200)

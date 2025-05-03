@@ -5,6 +5,7 @@ from .models import Reclamation
 from .serializers import ReclamationSerializer
 from users.permissions import IsAdmin, IsClient,IsInstallateur
 from installations.models import Installation
+from django.core.cache import cache
 
  
 class EnvoyerReclamationView(APIView):
@@ -35,6 +36,8 @@ class EnvoyerReclamationView(APIView):
         serializer = ReclamationSerializer(data=data)
         if serializer.is_valid():
             serializer.save(client=request.user)
+            cache.delete("stats:reclamations_total")
+            cache.delete("stats:reclamations_par_statut")
             return Response({"message": "Réclamation envoyée avec succès."}, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

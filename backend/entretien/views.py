@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from users.permissions import IsTechnicien
+from django.core.cache import cache
 
 from django.shortcuts import get_object_or_404
 from .models import Entretien, RappelEntretien
@@ -147,29 +148,38 @@ class MesEntretiensAPIView(APIView):
     
 class EntretienStatistiquesView(APIView):
     permission_classes = [IsAuthenticated]
- 
+
     def get(self, request):
+        cache_key = "stats:entretien_global"
+        data = cache.get(cache_key)
+        if data:
+            return Response(data)
+
         par_type = Entretien.objects.values('type_entretien').annotate(count=Count('id'))
         dict_type = {item['type_entretien']: item['count'] for item in par_type}
- 
+
         par_statut = Entretien.objects.values('statut').annotate(count=Count('id'))
         dict_statut = {item['statut']: item['count'] for item in par_statut}
- 
+
         par_mois = Entretien.objects.annotate(mois=TruncMonth('date_debut')).values('mois').annotate(count=Count('id')).order_by('mois')
         dict_mois = {item['mois'].strftime('%Y-%m'): item['count'] for item in par_mois if item['mois']}
- 
+
         par_tech = Entretien.objects.values('technicien__first_name', 'technicien__last_name').annotate(count=Count('id'))
         dict_technicien = {}
         for item in par_tech:
             nom = f"{item['technicien__first_name'] or ''} {item['technicien__last_name'] or ''}".strip() or "—"
             dict_technicien[nom] = item['count']
- 
-        return Response({
+
+        data = {
             "par_type": dict_type,
             "par_statut": dict_statut,
             "par_mois": dict_mois,
             "par_technicien": dict_technicien
-        })
+        }
+
+        cache.set(cache_key, data, timeout=600)  # 10 minutes
+        return Response(data)
+
     
 #entretient partie technicien
 

@@ -20,3 +20,11 @@ class Reclamation(models.Model):
  
     def __str__(self):
         return f"{self.client.email} - {self.sujet}"
+    
+class ReclamationImage(models.Model):
+    reclamation = models.ForeignKey(Reclamation, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to='reclamations/images/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Image pour {self.reclamation.sujet}"

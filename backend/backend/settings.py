@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'reclamation',
     'rapports',
     'historique',
+    #'django_celery_beat',
 
 ]
 ASGI_APPLICATION = 'backend.asgi.application'
@@ -107,6 +108,8 @@ TEMPLATES = [
     },
 ]
 
+FRONTEND_BASE_URL = "http://localhost:5173"
+
 WSGI_APPLICATION = 'backend.wsgi.application'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173", 
@@ -126,7 +129,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'solar_db',  
         'USER': 'postgres',
-        'PASSWORD': 'youta',
+        'PASSWORD': 'root',
         'HOST': 'localhost',
         'PORT': '5432',
 
@@ -206,6 +209,9 @@ default_app_config = 'entretien.apps.EntretienConfig'
 
 
 
+
+
+
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 EMAIL_HOST = 'smtp.gmail.com'
@@ -231,3 +237,7 @@ CACHES = {
         "LOCATION": "redis://localhost:6379/0", 
     }
 }
+
+import os
+GOOGLE_CREDENTIALS_PATH = os.path.join(BASE_DIR, 'google_credentials', 'starck-calendar-key.json')
+

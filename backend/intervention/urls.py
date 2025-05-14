@@ -10,7 +10,10 @@ from intervention.views import (
     NombreInterventionsParTechnicienView,
     TauxResolutionInterventionsView, 
     ListeFicheInterventionClientView, 
-    DetailFicheInterventionClientView
+    DetailFicheInterventionClientView,
+    ListeMesFichesInterventionView,
+    ExportInterventionsCSVView,
+    ExportInterventionsXLSXView
 
 )
 
@@ -24,6 +27,9 @@ urlpatterns = [
     path('interventions/historique/<int:installation_id>/', HistoriqueInterventionsParInstallationView.as_view(), name='historique-par-installation'),
     path('interventions/statistiques/technicien/', NombreInterventionsParTechnicienView.as_view(), name='stats-technicien'),
     path('interventions/statistiques/taux-resolution/', TauxResolutionInterventionsView.as_view(), name='taux-resolution'),
+    path('interventions/mes-interventions/', ListeMesFichesInterventionView.as_view(), name='mes-fiches-intervention'),
+    path('interventions/export/csv/', ExportInterventionsCSVView.as_view(), name='export-interventions-csv'),
+    path('interventions/export/xlsx/', ExportInterventionsXLSXView.as_view(), name='export-interventions-xlsx'),
 
 
     path("client/interventions/", ListeFicheInterventionClientView.as_view(), name="interventions-client"),

@@ -14,6 +14,11 @@ class FicheIntervention(models.Model):
         ('annulee', 'Annulée')
     ]
     
+    TYPE_CHOICES = [
+    ('diagnostic', 'Diagnostic'),
+    ('preventive', 'Préventive'),
+    ('curative', 'Curative'),
+    ]
 
     
     technicien = models.ForeignKey(
@@ -30,6 +35,13 @@ class FicheIntervention(models.Model):
         on_delete=models.CASCADE,
         related_name='interventions',
         verbose_name="Installation concernée"
+    )
+    
+    type_intervention = models.CharField(
+    max_length=20,
+    choices=TYPE_CHOICES,
+    default='diagnostic',
+    verbose_name="Type d'intervention"
     )
     
     description = models.TextField(verbose_name="Description de l'intervention")

@@ -51,6 +51,22 @@ const FormulaireEntretien = ({ onSuccess }) => {
           ))}
 </select>
 </div>
+<div>
+  <label className="block text-sm font-semibold text-gray-700 mb-1">
+    Répéter tous les :
+  </label>
+  <select
+    {...register("periode_recurrence")}
+    className="w-full border border-gray-300 text-gray-700 rounded px-3 py-2 text-sm"
+  >
+    <option value="">Aucune</option>
+    <option value="1">1 mois</option>
+    <option value="3">3 mois</option>
+    <option value="6">6 mois</option>
+    <option value="12">12 mois</option>
+  </select>
+</div>
+
  
       <div>
 <label className="block text-sm font-semibold text-gray-700 mb-1">Type d'entretien</label>

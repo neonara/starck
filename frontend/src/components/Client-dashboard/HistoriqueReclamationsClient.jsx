@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import ApiService from "../../Api/Api";
 import { format } from "date-fns";
-import { Loader2 } from "lucide-react";
+import { Loader2, Pencil, Trash2 } from "lucide-react";
 import { Toaster, toast } from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 const statusColors = {
   en_attente: "bg-yellow-100 text-yellow-700",
@@ -11,14 +12,17 @@ const statusColors = {
 };
 
 const HistoriqueReclamationsClient = () => {
-  const [reclamations, setReclamations] = useState([]); // ✅ tableau vide au départ
+  const [reclamations, setReclamations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedImages, setSelectedImages] = useState([]);
+  const [showImagesModal, setShowImagesModal] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchReclamations = async () => {
       try {
         const res = await ApiService.getMesReclamations();
-        setReclamations(Array.isArray(res.data) ? res.data : res.data.results || []); // ✅ corriger ici
+        setReclamations(Array.isArray(res.data) ? res.data : res.data.results || []);
       } catch (error) {
         console.error(error);
         toast.error("Erreur lors du chargement ❌");
@@ -28,6 +32,19 @@ const HistoriqueReclamationsClient = () => {
     };
     fetchReclamations();
   }, []);
+
+  const handleDelete = async (id) => {
+    const confirmed = window.confirm("Voulez-vous vraiment supprimer cette réclamation ?");
+    if (!confirmed) return;
+
+    try {
+      await ApiService.deleteReclamation(id);
+      toast.success("Réclamation supprimée ✅");
+      setReclamations((prev) => prev.filter((r) => r.id !== id));
+    } catch (err) {
+      toast.error("Erreur lors de la suppression ❌");
+    }
+  };
 
   return (
     <div className="pt-24 px-6 w-full">
@@ -48,8 +65,10 @@ const HistoriqueReclamationsClient = () => {
                 <tr>
                   <th className="px-4 py-2">Sujet</th>
                   <th className="px-4 py-2">Message</th>
+                  <th className="px-4 py-2">Images</th>
                   <th className="px-4 py-2">Date</th>
                   <th className="px-4 py-2">Statut</th>
+                  <th className="px-4 py-2">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -57,6 +76,21 @@ const HistoriqueReclamationsClient = () => {
                   <tr key={rec.id} className="hover:bg-gray-50">
                     <td className="px-4 py-2">{rec.sujet}</td>
                     <td className="px-4 py-2">{rec.message}</td>
+                    <td className="px-4 py-2">
+                      {rec.images && rec.images.length > 0 ? (
+                        <button
+                          onClick={() => {
+                            setSelectedImages(rec.images);
+                            setShowImagesModal(true);
+                          }}
+                          className="text-blue-600 underline hover:text-blue-800 text-sm"
+                        >
+                          Voir les photos ({rec.images.length})
+                        </button>
+                      ) : (
+                        <span className="text-gray-400 italic">Aucune</span>
+                      )}
+                    </td>
                     <td className="px-4 py-2">
                       {format(new Date(rec.date_envoi), "dd/MM/yyyy HH:mm")}
                     </td>
@@ -69,6 +103,22 @@ const HistoriqueReclamationsClient = () => {
                         {rec.statut.replace("_", " ")}
                       </span>
                     </td>
+                    <td className="px-4 py-2 flex gap-2">
+                      <button
+                        onClick={() => navigate(`/reclamations/${rec.id}/edit`)}
+                        className="text-blue-600 hover:text-blue-800"
+                        title="Modifier"
+                      >
+                        <Pencil size={18} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(rec.id)}
+                        className="text-red-600 hover:text-red-800"
+                        title="Supprimer"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -78,6 +128,38 @@ const HistoriqueReclamationsClient = () => {
                 Aucune réclamation envoyée pour le moment.
               </p>
             )}
+          </div>
+        )}
+
+        {showImagesModal && (
+          <div className="fixed inset-0 z-50 bg-black bg-opacity-30 flex items-center justify-center">
+            <div className="bg-white p-6 rounded-lg shadow max-w-3xl w-full">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Photos jointes</h3>
+              <div className="flex flex-wrap gap-3">
+                {selectedImages.map((img, idx) => (
+                  <a
+                    key={idx}
+                    href={img.image}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <img
+                      src={img.image}
+                      alt={`image-${idx}`}
+                      className="w-28 h-28 object-cover rounded border hover:scale-105 transition"
+                    />
+                  </a>
+                ))}
+              </div>
+              <div className="text-right mt-6">
+                <button
+                  onClick={() => setShowImagesModal(false)}
+                  className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                >
+                  Fermer
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>

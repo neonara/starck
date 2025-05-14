@@ -61,21 +61,38 @@ const ModifierEntretienPage = () => {
  
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const dateDebut = new Date(form.date_debut);
+    const duree = parseInt(form.duree_estimee);
+    const dateFin = new Date(dateDebut.getTime() + duree * 60000); 
     const cleaned = {
-      ...form,
-      duree_estimee: parseInt(form.duree_estimee),
       installation: parseInt(form.installation),
+      type_entretien: form.type_entretien,
+      date_debut: form.date_debut,
+      date_fin: dateFin.toISOString(), 
+      duree_estimee: duree,
+      statut: form.statut,
+      priorite: form.priorite,
       technicien: form.technicien ? parseInt(form.technicien) : null,
+      notes: form.notes,
     };
-    console.log("Données envoyées à updateEntretien :", cleaned);
+
+
+    console.log("🧾 Payload envoyé :", cleaned);
+
     try {
       await ApiService.updateEntretien(id, cleaned);
       toast.success("✅ Entretien mis à jour");
       navigate("/liste-entretiens");
     } catch (err) {
-      console.error("Erreur update :", err);
-      toast.error("❌ Erreur mise à jour");
+      if (err.response) {
+        console.error("🛑 Erreur backend :", err.response.data);
+        toast.error("❌ Erreur : " + JSON.stringify(err.response.data));
+      } else {
+        console.error("❌ Erreur inconnue :", err);
+        toast.error("❌ Erreur inconnue");
+      }
     }
+
   };
  
   if (!installations.length || !techniciens.length) return <p className="p-6">Chargement...</p>;

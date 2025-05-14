@@ -3,7 +3,16 @@ backend/backend/__pycache__s
 __pycache__/
 *.pyc__pycache__/
 *.py[cod]
+<<<<<<< HEAD
+=======
+frontend/
+node_module/
+>>>>>>> 89daaf5 (chnagment en cours pour resulution du main)
 .env.local
 
 node_modules/
 frontend/
+<<<<<<< HEAD
+=======
+google_credentials/credentials.json
+>>>>>>> 89daaf5 (chnagment en cours pour resulution du main)

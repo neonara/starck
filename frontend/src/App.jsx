@@ -49,7 +49,8 @@ import EntretienDetailModal from "./components/Entretien/EtretienDetailModal";
 import ModifierEntretienPage from "./components/Entretien/ModifierEntretienPage";
 import CalendrierEntretiens from "./components/Entretien/CalendrierEntretiens";
 import StatistiquesEntretiens from "./components/Entretien/StatistiquesEntretiens";
-
+import ListeEntretiensClient from "./components/Entretien/ListeEntretiensClient.jsx";
+import DetailleEntretienClient from "./components/Entretien/DetailleEntretienClient.jsx";
 //Reclamations
 import ListeReclamationsPage from "./components/Reclamation/ListeReclamationPage";
 import ModifierReclamationPage from "./components/Reclamation/ModifierReclamationPage";
@@ -67,6 +68,8 @@ import RapportAlarmesClientPage from "./components/Rapports/RapportAlarmesClient
 import ListeInterventionsClient from "./components/Intervention/ListeInterventionsClient";
 import DetailleInterventionClient from "./components/Intervention/DetailleInterventionClient";
 
+//Technicien 
+import MesEntretiens from "./Technicien/MesEntretiens.jsx";
 //Installateur
 import ListeUtilisateursPage from "./Installateur/ListeUtilisateursPage";
 import ListeMesInstallationsPage from "./Installateur/ListeMesInstallationsPage.jsx";
@@ -76,10 +79,6 @@ import ListeMesEntretiensInstallateurPage from "./Installateur/ListeMesEntretien
 import CalendrierEntretiensInstallateur from "./Installateur/CalendrierEntretiensInstallateur.jsx";
 import ListeAlarmesInstallateur from "./Installateur/ListeAlarmesInstallateur.jsx";
 import ListeReclamationsInstallateur from "./Installateur/ListeReclamationsInstallateur.jsx";
-//Technicien 
-import MesEntretiens from "./components/Utilisateurs/Technicien/MesEntretiens";
-
-
 
 function App() {
   return (
@@ -153,19 +152,15 @@ function App() {
        <Route path="/client/details-interventions/:id" element={<DetailleInterventionClient />} />
        
        
-
-
+       <Route path="/client/mes-entretien" element={<ListeEntretiensClient />} />
        
-       <Route path="//rapports-alarme" element={<RapportAlarmesClientPage />} />
-       
+       <Route path="/client/entretiens/:id" element={<DetailleEntretienClient />} />       
        
        <Route path="/MesEntretiens" element={<MesEntretiens />} />
        <Route path="/ListeUtilisateurs" element={<ListeUtilisateursPage />} />
        <Route path="/MesInstallation" element={<ListeMesInstallationsPage />} />
        
        <Route path="/MapInstallateur" element={<InstallationMapInstallateur />} />
-       
-       <Route path="/Mesintervention" element={<ListeMesInterventionsPage />} />
        <Route path="/MesEntrentientinstallateur" element={<ListeMesEntretiensInstallateurPage/>} />
        <Route path="/Calendrier-En-Insta" element={<CalendrierEntretiensInstallateur/>} />
        <Route path="/ListeAlarmesInstallateur" element={<ListeAlarmesInstallateur/>} />
@@ -173,18 +168,7 @@ function App() {
        <Route path="/ListeReclamationsInstallateur" element={<ListeReclamationsInstallateur/>} />
        
 
-       <Route path="/MesEntretiens" element={<MesEntretiens />} />
-       <Route path="/ListeUtilisateurs" element={<ListeUtilisateursPage />} />
-       <Route path="/MesInstallation" element={<ListeMesInstallationsPage />} />
-       
-       <Route path="/MapInstallateur" element={<InstallationMapInstallateur />} />
-       
        <Route path="/Mesintervention" element={<ListeMesInterventionsPage />} />
-       <Route path="/MesEntrentientinstallateur" element={<ListeMesEntretiensInstallateurPage/>} />
-       <Route path="/Calendrier-En-Insta" element={<CalendrierEntretiensInstallateur/>} />
-       <Route path="/ListeAlarmesInstallateur" element={<ListeAlarmesInstallateur/>} />
-       
-       <Route path="/ListeReclamationsInstallateur" element={<ListeReclamationsInstallateur/>} />
 
        </Route>
   </Routes>

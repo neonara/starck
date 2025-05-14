@@ -183,6 +183,17 @@ getInterventionsClient: () => {
 getInterventionDetailClient: (id) => {
   return api.get(`intervention/client/interventions/${id}/`);
 },
+exportInterventionsCSV: (params = {}) =>
+  api.get("intervention/interventions/export/csv/", {
+    params,
+    responseType: 'blob'
+  }),
+
+exportInterventionsXLSX: (params = {}) =>
+  api.get("intervention/interventions/export/xlsx/", {
+    params,
+    responseType: 'blob'
+  }),
 
 
 
@@ -199,15 +210,34 @@ getEntretienStats: () => api.get("entretien/entretien/statistiques/"),
 ajouterRappelEntretien: (entretienId, rappel_datetime) =>
   api.post(`entretien/entretiens/${entretienId}/rappel/`, { rappel_datetime }),
 getMesEntretiens: () => api.get("entretien/entretiens/mes-entretiens/"),
+getEntretiensClient: () => {
+  return api.get("entretien/client/entretiens/");
+},
+getEntretienDetail: (id) => {
+  return api.get(`entretien/client/entretiens/${id}/`);
+},
 
 
 //Reclamation
 getReclamations: (params = {}) => api.get("reclamation/reclamations/", { params }),
+<<<<<<< HEAD
 updateReclamation: (id, data) => api.put(`reclamation/reclamations/${id}/`, data),
 envoyerReclamation: (data) => api.post("reclamation/reclamations/envoyer/", data),
 getMesReclamations: () => api.get("reclamation/mes-reclamations/"),
 <<<<<<< HEAD
 <<<<<<< HEAD
+=======
+updateReclamation: (id, data) =>
+  api.put(`reclamation/reclamations/${id}/`, data, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  }),
+envoyerReclamation: (data) =>
+  api.post("reclamation/reclamations/envoyer/", data, {
+    headers: { "Content-Type": "multipart/form-data" },
+  }),getMesReclamations: () => api.get("reclamation/mes-reclamations/"),
+>>>>>>> 89daaf5 (chnagment en cours pour resulution du main)
 deleteReclamation: (id) => api.delete(`reclamation/reclamations/${id}/supprimer/`),
 =======
 >>>>>>> 38b6c1b (resolution conflicts merge)
@@ -285,6 +315,10 @@ getMesEntretiensInstallateur: () => api.get("entretien/entretiens/mes-entretiens
 getCalendarEntretiensInstallateur: (params) => api.get("entretien/entretiens/calendar-installateur/", { params }),
 getAlarmesInstallateur: () => api.get("alarme/liste/installateur/"),
 getReclamationsInstallateur: () =>api.get("reclamation/reclamations/installateur/"),
+<<<<<<< HEAD
+=======
+getStatistiquesAlarmesInstallateur: () =>api.get("alarme/statistiques-installateur/"),
+>>>>>>> 89daaf5 (chnagment en cours pour resulution du main)
 
 };
 

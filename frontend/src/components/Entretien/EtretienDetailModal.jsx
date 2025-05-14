@@ -60,7 +60,32 @@ const EntretienDetailPage = () => {
     )}
 <p><strong>Créé le :</strong> {new Date(entretien.cree_le).toLocaleString()}</p>
 <p><strong>Modifié le :</strong> {new Date(entretien.modifie_le).toLocaleString()}</p>
+
 </div>
+{entretien.entretien_suivant && (
+  <div className="col-span-2 mt-6 border-t pt-4">
+    <h3 className="text-lg font-semibold text-gray-800 mb-2">
+      📆 Prochain entretien généré automatiquement
+    </h3>
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-700">
+      <p><strong>Type :</strong> {entretien.entretien_suivant.type_entretien}</p>
+      <p><strong>Date prévue :</strong> {new Date(entretien.entretien_suivant.date_debut).toLocaleString()}</p>
+      <p><strong>Technicien :</strong> {entretien.entretien_suivant.technicien_details
+        ? `${entretien.entretien_suivant.technicien_details.first_name} ${entretien.entretien_suivant.technicien_details.last_name}`
+        : "—"}</p>
+      <p className="col-span-2"><strong>Notes :</strong> {entretien.entretien_suivant.notes || "—"}</p>
+    </div>
+    <div className="mt-2">
+      <button
+        onClick={() => navigate(`/detaille-entretien/${entretien.entretien_suivant.id}`)}
+        className="text-sm text-blue-600 hover:underline"
+      >
+        👉 Voir les détails du prochain entretien
+      </button>
+    </div>
+  </div>
+)}
+
 </div>
   );
 };

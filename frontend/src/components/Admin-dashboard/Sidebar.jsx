@@ -1,20 +1,20 @@
-import { useState } from 'react';
+ import { useState } from 'react';
 import {LayoutGrid, Users, Server, ChevronLeft, ChevronRight, CalendarCheck, Zap, AlertCircle, BarChart3} from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
-import { useUser } from '../../context/UserContext'; 
-
+import { useUser } from '../../context/UserContext';
+ 
 const Sidebar = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [openMenus, setOpenMenus] = useState({});
   const location = useLocation();
-  const { role: userRole } = useUser(); 
-
+  const { role: userRole } = useUser();
+ 
   if (!userRole) return null;
-
+ 
   const toggleMenu = (label) => {
     setOpenMenus((prev) => ({ ...prev, [label]: !prev[label] }));
   };
-
+ 
   //  Menu Admin
   const adminMenuItems = [
     { label: "Tableaux de bord", icon: LayoutGrid, path: "/admin-dashboard" },
@@ -37,7 +37,7 @@ const Sidebar = () => {
         { label: "Liste des Interventions", path: "/liste-interventions" },
       ]
     },
-    { label: "Gestion des Entretiens", icon: CalendarCheck, children: [
+    { label: "Plan d'action", icon: CalendarCheck, children: [
         { label: "Liste des Entretiens", path: "/liste-entretiens" },
         { label: "Calendrier des Entretiens", path: "/calendrier-entretiens" },
         { label: "Statistiques des Entretiens", path: "/statistiques-entretiens" },
@@ -50,10 +50,13 @@ const Sidebar = () => {
     { label: "Rapports", icon: CalendarCheck, children: [
         { label: "Rapport de production", path: "/rapport_production" },
         { label: "Rapport de consommation", path: "/rapport_consommation" },
+ 
+        { label: "Rapports d’historique des alarmes", path: "/rapport_alarme" },
+ 
       ]
     },
   ];
-
+ 
   // Menu Client
   const clientMenuItems = [
     {
@@ -61,17 +64,17 @@ const Sidebar = () => {
       icon: LayoutGrid,
       path: "/client-dashboard",
     },
- 
     {
-      label: "Mes interventions",
-      icon: CalendarCheck,
+      label: "Mes interventios",
+      icon: LayoutGrid,
       path: "/client-mes-interventions",
     },
     {
-      label: "Mes entretiens",
-      icon: CalendarCheck,
-      path: "/client-mes-entretien",
+      label: "Mes plan d'action",
+      icon: LayoutGrid,
+      path: "/client/mes-entretien",
     },
+ 
     {
       label: "Réclamations",
       icon: AlertCircle,
@@ -84,16 +87,17 @@ const Sidebar = () => {
       label: "Rapports",
       icon: BarChart3,
       children: [
-        { label: "Rapport de production", path: "/rapport_production_client" },
-        { label: "Rapport de consommation", path: "/rapport_consommation_client" },
+        { label: "Rapport Production", path: "/rapports-production" },
+        { label: "Rapport Consommation", path: "/rapports-consommation" },
+        { label: "Rapport Historique Alarme", path: "/rapports-alarme" },
       ],
     },
   ];
-    
-
+   
+ 
   // Menu Installateur
   const installateurMenuItems = [
-    { label: "Tableaux de bord", icon: LayoutGrid, path: "/installateur-dashboard" },
+    { label: "Tableaux de bord", icon: LayoutGrid, path: "/DashboardInstallateur" },
     { label: "Gestion des utilisateurs", icon: Users, children: [
         { label: "Utilisateurs ", path: "/ListeUtilisateurs" },
       ]
@@ -105,9 +109,7 @@ const Sidebar = () => {
     { label: "Gestion des Entretiens", icon: CalendarCheck, children: [
         { label: "Liste des Entretiens", path: "/MesEntrentientinstallateur" },
         { label: "Calendrier des Entretiens", path: "/Calendrier-En-Insta" },
-
-        { label: "Rapports d’historique des alarmes", path: "/rapport_alarme" },
-
+ 
       ]
     },
     { label: "Gestion des interventions", icon: Server, children: [
@@ -125,19 +127,38 @@ const Sidebar = () => {
 ]
 },
   ];
+    // Menu Technicien
+    const technicienMenuItems = [
+      { label: "Tableaux de bord", icon: LayoutGrid, path: "/dashboard-technicien" },
+      { label: "Mes interventions", icon: Server, path: "/technicien-interventions" },
+      { label: "Mes plan d'action", icon: CalendarCheck, path: "/MesEntretiens" },
+      { label: "Equipements", icon: CalendarCheck, path: "/equipement" },
+
+      {
+        label: "Rapport Technique",
+        icon: BarChart3,
+        children: [
+          { label: "Rapports interventions", path: "/rapports-interventions-technicien" },
+          { label: "Documents techniques", path: "/docs-techniques-technicien" }
+        ]
+      },
+    ];
+    
+  
   const menuItems =
     userRole === "admin" ? adminMenuItems :
     userRole === "client" ? clientMenuItems :
     userRole === "installateur" ? installateurMenuItems :
+    userRole === "technicien" ? technicienMenuItems :
     [];
-
+ 
   return (
     <div className={` ${isSidebarOpen ? 'w-64' : 'w-16'} bg-white border-r border-gray-200 transition-all duration-300 ease-in-out h-screen fixed top-0 left-0 z-40 overflow-x-hidden`}>
       <div className="flex items-center gap-2 px-4 pt-6">
         <img src="/assets/logo.jpg" alt="Logo" className="w-6 h-6" />
         {isSidebarOpen && <span className="text-lg font-semibold text-gray-800">Starck</span>}
       </div>
-
+ 
       <div className="pt-6 px-2">
         <ul className="space-y-2">
           {menuItems.map(({ label, path, children }) => (
@@ -152,7 +173,7 @@ const Sidebar = () => {
                     {isSidebarOpen && <span className="ml-3">{label}</span>}
                     {isSidebarOpen && <span className="ml-auto">{openMenus[label] ? "▲" : "▼"}</span>}
                   </button>
-
+ 
                   {openMenus[label] && isSidebarOpen && (
                     <ul className="ml-8 mt-1 space-y-1 text-sm text-gray-600">
                       {children.map((child) => (
@@ -181,7 +202,7 @@ const Sidebar = () => {
           ))}
         </ul>
       </div>
-
+ 
       <button
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
         className="absolute top-1/2 -right-3 transform -translate-y-1/2 z-50 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-full px-1.5 py-1 shadow-md"
@@ -191,5 +212,7 @@ const Sidebar = () => {
     </div>
   );
 };
-
+ 
 export default Sidebar;
+ 
+ 

@@ -149,26 +149,27 @@ class StatistiquesAlarmesClientView(APIView):
 class StatistiquesAlarmesInstallationView(APIView):
     permission_classes = [IsAuthenticated, IsAdminOrInstallateur]
 
-def get(self, request, installation_id):
-    cache_key = f"stats:alarmes_installation:{installation_id}"
-    result = cache.get(cache_key)
+    def get(self, request, installation_id):
+        cache_key = f"stats:alarmes_installation:{installation_id}"
+        result = cache.get(cache_key)
 
-    if result:
+        if result:
+            return Response(result)
+
+        alarmes = AlarmeDeclenchee.objects.filter(installation_id=installation_id, est_resolue=False)
+        counts = {"critique": 0, "majeure": 0, "mineure": 0}
+
+        for alarme in alarmes:
+            gravite = alarme.code_alarme.gravite
+            if gravite in counts:
+                counts[gravite] += 1
+
+        total = sum(counts.values())
+        result = {"total": total, **counts}
+        cache.set(cache_key, result, timeout=600)
+
         return Response(result)
 
-    alarmes = AlarmeDeclenchee.objects.filter(installation_id=installation_id, est_resolue=False)
-    counts = {"critique": 0, "majeure": 0, "mineure": 0}
-
-    for alarme in alarmes:
-        gravite = alarme.code_alarme.gravite
-        if gravite in counts:
-            counts[gravite] += 1
-
-    total = sum(counts.values())
-    result = {"total": total, **counts}
-    cache.set(cache_key, result, timeout=600)
-
-    return Response(result)
         
 
 

@@ -58,6 +58,7 @@ const ApiService = {
   getClients: () => api.get("users/clients/"),
   getInstallateurs: () => api.get("users/installateurs/"),
   getTechnicien: () => api.get("users/techniciens/"),
+resendRegistrationLink: (email) => api.post("users/resend-registration-link/", { email }),
 
 //dashboard
 
@@ -273,6 +274,17 @@ getReclamationsInstallateur: () =>api.get("reclamation/reclamations/installateur
 getStatistiquesAlarmesInstallateur: () =>api.get("alarme/statistiques-installateur/"),
 
 getInstallationsByInstallateur: () =>api.get("installations/mes-installations/"),
+getStatistiquesInstallateurProduction: () => api.get("production/statistiques-installateur/"),
+
+//equipement
+
+  ajouterEquipement: (data) => api.post("equipements/ajouter/", data),
+  modifierEquipement: (id, data) => api.put(`equipements/modifier/${id}/`, data),
+  supprimerEquipement: (id) => api.delete(`equipements/supprimer/${id}/`),
+  getEquipementsParInstallation: (installationId) => api.get(`equipements/installation/${installationId}/`),
+  getDetailsEquipement: (id) => api.get(`equipements/details/${id}/`),
+getEquipementParQRCode: (code) =>
+  api.get(`/equipements/qrcode/${code}/`),
 };
 
 export default ApiService;

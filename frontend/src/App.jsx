@@ -75,6 +75,11 @@ import ListeMesEntretiensInstallateurPage from "./Installateur/ListeMesEntretien
 import CalendrierEntretiensInstallateur from "./Installateur/CalendrierEntretiensInstallateur.jsx";
 import ListeAlarmesInstallateur from "./Installateur/ListeAlarmesInstallateur.jsx";
 import ListeReclamationsInstallateur from "./Installateur/ListeReclamationsInstallateur.jsx";
+import DashboardInstallateur from "./Installateur/Dashboard-installateur.jsx";
+//equipement
+import EquipmentSection from "./components/équipements/EquipmentSection.jsx";
+import ClientEquipmentPage from "./components/Client-dashboard/ClientEquipmentPage.jsx";
+import ScanEquipementPage from "./components/équipements/ScanEquipementPage.jsx";
 function App() {
   return (
     <Router>
@@ -156,6 +161,11 @@ function App() {
        
        <Route path="/ListeReclamationsInstallateur" element={<ListeReclamationsInstallateur/>} />
        
+       <Route path="/DashboardInstallateur" element={<DashboardInstallateur/>} />
+
+<Route path="/equipements" element={<EquipmentSection />} />
+<Route path="/client/equipements" element={<ClientEquipmentPage />} />
+<Route path="/equipements/equipements/scan/:code" element={<ScanEquipementPage />} />
 
        </Route>
   </Routes>

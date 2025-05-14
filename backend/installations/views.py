@@ -146,7 +146,7 @@ class InstallationClientView(APIView):
             etat_fonctionnement = 'En panne' if alarme_critique_active else 'Fonctionnelle'
 
             data = {
-
+                "id": installation.id,
                 "nom": installation.nom,
                 "adresse": installation.adresse,
                 "ville": installation.ville,
@@ -163,7 +163,6 @@ class InstallationClientView(APIView):
                 "etat_fonctionnement": etat_fonctionnement,
             }
 
-            #photo de l'installation
             if installation.photo_installation:
                 data["photo_installation_url"] = request.build_absolute_uri(installation.photo_installation.url)
             else:

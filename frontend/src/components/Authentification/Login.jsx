@@ -54,9 +54,9 @@ export default function LoginPage() {
 
         admin: "/admin-dashboard",
 
-        installateur: "/update-profile",
+        installateur: "/DashboardInstallateur",
 
-        technicien: "/update-profile",
+        technicien: "/MesEntretiens",
 
         client: "/client-dashboard",
 

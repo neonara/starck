@@ -9,6 +9,7 @@ class AlarmeCodeSerializer(serializers.ModelSerializer):
 
 class AlarmeDeclencheeSerializer(serializers.ModelSerializer):
     installation_nom = serializers.CharField(source='installation.nom', read_only=True)
+    installation_id = serializers.IntegerField(source='installation.id', read_only=True)  
     code_constructeur = serializers.CharField(source='code_alarme.code_constructeur', read_only=True)
     type_alarme = serializers.CharField(source='code_alarme.type_alarme', read_only=True)
     marque = serializers.CharField(source='code_alarme.marque', read_only=True)

@@ -1,278 +1,187 @@
 import React, { useEffect, useState } from "react";
-import { Suspense, lazy } from "react";
-import ApiService from "../../Api/Api"; 
-import { PieChart, Pie, Cell } from "recharts";
-import { AlertCircle, AlertTriangle, Info, Zap, Users, Wrench } from "lucide-react";
+import ApiService from "../../Api/Api";
+import { Users, Wrench } from "lucide-react";
+import ReactApexChart from "react-apexcharts";
 
-const ReactApexChart = lazy(() => import("react-apexcharts"));
-
-
-
-
-
-
-
-const StatCard = ({ icon, label, value }) => (
-  <div className="bg-white shadow rounded-lg p-4 flex items-center gap-4 w-full">
-    <div className="p-3 bg-gray-100 rounded-full">{icon}</div>
-    <div>
-      <p className="text-sm text-gray-500">{label}</p>
-      <p className="text-lg font-semibold text-gray-800">{value}</p>
-    </div>
+const Card = ({ title, children, color = "gray" }) => (
+  <div className="bg-white rounded-2xl shadow-md p-6 transition-all hover:shadow-lg">
+    {title && <h2 className={`text-lg font-semibold text-${color}-600 mb-4`}>{title}</h2>}
+    {children}
   </div>
 );
 
-const ProductionChart = ({ productionData }) => {
-  const [view, setView] = useState("daily");
-
-  const data = productionData || initialData; 
-
-  const [series, setSeries] = useState([
-    { name: "Objectif", data: data.daily },
-    { name: "Réalisé", data: data.daily.map((val) => Math.floor(val * 0.6)) }
-  ]);
-
-  const options = {
-    chart: { type: "area", toolbar: { show: false }, zoom: { enabled: false } },
-    dataLabels: { enabled: false },
-    stroke: { curve: "smooth", width: 2 },
-    fill: { type: "gradient", gradient: { opacityFrom: 0.4, opacityTo: 0, stops: [0, 100] } },
-    xaxis: {
-      categories:
-        view === "daily"
-          ? ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"]
-          : view === "monthly"
-          ? ["Janv", "Févr", "Mars", "Avr", "Mai", "Juin", "Juil", "Août", "Sept"]
-          : view === "annual"
-          ? ["2019", "2020", "2021", "2022"]
-          : ["Total"]
-    },
-    tooltip: { y: { formatter: (val) => `${val} unités` } },
-    colors: ["#3b82f6", "#93c5fd"]
-  };
-
-  const handleViewChange = (newView) => {
-    setView(newView);
-    const newData = data[newView];
-    setSeries([
-      { name: "Objectif", data: newData },
-      { name: "Réalisé", data: newData.map((val) => Math.floor(val * 0.6)) }
-    ]);
-  };
-
-  const buttons = [
-    { label: "Production journalière", value: "daily" },
-    { label: "Production mensuelle", value: "monthly" },
-    { label: "Production annuelle", value: "annual" },
-    { label: "Totale", value: "total" }
-  ];
-
-  return (
-    <div className="bg-white p-6 mt-6 rounded-xl shadow-md w-full">
-      <div className="flex justify-between items-start mb-4">
-        <div>
-          <h2 className="text-xl font-semibold text-gray-800">Statistics</h2>
-          <p className="text-sm text-gray-500">Production</p>
-        </div>
-        <div className="flex gap-2 flex-wrap">
-          {buttons.map(({ label, value }) => (
-            <button
-              key={value}
-              onClick={() => handleViewChange(value)}
-              className={`px-4 py-1.5 rounded-md text-sm font-medium ${
-                view === value
-                  ? "bg-blue-100 text-blue-900"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      </div>
-      <Suspense fallback={<div>Chargement du graphique...</div>}>
-        <ReactApexChart options={options} series={series} type="area" height={320} />
-      </Suspense>
-    </div>
-  );
-};
 const Dashboard = () => {
   const [stats, setStats] = useState({ total_clients: 0, total_installateurs: 0 });
-  const [productionData, setProductionData] = useState(null); 
-  const [dataAlarms, setDataAlarms] = useState([]);
-
-  const [installationStats, setInstallationStats] = useState({
-    total_normales: 0,
-    total_en_panne: 0,
-  });
+  const [installationStats, setInstallationStats] = useState({ total_normales: 0, total_en_panne: 0 });
+  const [alarmStats, setAlarmStats] = useState({ critique: 0, majeure: 0, mineure: 0 });
+  const [prodStats, setProdStats] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("jour");
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await ApiService.getUserStats();
-        setStats(response.data);
-      } catch (error) {
-        console.error("Erreur lors de la récupération des statistiques", error);
-      }
-    };
-    const fetchInstallationStats = async () => {
-      try {
-        const res = await ApiService.getInstallationStats();
-        setInstallationStats(res.data);
-      } catch (err) {
-        console.error("Erreur récupération stats installations", err);
-      }
-    };
-    
+        const [userStats, installStats, alarmData, prodData] = await Promise.all([
+          ApiService.getUserStats(),
+          ApiService.getInstallationStats(),
+          ApiService.getStatistiquesAlarmesglobale(),
+          ApiService.statistiquesGlobales()
+        ]);
 
-    const fetchGlobalStats = async () => {
-      try {
-        const response = await ApiService.statistiquesGlobales();
-        const globalData = response.data;
+        setStats(userStats.data);
+        setInstallationStats(installStats.data);
 
-        const formattedData = {
-          daily: [globalData.production_journaliere],
-          monthly: [globalData.production_mensuelle],
-          annual: [globalData.production_annuelle],
-          total: [globalData.production_totale]
-        };
-
-        setProductionData(formattedData);  
+        const alarmTotals = alarmData.data.reduce((acc, cur) => {
+          acc[cur.code_alarme__gravite] = cur.total;
+          return acc;
+        }, {});
+        setAlarmStats(alarmTotals);
+        setProdStats(prodData.data);
       } catch (error) {
-        console.error("Erreur lors de la récupération des statistiques globales", error);
+        console.error("Erreur chargement stats", error);
+      } finally {
+        setLoading(false);
       }
     };
-    const fetchAlarmStats = async () => {
-      try {
-        const res = await ApiService.getStatistiquesAlarmesglobale(); 
-        const iconMap = {
-          critique: <AlertCircle size={16} />,
-          majeure: <Zap size={16} />,
-          mineure: <AlertTriangle size={16} />,
-        };
-        const colorMap = {
-          critique: "#e53935",
-          majeure: "#fb8c00",
-          mineure: "#fdd835",
-        };
-    
-        const formatted = res.data.map((item) => {
-          const key = item.code_alarme__gravite;
-          return {
-            name: key.charAt(0).toUpperCase() + key.slice(1),
-            value: item.total,
-            color: colorMap[key] || "#ccc",
-            icon: iconMap[key] || <Info size={16} />,
-          };
-        });
-    
-        setDataAlarms(formatted);
-      } catch (error) {
-        console.error("Erreur chargement statistiques alarmes", error);
-      }
-    };
-    
     fetchStats();
-    fetchGlobalStats();
-    fetchInstallationStats(); 
-    fetchAlarmStats(); 
   }, []);
 
-  if (!productionData) {
-    return <div>Chargement des statistiques...</div>;
-  }
-  const dataInstallations = [
-    { name: "Normales", value: installationStats.total_normales || 0, color: "#29b6f6" },
-    { name: "En panne", value: installationStats.total_en_panne || 0, color: "#e53935" }
-  ];
+  const chartConfig = {
+    jour: {
+      title: "Production journalière",
+      data: prodStats?.production_journaliere || {},
+      type: "area",
+      color: "#3b82f6"
+    },
+    mois: {
+      title: "Production mensuelle",
+      data: prodStats?.production_mensuelle || {},
+      type: "bar",
+      color: "#10b981"
+    },
+    totale: {
+      title: "Production totale",
+      data: { Total: prodStats?.production_totale || 0 },
+      type: "bar",
+      color: "#6366f1"
+    }
+  };
+
+  const current = chartConfig[activeTab];
+  const categories = Object.keys(current?.data || {});
+  const values = Object.values(current?.data || {});
+
+  if (loading || !prodStats) return <div className="text-center py-10 text-gray-500">Chargement...</div>;
+
   return (
-<div className="relative pr-0 pl-0 pt-16 flex flex-col gap-0">
-
+    <div className="p-6 pt-20 flex flex-col gap-6">
       <div className="flex gap-6">
- 
-        <div className="flex flex-col gap-4 w-64">
-
-          <StatCard icon={<Users className="text-blue-600" />} label="Total Clients" value={stats.total_clients} />
-          <StatCard icon={<Wrench className="text-green-600" />} label="Total Installateurs" value={stats.total_installateurs} />
+        {/* Colonne gauche */}
+        <div className="flex flex-col gap-6 w-64">
+          <Card title="Total Clients" color="blue">
+            <div className="flex items-center gap-4">
+              <Users className="text-blue-600" />
+              <span className="text-lg font-semibold">{stats.total_clients}</span>
+            </div>
+          </Card>
+          <Card title="Total Installateurs" color="green">
+            <div className="flex items-center gap-4">
+              <Wrench className="text-green-600" />
+              <span className="text-lg font-semibold">{stats.total_installateurs}</span>
+            </div>
+          </Card>
         </div>
 
-        <div className="flex flex-1 gap-6">
-          {/* Installations */}
-          <div className="flex items-center gap-4 bg-white p-4 rounded shadow w-full">
-            <div className="relative">
-              <PieChart width={220} height={220}>
-                <Pie
-                  data={dataInstallations}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={100}
-                  paddingAngle={3}
-                  dataKey="value"
-                >
-                  {dataInstallations.map((entry, index) => (
-                    <Cell key={index} fill={entry.color} />
-                  ))}
-                </Pie>
-              </PieChart>
-              <div className="absolute inset-0 flex flex-col justify-center items-center text-gray-800">
-                <span className="text-lg font-bold">
-                  {dataInstallations.reduce((a, b) => a + b.value, 0)}
-                </span>
-                <span className="text-xs text-gray-500">Installations</span>
-              </div>
-            </div>
-            <div className="text-sm space-y-2">
-              {dataInstallations.map((entry, index) => (
-                <div key={index} className="flex items-center gap-2" style={{ color: entry.color }}>
-                  <span className="font-semibold">{entry.value}</span>
-                  <span>{entry.name}</span>
-                </div>
-              ))}
-            </div>
-          </div>
+        {/* Colonne droite donuts */}
+        <div className="flex-1 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card title="État des Installations" color="blue">
+              <ReactApexChart
+                type="donut"
+                series={[installationStats.total_normales, installationStats.total_en_panne]}
+                options={{
+                  labels: ["Fonctionnelles", "En panne"],
+                  colors: ["#10b981", "#ef4444"],
+                  legend: { position: "bottom" },
+                  dataLabels: { enabled: true },
+                  plotOptions: { pie: { donut: { size: "70%" } } },
+                  tooltip: { y: { formatter: (val) => `${val} installations` } }
+                }}
+                height={250}
+              />
+            </Card>
 
-          {/* Alarms */}
-          <div className="flex items-center gap-4 bg-white p-4 rounded shadow w-full">
-            <div className="relative">
-              <PieChart width={220} height={220}>
-                <Pie
-                  data={dataAlarms}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={100}
-                  startAngle={90}
-                  endAngle={-270}
-                  paddingAngle={2}
-                  dataKey="value"
-                >
-                  {dataAlarms.map((entry, index) => (
-                    <Cell key={index} fill={entry.color} />
-                  ))}
-                </Pie>
-              </PieChart>
-              <div className="absolute inset-0 flex flex-col justify-center items-center text-gray-800">
-                <span className="text-lg font-bold">
-                  {dataAlarms.reduce((a, b) => a + b.value, 0)}
-                </span>
-                <span className="text-xs text-gray-300">Total des alarmes</span>
-              </div>
-            </div>
-            <div className="text-sm space-y-2 ml-2">
-              {dataAlarms.map((entry, index) => (
-                <div key={index} className="flex items-center gap-2" style={{ color: entry.color }}>
-                  <div>{entry.icon}</div>
-                  <span className="font-semibold">{entry.value}</span>
-                  <span>{entry.name}</span>
-                </div>
-              ))}
-            </div>
+            <Card title="Alarmes Actives" color="red">
+        <ReactApexChart
+  type="donut"
+  series={[
+    alarmStats.critique || 0.001,
+    alarmStats.majeure || 0.001,
+    alarmStats.mineure || 0.001
+  ]}
+  options={{
+    labels: ["Critiques", "Majeures", "Mineures"],
+    colors: ["#ef4444", "#facc15", "#22c55e"],
+    legend: { position: "bottom" },
+    dataLabels: {
+      enabled: true,
+      formatter: (val, opts) => {
+        const total = alarmStats.critique + alarmStats.majeure + alarmStats.mineure;
+        const value = opts.w.config.series[opts.seriesIndex];
+        return total === 0 ? "0%" : `${((value / total) * 100).toFixed(1)}%`;
+      }
+    },
+    plotOptions: { pie: { donut: { size: "70%" } } },
+    tooltip: { y: { formatter: (val) => `${val.toFixed(0)} alarme(s)` } }
+  }}
+  height={250}
+/>
+
+            </Card>
           </div>
         </div>
       </div>
 
-      <ProductionChart productionData={productionData} />
+      {/* Graphique de production */}
+      <div className="bg-white rounded-xl shadow p-6">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold text-gray-800">📊 Statistiques de production</h2>
+          <div className="flex gap-2">
+            {Object.entries(chartConfig).map(([key, cfg]) => (
+              <button
+                key={key}
+                onClick={() => setActiveTab(key)}
+                className={`px-4 py-1.5 rounded-md text-sm font-medium ${
+                  activeTab === key
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
+              >
+                {cfg.title}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <ReactApexChart
+          type={current?.type}
+          series={[{ name: "Production", data: values }]}
+          options={{
+            chart: { toolbar: { show: false } },
+            stroke: { curve: "smooth", width: 2 },
+            dataLabels: { enabled: false },
+            xaxis: {
+              categories,
+              labels: { style: { fontSize: "13px" } }
+            },
+            colors: [current?.color],
+            tooltip: {
+              y: { formatter: (val) => `${val} kWh` }
+            }
+          }}
+          height={320}
+        />
+      </div>
     </div>
   );
 };

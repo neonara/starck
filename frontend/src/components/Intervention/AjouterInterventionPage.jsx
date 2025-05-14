@@ -13,7 +13,9 @@ const AjouterInterventionPage = () => {
     technicien: '',
     date_prevue: '',
     statut: '',
-    description: ''
+    description: '',
+    type_intervention: '',    
+    periode_recurrence: '' 
   });
 
   const statutOptions = [
@@ -22,6 +24,14 @@ const AjouterInterventionPage = () => {
     { value: 'terminee', label: 'Terminée' },
     { value: 'annulee', label: 'Annulée' },
   ];
+  const typeInterventionOptions = [
+    { value: 'diagnostic', label: 'Diagnostic' },
+    { value: 'preventive', label: 'Préventive' },
+    { value: 'curative', label: 'Curative' }
+  ];
+
+
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -52,8 +62,12 @@ const AjouterInterventionPage = () => {
         technicien: parseInt(formData.technicien),
         date_prevue: formData.date_prevue,
         statut: formData.statut,
-        description: formData.description || 'Aucune description'
+        description: formData.description || 'Aucune description',
+        type_intervention: formData.type_intervention,
       };
+      if (formData.periode_recurrence) {
+        interventionData.periode_recurrence = formData.periode_recurrence;
+      }
 
       const response = await ApiService.createIntervention(interventionData);
       toast.success("Intervention créée avec succès ✅");
@@ -112,6 +126,12 @@ const AjouterInterventionPage = () => {
       label: "Date prévue",
       name: "date_prevue",
       type: "date",
+    },
+    {
+      label: "Type intervention",
+      name: "type_intervention", 
+      type: "select",
+      options: typeInterventionOptions,
     },
     {
       label: "Statut",

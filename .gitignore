@@ -12,8 +12,6 @@ frontend/
 <<<<<<< HEAD
 =======
 google_credentials/credentials.json
-<<<<<<< HEAD
->>>>>>> 89daaf5 (chnagment en cours pour resulution du main)
-=======
+backend/google_credentials/starck-calendar-key.json
 backend/google_credentials/starck-calendar-key.json
 >>>>>>> 7d1d117 (Remove secret key from google calendar)

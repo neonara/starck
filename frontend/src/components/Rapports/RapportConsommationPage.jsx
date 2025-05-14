@@ -81,7 +81,6 @@ const RapportConsommationPage = () => {
 <div className="p-8 text-gray-800">
 <h2 className="text-2xl font-bold mb-6">Rapport de Consommation Mensuelle</h2>
  
-      {/* Formulaire de filtre */}
 <form
         onSubmit={handleSubmit}
         className="mb-6 flex flex-wrap items-center gap-4"
@@ -114,10 +113,8 @@ const RapportConsommationPage = () => {
 </button>
 </form>
  
-      {/* Résultats */}
       {donnees.length > 0 && (
 <div className="grid md:grid-cols-2 gap-8">
-          {/* Tableau de consommation */}
 <div>
 <h3 className="text-lg font-semibold mb-2">Tableau de consommation</h3>
 <div className="overflow-x-auto">
@@ -142,7 +139,6 @@ const RapportConsommationPage = () => {
 </div>
 </div>
  
-          {/* Graphique */}
 <div>
 <h3 className="text-lg font-semibold mb-2">Graphique de consommation</h3>
 <Chart
@@ -167,7 +163,6 @@ const RapportConsommationPage = () => {
             />
 </div>
  
-          {/* Boutons d’export */}
 <div className="md:col-span-2 flex justify-end gap-4 mt-4">
 <button
               type="button"

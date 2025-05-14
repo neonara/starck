@@ -10,7 +10,8 @@ from .views import (
     StatistiquesInstallationsView,
     InstallationGeoDataView,
     ListerMesInstallationsView,
-    InstallationGeoDataInstallateurView
+    InstallationGeoDataInstallateurView,
+    StatistiquesInstallateurView
 
 )
 
@@ -25,5 +26,8 @@ urlpatterns = [
     path('geodata/', InstallationGeoDataView.as_view(), name='installation-geodata'),
    path('mes-installations/', ListerMesInstallationsView.as_view(), name='mes-installations'),#installation par installateur 
     path('mes-installations-geo/', InstallationGeoDataInstallateurView.as_view(), name='mes_installations_geo'),
+    path('statistiques-installateur/', StatistiquesInstallateurView.as_view(), name='statistiques-installateur'),
+
+
 
 ]

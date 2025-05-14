@@ -1,22 +1,18 @@
 import { useEffect, useState } from 'react';
 import {
-  Bell, ChevronDown, User, LogOut, Settings, Pencil, Globe
+  Bell, ChevronDown, User, LogOut, Pencil, Globe
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { toast, Toaster } from 'react-hot-toast';
 import ApiService from "../../Api/Api";
-import { useNavigate } from 'react-router-dom';
-
 
 const Navbar = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [hasNewNotif, setHasNewNotif] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0); // au lieu de hasNewNotif
-  const [user, setUser] = useState({ name: "", email: "" });
+  const [user, setUser] = useState({ name: "", email: "", role: "" });
   const navigate = useNavigate();
-
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -27,7 +23,6 @@ const Navbar = () => {
           email: res.data.email,
           role: res.data.role,
         });
-        
       } catch (err) {
         console.error("Erreur chargement profil :", err);
       }
@@ -35,65 +30,58 @@ const Navbar = () => {
     fetchProfile();
   }, []);
 
-
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
     if (!token) return;
-  
+
     const socket = new WebSocket(`ws://localhost:8000/ws/notifications/?token=${token}`);
-  
+
     socket.onopen = () => console.log("WebSocket connecté");
     socket.onmessage = (e) => {
       try {
         const data = JSON.parse(e.data);
         const message = data.message || { title: "❓", content: "Notification inconnue" };
-    
+
         console.log("Nouvelle notification reçue ✅", message);
-    
+
         toast.success(message.content || "🔔 Nouvelle notification !");
-        setNotifications((prev) => [...prev, { ...message, is_read: false }]); // ⚡ ajouter is_read false
+        setNotifications((prev) => [...prev, { ...message, is_read: false }]);
+        setHasNewNotif(true);
       } catch (err) {
         console.error("Erreur de parsing :", err);
       }
     };
-    
-    
-  
+
     socket.onerror = (err) => console.error("Erreur WebSocket :", err);
     socket.onclose = () => console.log("WebSocket fermé");
-  
+
     return () => socket.close();
   }, [user.email]);
-  console.log("UnreadCount =", unreadCount);
   useEffect(() => {
-    const count = notifications.filter((n) => !n.is_read).length;
-    setUnreadCount(count);
-  }, [notifications]);
+    setHasNewNotif(true);
+  }, []);
   
-
   return (
     <nav className="fixed top-0 left-64 right-0 z-50 bg-white shadow-sm px-6 py-3 flex justify-between items-center">
       <div className="flex items-center gap-2" />
 
       <div className="flex items-center gap-4 relative">
+        {/* Bouton notifications */}
         <div className="relative">
-       
+        <button
+  onClick={() => {
+    setHasNewNotif(false);
+    navigate("/notification");
+  }}
+  className="relative rounded-full border p-2 text-gray-500 hover:bg-gray-100"
+>
+  <Bell className="w-5 h-5" />
 
+  {hasNewNotif && (
+    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-600 rounded-full" />
+  )}
+</button>
 
-          
-          <button
-          onClick={() => {
-            setHasNewNotif(false); 
-            navigate("/notification"); 
-          }}
-            className="relative rounded-full border p-2 text-gray-500 hover:bg-gray-100"
-          >
-            <Bell className="w-5 h-5" />
-            {hasNewNotif && (
-              <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-red-500 animate-ping" />
-            )}
-          </button>
-          
 
           {notifOpen && (
             <div className="absolute right-0 mt-2 w-80 bg-white border rounded-md shadow-md z-50 text-sm">
@@ -113,26 +101,26 @@ const Navbar = () => {
             </div>
           )}
         </div>
-        
+
         {user && user.role && (
-  <button
-    onClick={() => {
-      if (user.role === "admin") {
-        navigate("/installationMap"); 
-      } else if (user.role === "installateur") {
-        navigate("/MapInstallateur"); 
-      } else {
-        toast.error("Accès non autorisé à la carte 🌐");
-      }
-    }}
-    className="relative rounded-full border p-2 text-gray-500 hover:bg-gray-100"
-    title="Carte des installations"
-  >
-    <Globe className="w-5 h-5" />
-  </button>
-)}
+          <button
+            onClick={() => {
+              if (user.role === "admin") {
+                navigate("/installationMap");
+              } else if (user.role === "installateur") {
+                navigate("/MapInstallateur");
+              } else {
+                toast.error("Accès non autorisé à la carte 🌐");
+              }
+            }}
+            className="relative rounded-full border p-2 text-gray-500 hover:bg-gray-100"
+            title="Carte des installations"
+          >
+            <Globe className="w-5 h-5" />
+          </button>
+        )}
 
-
+        {/* Dropdown utilisateur */}
         <div className="relative">
           <button
             onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -153,11 +141,6 @@ const Navbar = () => {
                 <li>
                   <Link to="/update-profile" className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100">
                     <Pencil className="w-4 h-4" /> Mon profil
-                  </Link>
-                </li>
-                <li>
-                  <Link to="/update-profile" className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100">
-                    <Settings className="w-4 h-4" /> Paramètres
                   </Link>
                 </li>
               </ul>

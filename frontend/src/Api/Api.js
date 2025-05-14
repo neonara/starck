@@ -58,6 +58,7 @@ const ApiService = {
   getClients: () => api.get("users/clients/"),
   getInstallateurs: () => api.get("users/installateurs/"),
   getTechnicien: () => api.get("users/techniciens/"),
+resendRegistrationLink: (email) => api.post("users/resend-registration-link/", { email }),
 
 //dashboard
 
@@ -233,6 +234,32 @@ rapports: {
     api.post("rapports/rapports/export-consommation-pdf/", params, {
       responseType: "blob",
     }),
+
+  getRapportAlarmesMensuelles: (installationId, mois) =>
+    api.get(`rapports/rapports/alarme-mensuelle/`, {
+    params: { installation_id: installationId, mois },
+  }),
+
+  exportRapportAlarmesExcel: (params) =>
+    api.post("rapports/rapports/export-alarmes-excel/", params, {
+      responseType: "blob"
+    }),
+  
+  exportRapportAlarmesPDF: (params) =>
+    api.post("rapports/rapports/export-alarmes-pdf/", params, { responseType: "blob" }),
+
+  getProductionClient: (mois) => api.get(`rapports/client/rapport/production?mois=${mois}`),
+  getConsommation: (mois) => api.get(`rapports/client/rapport/consommation?mois=${mois}`),
+  getAlarmes: (mois) => api.get(`rapports/client/rapport/alarmes?mois=${mois}`),
+
+  exportProductionExcel: (mois) => api.post(`rapports/client/export/production/excel`, { mois }, { responseType: "blob" }),
+  exportConsommationExcel: (mois) => api.post(`rapports/client/export/consommation/excel`, { mois }, { responseType: "blob" }),
+  exportAlarmesExcel: (mois) => api.post(`rapports/client/export/alarmes/excel`, { mois }, { responseType: "blob" }),
+
+  exportProductionPDF: (mois) => api.post(`rapports/client/export/production/pdf`, { mois }, { responseType: "blob" }),
+  exportConsommationPDF: (mois) => api.post(`rapports/client/export/consommation/pdf`, { mois }, { responseType: "blob" }),
+  exportAlarmesPDF: (mois) => api.post(`rapports/client/export/alarmes/pdf`, { mois }, { responseType: "blob" }),
+    
 },
 
 //Installateur
@@ -244,7 +271,20 @@ getMesEntretiensInstallateur: () => api.get("entretien/entretiens/mes-entretiens
 getCalendarEntretiensInstallateur: (params) => api.get("entretien/entretiens/calendar-installateur/", { params }),
 getAlarmesInstallateur: () => api.get("alarme/liste/installateur/"),
 getReclamationsInstallateur: () =>api.get("reclamation/reclamations/installateur/"),
+getStatistiquesAlarmesInstallateur: () =>api.get("alarme/statistiques-installateur/"),
 
+getInstallationsByInstallateur: () =>api.get("installations/mes-installations/"),
+getStatistiquesInstallateurProduction: () => api.get("production/statistiques-installateur/"),
+
+//equipement
+
+  ajouterEquipement: (data) => api.post("equipements/ajouter/", data),
+  modifierEquipement: (id, data) => api.put(`equipements/modifier/${id}/`, data),
+  supprimerEquipement: (id) => api.delete(`equipements/supprimer/${id}/`),
+  getEquipementsParInstallation: (installationId) => api.get(`equipements/installation/${installationId}/`),
+  getDetailsEquipement: (id) => api.get(`equipements/details/${id}/`),
+getEquipementParQRCode: (code) =>
+  api.get(`/equipements/qrcode/${code}/`),
 };
 
 export default ApiService;

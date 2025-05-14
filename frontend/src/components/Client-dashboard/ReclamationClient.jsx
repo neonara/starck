@@ -10,8 +10,8 @@ const FormulaireEnvoyerReclamation = () => {
     message: "",
   });
   const [loading, setLoading] = useState(false);
-  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false); // 👉 Pour ouvrir la confirmation
-  const [pendingSubmit, setPendingSubmit] = useState(false); // 👉 Pour attendre la vraie confirmation
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false); 
+  const [pendingSubmit, setPendingSubmit] = useState(false); 
 
   const handleChange = (e) => {
     setFormData(prev => ({
@@ -37,7 +37,6 @@ const FormulaireEnvoyerReclamation = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // 👉 Avant d'envoyer, ouvrir une popup de confirmation
     setIsConfirmDialogOpen(true);
   };
 
@@ -50,7 +49,6 @@ const FormulaireEnvoyerReclamation = () => {
         </h2>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-          {/* Sujet */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Sujet</label>
             <input
@@ -64,7 +62,6 @@ const FormulaireEnvoyerReclamation = () => {
             />
           </div>
 
-          {/* Message */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
             <textarea
@@ -77,7 +74,6 @@ const FormulaireEnvoyerReclamation = () => {
             />
           </div>
 
-          {/* Bouton Envoyer */}
           <button
             type="submit"
             className="flex items-center justify-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition"

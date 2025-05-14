@@ -43,7 +43,6 @@ INSTALLED_APPS = [
     'corsheaders',
     'channels',
     'users',
-    'equipements',
     'installations',
     'alarme',
     'notification',
@@ -53,6 +52,7 @@ INSTALLED_APPS = [
     'reclamation',
     'rapports',
     'historique',
+    "equipements",
 
 ]
 ASGI_APPLICATION = 'backend.asgi.application'

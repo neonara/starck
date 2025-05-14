@@ -231,3 +231,7 @@ CACHES = {
         "LOCATION": "redis://localhost:6379/0", 
     }
 }
+
+import os
+GOOGLE_CREDENTIALS_PATH = os.path.join(BASE_DIR, 'google_credentials', 'starck-calendar-key.json')
+

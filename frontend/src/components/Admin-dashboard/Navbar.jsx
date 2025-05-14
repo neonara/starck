@@ -129,14 +129,12 @@ const Navbar = () => {
             <User className="w-6 h-6 text-gray-700 border rounded-full p-1" />
             <ChevronDown className="w-4 h-4 text-gray-600" />
           </button>
-
           {dropdownOpen && (
             <div className="absolute right-0 mt-2 w-64 bg-white border rounded-md shadow-md z-50 text-sm">
               <div className="px-4 py-3 border-b">
                 <p className="font-medium text-gray-800">{user.name || "Utilisateur"}</p>
                 <p className="text-gray-500 text-sm">{user.email || "email inconnu"}</p>
               </div>
-
               <ul className="text-gray-700 divide-y">
                 <li>
                   <Link to="/update-profile" className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100">
@@ -157,7 +155,6 @@ const Navbar = () => {
           )}
         </div>
       </div>
-
       <Toaster position="top-right" />
     </nav>
   );

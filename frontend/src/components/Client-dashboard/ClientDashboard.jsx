@@ -178,6 +178,7 @@ const ClientDashboard = () => {
         </div>
 
         {/* Weather Card */}
+        {/* Weather Card */}
 <div className='flex-grow rounded-2xl  flex flex-col'>
 <WeatherCard todayWeather={todayWeather} weather={weather} />
 

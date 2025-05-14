@@ -34,6 +34,7 @@ const ListeInterventionPage = () => {
   const [statutFilter, setStatutFilter] = useState("");
   const [technicienFilter, setTechnicienFilter] = useState("");
   const [techniciensDisponibles, setTechniciensDisponibles] = useState([]);
+  const [typeFilter, setTypeFilter] = useState("");
 
   const navigate = useNavigate();
 
@@ -42,10 +43,12 @@ const ListeInterventionPage = () => {
       try {
         const params = {
           statut: statutFilter || undefined,
-          technicien_id: technicienFilter || undefined,
+          technicien: technicienFilter || undefined,
+          type_intervention: typeFilter || undefined,
+          search: globalFilter || undefined,
         };
 
-        const res = await ApiService.getInterventions({ params });
+        const res = await ApiService.getInterventions(params); 
         const interventions = res.data.results || res.data;
 
         if (Array.isArray(interventions)) {
@@ -85,17 +88,27 @@ const ListeInterventionPage = () => {
     };
 
     fetchInterventions();
-  }, [ statutFilter, technicienFilter]);
+  }, [ statutFilter, technicienFilter, typeFilter, globalFilter]);
 
-  const handleExportClick = async (format) => {
-    setShowExportOptions(false);
-    try {
-      await ApiService.exportInterventions({ format });
-      toast.success(`Export ${format.toUpperCase()} lancé ✅`);
-    } catch (err) {
-      toast.error("Erreur lors de l'export ❌");
-    }
-  };
+const handleExportClick = async (format) => {
+  setShowExportOptions(false);
+  try {
+    const exporter = format === "csv" ? ApiService.exportInterventionsCSV : ApiService.exportInterventionsXLSX;
+    const response = await exporter({ statut: statutFilter, technicien: technicienFilter, type_intervention: typeFilter });
+
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `interventions.${format}`);
+    document.body.appendChild(link);
+    link.click();
+    toast.success(`Export ${format.toUpperCase()} réussi ✅`);
+  } catch (err) {
+    toast.error("Erreur export ❌");
+  }
+};
+
+
 
   const columns = useMemo(
     () => [
@@ -128,6 +141,24 @@ const ListeInterventionPage = () => {
           return date ? new Date(date).toLocaleDateString() : "—";
         },
       },
+      {
+        header: "TYPE",
+        accessorKey: "type_intervention",
+        cell: (info) => {
+          const type = info.getValue();
+          switch (type) {
+            case "diagnostic":
+              return "Diagnostic";
+            case "preventive":
+              return "Préventive";
+            case "curative":
+              return "Curative";
+            default:
+              return "—";
+          }
+        }
+      },
+
       {
         header: "STATUT",
         accessorKey: "statut",
@@ -180,41 +211,11 @@ const ListeInterventionPage = () => {
     data,
     columns,
     initialState: { pagination: { pageSize } },
-    state: { globalFilter },
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     onGlobalFilterChange: setGlobalFilter,
-    filterFns: {
-      fuzzy: (row, columnId, value) => {
-        const searchValue = value.toLowerCase();
-        const rowData = row.original;
-
-        // Recherche dans l'installation
-        const installation = rowData.installation_details || rowData.installation;
-        if (installation?.nom?.toLowerCase().includes(searchValue)) return true;
-
-        // Recherche dans le technicien
-        const tech = rowData.technicien_details || rowData.technicien;
-        if (tech) {
-          const techName = `${tech.first_name || ''} ${tech.last_name || ''}`.trim().toLowerCase();
-          if (techName.includes(searchValue)) return true;
-          if (tech.email?.toLowerCase().includes(searchValue)) return true;
-        }
-
-        // Recherche dans la date
-        if (rowData.date_prevue) {
-          const date = new Date(rowData.date_prevue).toLocaleDateString().toLowerCase();
-          if (date.includes(searchValue)) return true;
-        }
-
-        // Recherche dans le statut
-        if (rowData.statut?.toLowerCase().includes(searchValue)) return true;
-
-        return false;
-      }
-    },
-    globalFilterFn: 'fuzzy'
+    state: {},
   });
 
   useEffect(() => {
@@ -260,6 +261,17 @@ const ListeInterventionPage = () => {
               </option>
             ))}
           </select>
+        <select
+          value={typeFilter}
+          onChange={(e) => setTypeFilter(e.target.value)}
+          className="border text-gray-500 rounded px-2 py-1 text-sm"
+        >
+          <option value="">Tous les types</option>
+          <option value="diagnostic">Diagnostic</option>
+          <option value="preventive">Préventive</option>
+          <option value="curative">Curative</option>
+        </select>
+
 
           <input
             type="text"

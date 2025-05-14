@@ -12,9 +12,10 @@ from django.contrib.auth import get_user_model
 from users.serializers import UserSerializer
 from users.permissions import IsAdminOrInstallateur,IsInstallateur
 from rest_framework.permissions import IsAuthenticated
-from django.core.cache import cache
+from rest_framework import generics, permissions
+from dateutil.relativedelta import relativedelta  
+from datetime import datetime
 
-from django.db.models import Count, Q
 User = get_user_model()
 
 class ListeFicheInterventionView(generics.ListAPIView):
@@ -32,6 +33,7 @@ class ListeFicheInterventionView(generics.ListAPIView):
                 Q(installation__nom__icontains=search_term) |
                 Q(statut__icontains=search_term) |
                 Q(technicien__email__icontains=search_term) |
+                Q(type_intervention__icontains=search_term) |
                 Q(technicien__first_name__icontains=search_term) |
                 Q(technicien__last_name__icontains=search_term)
             )
@@ -47,34 +49,30 @@ class ListeFicheInterventionView(generics.ListAPIView):
         statut = self.request.query_params.get('statut')
         if statut:
             queryset = queryset.filter(statut=statut)
+        
+        type_intervention = self.request.query_params.get('type_intervention')
+        if type_intervention:
+            queryset = queryset.filter(type_intervention=type_intervention)
+
             
         return queryset
 
 
+
 class CreerFicheInterventionView(generics.CreateAPIView):
     serializer_class = FicheInterventionCreateSerializer
-    permission_classes = [permissions.IsAuthenticated,IsAdminOrInstallateur]
+    permission_classes = [permissions.IsAuthenticated, IsAdminOrInstallateur]
 
     def create(self, request, *args, **kwargs):
-        try:
-            serializer = self.get_serializer(data=request.data)
-            if not serializer.is_valid():
-                return Response(
-                    serializer.errors,
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            self.perform_create(serializer)
-            instance = FicheIntervention.objects.get(pk=serializer.instance.pk)
-            detail_serializer = FicheInterventionDetailSerializer(instance)
-            return Response(
-                detail_serializer.data,
-                status=status.HTTP_201_CREATED
-            )
-        except Exception as e:
-            return Response(
-                {'error': str(e)},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+
+        instance = serializer.instance
+        detail_serializer = FicheInterventionDetailSerializer(instance)
+
+        return Response(detail_serializer.data, status=status.HTTP_201_CREATED)
+
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import permissions
@@ -178,61 +176,64 @@ class HistoriqueInterventionsParInstallationView(generics.ListAPIView):
         return FicheIntervention.objects.filter(installation_id=installation_id).order_by('-date_prevue')
 
 
-
-
+from django.db.models import Count, Q
 
 class NombreInterventionsParTechnicienView(APIView):
-    permission_classes = [permissions.IsAuthenticated, IsAdminOrInstallateur]
+    """Retourne le nombre total d'interventions par technicien"""
+    permission_classes = [permissions.IsAuthenticated,IsAdminOrInstallateur]
 
     def get(self, request):
-        cache_key = "stats:interventions_par_technicien"
-        data = cache.get(cache_key)
-        if data:
-            return Response(data)
-
-        raw_data = (
+        data = (
             FicheIntervention.objects.values('technicien__id', 'technicien__first_name', 'technicien__last_name')
             .annotate(nombre_interventions=Count('id'))
         )
 
-        data = [
+        result = [
             {
                 "technicien_id": entry["technicien__id"],
                 "nom": f'{entry["technicien__first_name"]} {entry["technicien__last_name"]}',
                 "nombre_interventions": entry["nombre_interventions"]
             }
-            for entry in raw_data
+            for entry in data
         ]
 
-        cache.set(cache_key, data, timeout=3600)
-        return Response(data)
-
-
+        return Response(result)
 
 
 class TauxResolutionInterventionsView(APIView):
-    permission_classes = [permissions.IsAuthenticated, IsAdminOrInstallateur]
+    """Retourne le taux de résolution des interventions"""
+    permission_classes = [permissions.IsAuthenticated,IsAdminOrInstallateur]
 
     def get(self, request):
-        cache_key = "stats:taux_resolution_intervention"
-        data = cache.get(cache_key)
-        if data:
-            return Response(data)
-
         total = FicheIntervention.objects.count()
         resolues = FicheIntervention.objects.filter(statut='resolue').count()
+
         taux_resolution = (resolues / total * 100) if total > 0 else 0
 
-        data = {
+        return Response({
             "total_interventions": total,
             "interventions_resolues": resolues,
             "taux_resolution": f"{taux_resolution:.2f} %"
-        }
+        })
+    
+class ListeFicheInterventionClientView(generics.ListAPIView):
+    """
+    Retourne les fiches d'intervention liées aux installations du client connecté
+    """
+    serializer_class = FicheInterventionDetailSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
-        cache.set(cache_key, data, timeout=3600)
-        return Response(data)
+    def get_queryset(self):
+        user = self.request.user
+        return FicheIntervention.objects.filter(installation__client=user).order_by('-date_prevue')
+    
+class DetailFicheInterventionClientView(generics.RetrieveAPIView):
+    serializer_class = FicheInterventionDetailSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
-
+    def get_queryset(self):
+        user = self.request.user
+        return FicheIntervention.objects.filter(installation__client=user)
 
 
 #liste intervention installateur 
@@ -251,3 +252,99 @@ class ListeMesFichesInterventionView(generics.ListAPIView):
             return FicheIntervention.objects.none()
 
         return FicheIntervention.objects.filter(installation__installateur=user).order_by('-date_prevue')
+
+
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from django.http import HttpResponse
+import openpyxl
+import csv
+from openpyxl.utils import get_column_letter
+from django.db.models import Q
+from .models import FicheIntervention
+# Export CSV
+class ExportInterventionsCSVView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        queryset = self._filter_queryset(request)
+        return self._export_csv(queryset)
+
+    def _filter_queryset(self, request):
+        qs = FicheIntervention.objects.all()
+        statut = request.query_params.get('statut')
+        technicien = request.query_params.get('technicien')
+        type_intervention = request.query_params.get('type_intervention')
+        search = request.query_params.get('search')
+
+        if statut:
+            qs = qs.filter(statut=statut)
+        if technicien:
+            qs = qs.filter(technicien_id=technicien)
+        if type_intervention:
+            qs = qs.filter(type_intervention=type_intervention)
+        if search:
+            qs = qs.filter(
+                Q(installation__nom__icontains=search) |
+                Q(technicien__first_name__icontains=search) |
+                Q(technicien__last_name__icontains=search) |
+                Q(description__icontains=search)
+            )
+        return qs
+
+    def _export_csv(self, queryset):
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="interventions.csv"'
+        writer = csv.writer(response)
+        writer.writerow(["Installation", "Technicien", "Date prévue", "Type", "Statut", "Description"])
+        for obj in queryset:
+            writer.writerow([
+                obj.installation.nom if obj.installation else "",
+                f"{obj.technicien.first_name} {obj.technicien.last_name}" if obj.technicien else "",
+                obj.date_prevue.strftime("%Y-%m-%d %H:%M") if obj.date_prevue else "",
+                obj.get_type_intervention_display(),
+                obj.get_statut_display(),
+                obj.description or ""
+            ])
+        return response
+
+
+# Export XLSX
+class ExportInterventionsXLSXView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        queryset = ExportInterventionsCSVView()._filter_queryset(request)  # Réutilise le filtre
+        return self._export_xlsx(queryset)
+
+    def _export_xlsx(self, queryset):
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Interventions"
+        headers = ["Installation", "Technicien", "Date prévue", "Type", "Statut", "Description"]
+        ws.append(headers)
+
+        for obj in queryset:
+            ws.append([
+                obj.installation.nom if obj.installation else "",
+                f"{obj.technicien.first_name} {obj.technicien.last_name}" if obj.technicien else "",
+                obj.date_prevue.strftime("%Y-%m-%d %H:%M") if obj.date_prevue else "",
+                obj.get_type_intervention_display(),
+                obj.get_statut_display(),
+                obj.description or ""
+            ])
+
+        for col_num, _ in enumerate(headers, 1):
+            col_letter = get_column_letter(col_num)
+            ws.column_dimensions[col_letter].width = 20
+
+        from io import BytesIO
+        output = BytesIO()
+        wb.save(output)
+        output.seek(0)
+        response = HttpResponse(
+            output.getvalue(),
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = 'attachment; filename="interventions.xlsx"'
+        return response

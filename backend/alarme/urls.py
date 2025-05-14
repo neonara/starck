@@ -15,7 +15,8 @@ from .views import (
     StatistiquesAlarmesClientView,
     StatistiquesAlarmesInstallationView,
     ListeAlarmesInstallateurView,
-    StatistiquesAlarmesInstallateurView
+    StatistiquesAlarmesInstallateurView,
+    ListeAlarmesInstallateurView
 )
 
 

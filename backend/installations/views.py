@@ -91,7 +91,6 @@ class DetailsInstallationView(APIView):
         except Installation.DoesNotExist:
             return Response({"error": "Installation non trouvée."}, status=status.HTTP_404_NOT_FOUND)
 
-
 class StatistiquesInstallationsView(APIView):
     permission_classes = [IsAuthenticated, IsAdminOrInstallateur]
 

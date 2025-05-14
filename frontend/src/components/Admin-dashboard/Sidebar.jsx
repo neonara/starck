@@ -47,11 +47,11 @@ const Sidebar = () => {
         { label: "Alarme Active", path: "/ListeAlarmesDeclenchees" },
       ]
     },
-    { label: "Gestion des interventions", icon: Wrench, children: [
+    { label: "Gestion des interventions", icon: Server, children: [
         { label: "Liste des Interventions", path: "/liste-interventions" },
       ]
     },
-    { label: "Gestion des Entretiens", icon:ClipboardCheck , children: [
+    { label: "Plan d'action", icon: CalendarCheck, children: [
         { label: "Liste des Entretiens", path: "/liste-entretiens" },
         { label: "Calendrier des Entretiens", path: "/calendrier-entretiens" },
         { label: "Statistiques des Entretiens", path: "/statistiques-entretiens" },
@@ -84,9 +84,21 @@ const Sidebar = () => {
          { label: "Mes Equipements", path: "/client/equipements" },
       ]
     },
+  
+    {
+      label: "Mes interventios",
+      icon: LayoutGrid,
+      path: "/client-mes-interventions",
+    },
+    {
+      label: "Mes plan d'action",
+      icon: LayoutGrid,
+      path: "/client/mes-entretien",
+    },
+ 
     {
       label: "Réclamations",
-      icon: StickyNote,
+      icon: AlertCircle,
       children: [
         { label: "Créer réclamations", path: "/client-reclamations" },
         { label: "Mes réclamations", path: "/liste-reclamations" },
@@ -137,19 +149,37 @@ const Sidebar = () => {
 ]
 },
   ];
+    // Menu Technicien
+    const technicienMenuItems = [
+      { label: "Tableaux de bord", icon: LayoutGrid, path: "/dashboard-technicien" },
+      { label: "Mes interventions", icon: Server, path: "/technicien-interventions" },
+      { label: "Mes plan d'action", icon: CalendarCheck, path: "/MesEntretiens" },
+      { label: "Equipements", icon: CalendarCheck, path: "/equipement" },
+
+      {
+        label: "Rapport Technique",
+        icon: BarChart3,
+        children: [
+          { label: "Rapports interventions", path: "/rapports-interventions-technicien" },
+          { label: "Documents techniques", path: "/docs-techniques-technicien" }
+        ]
+      },
+    ];
+    
+  
   const menuItems =
     userRole === "admin" ? adminMenuItems :
     userRole === "client" ? clientMenuItems :
     userRole === "installateur" ? installateurMenuItems :
+    userRole === "technicien" ? technicienMenuItems :
     [];
-
+ 
   return (
     <div className={` ${isSidebarOpen ? 'w-64' : 'w-16'} bg-white border-r border-gray-200 transition-all duration-300 ease-in-out h-screen fixed top-0 left-0 z-40 overflow-x-hidden`}>
       <div className="flex items-center gap-2 px-4 pt-6">
         <img src="/assets/logo.jpg" alt="Logo" className="w-6 h-6" />
         {isSidebarOpen && <span className="text-lg font-semibold text-gray-800">Starck</span>}
       </div>
-
       <div className="pt-6 px-2">
         <ul className="space-y-2">
           {menuItems.map(({ label, icon: Icon, path, children }) => (
@@ -164,7 +194,6 @@ const Sidebar = () => {
                     {isSidebarOpen && <span className="ml-3">{label}</span>}
                     {isSidebarOpen && <span className="ml-auto">{openMenus[label] ? "▲" : "▼"}</span>}
                   </button>
-
                   {openMenus[label] && isSidebarOpen && (
                     <ul className="ml-8 mt-1 space-y-1 text-sm text-gray-600">
                       {children.map((child) => (
@@ -193,7 +222,6 @@ const Sidebar = () => {
           ))}
         </ul>
       </div>
-
       <button
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
         className="absolute top-1/2 -right-3 transform -translate-y-1/2 z-50 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-full px-1.5 py-1 shadow-md"

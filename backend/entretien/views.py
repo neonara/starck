@@ -5,7 +5,6 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from users.permissions import IsTechnicien
-from django.core.cache import cache
 
 from django.shortcuts import get_object_or_404
 from .models import Entretien, RappelEntretien
@@ -21,11 +20,18 @@ from django.utils.timezone import now, make_aware
 
 from django.db.models import Q
 from .tasks import rappel_mail_entretien_task
+from dateutil.relativedelta import relativedelta  
 
 from django.utils.dateparse import parse_datetime
 from .utils import notifier_technicien_entretien 
 from users.permissions import IsAdminOrInstallateur,IsInstallateur
+from utils.google_calendar_service import ajouter_entretien_google_calendar
+from utils.google_calendar_service import supprimer_evenement_google_calendar
+from utils.google_calendar_service import modifier_evenement_google_calendar
+from entretien.tasks import generer_suivant_entretien
 User = get_user_model()
+
+
 
 class EntretienListCreateAPIView(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
@@ -62,17 +68,43 @@ class EntretienListCreateAPIView(generics.ListCreateAPIView):
  
         serializer = EntretienSerializer(entretiens, many=True)
         return Response(serializer.data)
-
     def post(self, request):
         serializer = EntretienSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(cree_par=request.user)
-            #  Notification technicien
             entretien = serializer.instance
+
+            print("📌 Appel ajout Google Calendar pour ID :", entretien.id)
+            ajouter_entretien_google_calendar(entretien)  # ✅ Principal
+
+            periode = serializer.validated_data.get("periode_recurrence")
+            if periode and entretien.date_debut:
+                try:
+                    prochaine_date = entretien.date_debut + relativedelta(months=periode)
+                    prochain_entretien = Entretien.objects.create(
+                        installation=entretien.installation,
+                        type_entretien=entretien.type_entretien,
+                        date_debut=prochaine_date,
+                        duree_estimee=entretien.duree_estimee,
+                        statut='planifie',
+                        priorite=entretien.priorite,
+                        technicien=entretien.technicien,
+                        cree_par=request.user,
+                        notes=f"[Généré automatiquement après {periode} mois] {entretien.notes or ''}",
+                        entretien_parent=entretien,
+                        periode_recurrence=entretien.periode_recurrence
+
+                    )
+
+                    print("📌 Appel ajout Google Calendar pour le prochain entretien :", prochain_entretien.id)
+                    ajouter_entretien_google_calendar(prochain_entretien)  # ✅ Manquait ici
+
+                except Exception as e:
+                    print(f"⚠️ Erreur de création du prochain entretien : {e}")
+
             notifier_technicien_entretien(entretien)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 class EntretienDetailAPIView(APIView):
     permission_classes = [IsAuthenticated,IsAdminOrInstallateur]
@@ -84,25 +116,46 @@ class EntretienDetailAPIView(APIView):
         entretien = self.get_object(pk)
         serializer = EntretienSerializer(entretien)
         return Response(serializer.data)
-
+    
     def put(self, request, pk):
         entretien = self.get_object(pk)
         serializer = EntretienSerializer(entretien, data=request.data)
+
         if serializer.is_valid():
             serializer.save()
+            entretien.refresh_from_db()
+
+            modifier_evenement_google_calendar(entretien)
+            generer_suivant_entretien(entretien, request.user)
+
+            
+
             return Response(serializer.data)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
     def patch(self, request, pk):
         entretien = self.get_object(pk)
         serializer = EntretienSerializer(entretien, data=request.data, partial=True)
+
         if serializer.is_valid():
             serializer.save()
+            entretien.refresh_from_db()
+
+            modifier_evenement_google_calendar(entretien)
+            generer_suivant_entretien(entretien, request.user)
+
             return Response(serializer.data)
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, pk):
         entretien = self.get_object(pk)
+        print("🔍 Suppression entretien", entretien.id)
+        print("📎 event_id_google =", entretien.event_id_google)
+        # 🔁 Supprimer dans Google Calendar
+        supprimer_evenement_google_calendar(entretien)
         entretien.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
@@ -115,16 +168,16 @@ class EntretienCalendarAPIView(APIView):
         start_date = request.query_params.get('start_date')
         end_date = request.query_params.get('end_date')
         
-        if not start_date or not end_date:
-            return Response(
-                {"error": "Les paramètres start_date et end_date sont requis"},
-                status=status.HTTP_400_BAD_REQUEST
+        entretiens = Entretien.objects.all()
+
+        if start_date and end_date:
+            entretiens = entretiens.filter(
+                date_debut__gte=start_date,
+                date_debut__lte=end_date
             )
-        
-        entretiens = Entretien.objects.filter(
-            date_debut__gte=start_date,
-            date_debut__lte=end_date
-        ).select_related('installation', 'technicien')
+
+        entretiens = entretiens.select_related('installation', 'technicien')
+
         
         data = [{
             'id': e.id,
@@ -138,6 +191,35 @@ class EntretienCalendarAPIView(APIView):
         } for e in entretiens]
         
         return Response(data)
+
+    
+class EntretienStatistiquesView(APIView):
+    permission_classes = [IsAuthenticated]
+ 
+    def get(self, request):
+        par_type = Entretien.objects.values('type_entretien').annotate(count=Count('id'))
+        dict_type = {item['type_entretien']: item['count'] for item in par_type}
+ 
+        par_statut = Entretien.objects.values('statut').annotate(count=Count('id'))
+        dict_statut = {item['statut']: item['count'] for item in par_statut}
+ 
+        par_mois = Entretien.objects.annotate(mois=TruncMonth('date_debut')).values('mois').annotate(count=Count('id')).order_by('mois')
+        dict_mois = {item['mois'].strftime('%Y-%m'): item['count'] for item in par_mois if item['mois']}
+ 
+        par_tech = Entretien.objects.values('technicien__first_name', 'technicien__last_name').annotate(count=Count('id'))
+        dict_technicien = {}
+        for item in par_tech:
+            nom = f"{item['technicien__first_name'] or ''} {item['technicien__last_name'] or ''}".strip() or "—"
+            dict_technicien[nom] = item['count']
+ 
+        return Response({
+            "par_type": dict_type,
+            "par_statut": dict_statut,
+            "par_mois": dict_mois,
+            "par_technicien": dict_technicien
+        })
+    
+#entretient partie technicien
 class MesEntretiensAPIView(APIView):
     permission_classes = [IsAuthenticated,IsTechnicien]
  
@@ -145,43 +227,6 @@ class MesEntretiensAPIView(APIView):
         entretiens = Entretien.objects.filter(technicien=request.user)
         serializer = EntretienSerializer(entretiens, many=True)
         return Response(serializer.data)
-    
-class EntretienStatistiquesView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        cache_key = "stats:entretien_global"
-        data = cache.get(cache_key)
-        if data:
-            return Response(data)
-
-        par_type = Entretien.objects.values('type_entretien').annotate(count=Count('id'))
-        dict_type = {item['type_entretien']: item['count'] for item in par_type}
-
-        par_statut = Entretien.objects.values('statut').annotate(count=Count('id'))
-        dict_statut = {item['statut']: item['count'] for item in par_statut}
-
-        par_mois = Entretien.objects.annotate(mois=TruncMonth('date_debut')).values('mois').annotate(count=Count('id')).order_by('mois')
-        dict_mois = {item['mois'].strftime('%Y-%m'): item['count'] for item in par_mois if item['mois']}
-
-        par_tech = Entretien.objects.values('technicien__first_name', 'technicien__last_name').annotate(count=Count('id'))
-        dict_technicien = {}
-        for item in par_tech:
-            nom = f"{item['technicien__first_name'] or ''} {item['technicien__last_name'] or ''}".strip() or "—"
-            dict_technicien[nom] = item['count']
-
-        data = {
-            "par_type": dict_type,
-            "par_statut": dict_statut,
-            "par_mois": dict_mois,
-            "par_technicien": dict_technicien
-        }
-
-        cache.set(cache_key, data, timeout=600)  # 10 minutes
-        return Response(data)
-
-    
-#entretient partie technicien
 
 
 class RappelEntretienAPIView(APIView):
@@ -308,3 +353,22 @@ class EntretienCalendarInstallateurAPIView(APIView):
 
         return Response(data)
 
+
+    
+class EntretiensClientAPIView(generics.ListAPIView):
+    """Liste des entretiens liés aux installations du client connecté"""
+    serializer_class = EntretienSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return Entretien.objects.filter(installation__client=user).select_related('installation', 'technicien').order_by('-date_debut')
+
+from rest_framework import generics, permissions
+
+class EntretienClientDetailView(generics.RetrieveAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = EntretienSerializer
+
+    def get_queryset(self):
+        return Entretien.objects.filter(installation__client=self.request.user).select_related('installation', 'technicien')

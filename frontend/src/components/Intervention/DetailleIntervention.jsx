@@ -74,6 +74,7 @@ const DetailleIntervention = () => {
         <div className="space-y-4 text-gray-700 text-left">
           <p><span className="font-semibold">Description :</span> {intervention.description}</p>
           <p><span className="font-semibold">Date prévue :</span> {formatDate(intervention.date_prevue)}</p>
+          <p><span className="font-semibold">Type d’intervention :</span> {intervention.type_intervention_display || intervention.type_intervention}</p>
           <p><span className="font-semibold">Date de création :</span> {formatDate(intervention.date_creation)}</p>
           <p><span className="font-semibold">Dernière modification :</span> {formatDate(intervention.date_modification)}</p>
           <p><span className="font-semibold">Commentaire :</span> {intervention.commentaire || "Aucun"}</p>
@@ -110,31 +111,6 @@ const DetailleIntervention = () => {
               <p><span className="font-semibold">Statut :</span> {intervention.installation_details.statut}</p>
             </>
           )}
-        </div>
-      </div>
-
-      {/* Statistiques */}
-      <div className="bg-white rounded-lg p-6 shadow-lg">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">Statistiques</h2>
-        <div className="grid grid-cols-3 gap-6 text-gray-700 text-left">
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <p className="text-sm text-blue-600">Interventions précédentes</p>
-            <p className="text-xl font-bold text-blue-800">
-              {intervention.statistiques?.nombre_interventions_precedentes || 0}
-            </p>
-          </div>
-          <div className="bg-green-50 p-4 rounded-lg">
-            <p className="text-sm text-green-600">Temps depuis dernière</p>
-            <p className="text-xl font-bold text-green-800">
-              {intervention.statistiques?.temps_depuis_derniere ?? 'N/A'}
-            </p>
-          </div>
-          <div className="bg-purple-50 p-4 rounded-lg">
-            <p className="text-sm text-purple-600">Temps moyen entre</p>
-            <p className="text-xl font-bold text-purple-800">
-              {intervention.statistiques?.temps_moyen_entre ?? 'N/A'}
-            </p>
-          </div>
         </div>
       </div>
     </div>

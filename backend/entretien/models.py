@@ -26,13 +26,38 @@ class Entretien(models.Model):
         ('normale', 'Normale'),
         ('basse', 'Basse'),
     ]
+    PERIODE = [
+    (1, '1 mois'),
+    (3, '3 mois'),
+    (6, '6 mois'),
+    (12, '12 mois'),
+]
+    
+    periode_recurrence = models.PositiveIntegerField(
+    choices=PERIODE,
+    null=True,
+    blank=True,
+    help_text="Créer automatiquement un entretien récurrent après cette période (en mois)"
+    )
     titre = models.CharField(max_length=100, blank=True, verbose_name="Titre personnalisé")
     installation = models.ForeignKey(
         Installation, 
         on_delete=models.CASCADE, 
         related_name='entretiens'
     )
-    
+    event_id_google = models.CharField(
+    max_length=200,
+    null=True,
+    blank=True,
+    verbose_name="ID de l'événement Google Calendar"
+    )
+    lien_evenement_google = models.URLField(
+    blank=True,
+    null=True,
+    verbose_name="Lien vers l’événement Google Calendar"
+    )
+    entretien_parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, related_name='doublons')
+
     type_entretien = models.CharField(
         max_length=20, 
         choices=TYPE_ENTRETIEN,

@@ -17,14 +17,25 @@ class FicheInterventionListSerializer(serializers.ModelSerializer):
             'statut', 'statut_display'
         ]
 
+
 class FicheInterventionCreateSerializer(serializers.ModelSerializer):
-    """Sérialiseur pour la création d'une fiche d'intervention"""
+    type_intervention = serializers.ChoiceField(choices=FicheIntervention.TYPE_CHOICES)
+
+
     class Meta:
         model = FicheIntervention
         fields = [
-            'technicien', 'installation',
-            'description', 'date_prevue'
+            'installation',
+            'technicien',
+            'date_prevue',
+            'statut',
+            'description',
+            'type_intervention',
         ]
+
+    def create(self, validated_data):
+        validated_data.pop('periode_recurrence', None)
+        return super().create(validated_data)
 
     def validate_technicien(self, value):
         """Vérifie que l'utilisateur est bien un technicien"""
@@ -43,7 +54,7 @@ class FicheInterventionDetailSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'technicien', 'installation',
             'technicien_details', 'installation_details',
-            'description', 'date_prevue', 'date_creation',
+            'description','type_intervention', 'date_prevue', 'date_creation',
             'date_modification', 'statut', 'statut_display',
             'commentaire'
         ]

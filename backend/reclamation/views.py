@@ -2,13 +2,16 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions, generics, filters
 from .models import Reclamation
-from .serializers import ReclamationSerializer
+from .serializers import ReclamationSerializer, ReclamationUpdateSerializer
 from users.permissions import IsAdmin, IsClient,IsInstallateur
 from installations.models import Installation
+from rest_framework.parsers import MultiPartParser, FormParser
+from .models import ReclamationImage
 
  
 class EnvoyerReclamationView(APIView):
     permission_classes = [permissions.IsAuthenticated, IsClient]
+    parser_classes = [MultiPartParser, FormParser]
 
     def post(self, request):
         data = request.data.copy()
@@ -35,6 +38,16 @@ class EnvoyerReclamationView(APIView):
 
         serializer = ReclamationSerializer(data=data)
         if serializer.is_valid():
+            reclamation = serializer.save(client=request.user)
+
+            # 🖼️ Traitement des images envoyées
+            images = request.FILES.getlist('images')
+            if len(images) > 5:
+                return Response({"images": ["Maximum 5 images autorisées."]},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+            for image in images:
+                ReclamationImage.objects.create(reclamation=reclamation, image=image)
             serializer.save(client=request.user)
             return Response({"message": "Réclamation envoyée avec succès."}, status=status.HTTP_201_CREATED)
 
@@ -49,7 +62,7 @@ class MesReclamationsView(generics.ListAPIView):
     
 class ReclamationListView(generics.ListAPIView):
     serializer_class = ReclamationSerializer
-    permission_classes = [permissions.IsAuthenticated, IsAdmin]
+    permission_classes = [permissions.IsAuthenticated]
     filter_backends = [filters.SearchFilter]
     search_fields = ['client__email', 'sujet', 'message', 'statut']
  
@@ -58,8 +71,9 @@ class ReclamationListView(generics.ListAPIView):
  
 class ReclamationUpdateView(generics.UpdateAPIView):
     queryset = Reclamation.objects.all()
-    serializer_class = ReclamationSerializer
-    permission_classes = [permissions.IsAuthenticated, IsAdmin]
+    serializer_class = ReclamationUpdateSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
 
 class SupprimerReclamationView(generics.DestroyAPIView):
     queryset = Reclamation.objects.all()

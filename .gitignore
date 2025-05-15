@@ -9,9 +9,5 @@ node_module/
 
 node_modules/
 frontend/
-<<<<<<< HEAD
-=======
 google_credentials/credentials.json
 backend/google_credentials/starck-calendar-key.json
-backend/google_credentials/starck-calendar-key.json
->>>>>>> 7d1d117 (Remove secret key from google calendar)

@@ -43,7 +43,6 @@ INSTALLED_APPS = [
     'corsheaders',
     'channels',
     'users',
-    'equipements',
     'installations',
     'alarme',
     'notification',
@@ -54,6 +53,7 @@ INSTALLED_APPS = [
     'rapports',
     'historique',
     #'django_celery_beat',
+    "equipements",
 
 ]
 ASGI_APPLICATION = 'backend.asgi.application'
@@ -129,7 +129,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'solar_db',  
         'USER': 'postgres',
-        'PASSWORD': 'root',
+        'PASSWORD': 'youta',
         'HOST': 'localhost',
         'PORT': '5432',
 

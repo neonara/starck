@@ -1,5 +1,19 @@
- import { useState } from 'react';
-import {LayoutGrid, Users, Server, ChevronLeft, ChevronRight, CalendarCheck, Zap, AlertCircle, BarChart3} from 'lucide-react';
+import { useState } from 'react';
+import {
+  LayoutGrid,
+  Users,
+  Server,
+  ChevronLeft,
+  ChevronRight,
+  CalendarCheck,
+  Bell,
+  Wrench,
+  ClipboardCheck,
+  StickyNote,
+  AlertCircle,
+  BarChart3, 
+  FileText
+} from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useUser } from '../../context/UserContext';
  
@@ -27,7 +41,7 @@ const Sidebar = () => {
         { label: "Installations", path: "/liste-installations" },
       ]
     },
-    { label: "Gestion des Alarmes", icon: Server, children: [
+    { label: "Gestion des Alarmes", icon: AlertCircle, children: [
         { label: "Redéfinir l'alarme", path: "/codes-alarmes/ajouter" },
         { label: "Code Alarme", path: "/ListeCodesAlarmes" },
         { label: "Alarme Active", path: "/ListeAlarmesDeclenchees" },
@@ -43,11 +57,11 @@ const Sidebar = () => {
         { label: "Statistiques des Entretiens", path: "/statistiques-entretiens" },
       ]
     },
-    { label: "Reclamations", icon: CalendarCheck, children: [
+    { label: "Reclamations", icon:StickyNote, children: [
         { label: "Liste des reclamations", path: "/list_reclamations" },
       ]
     },
-    { label: "Rapports", icon: CalendarCheck, children: [
+    { label: "Rapports", icon: FileText, children: [
         { label: "Rapport de production", path: "/rapport_production" },
         { label: "Rapport de consommation", path: "/rapport_consommation" },
  
@@ -64,6 +78,13 @@ const Sidebar = () => {
       icon: LayoutGrid,
       path: "/client-dashboard",
     },
+  
+     { label: "Gestion d'installation", icon: Server, children: [
+        { label: "Mon installation", path: "/client-dashboard" },
+         { label: "Mes Equipements", path: "/client/equipements" },
+      ]
+    },
+  
     {
       label: "Mes interventios",
       icon: LayoutGrid,
@@ -85,7 +106,7 @@ const Sidebar = () => {
     },
     {
       label: "Rapports",
-      icon: BarChart3,
+      icon: FileText,
       children: [
         { label: "Rapport Production", path: "/rapports-production" },
         { label: "Rapport Consommation", path: "/rapports-consommation" },
@@ -104,6 +125,7 @@ const Sidebar = () => {
     },
     { label: "Gestion des installations", icon: Server, children: [
         { label: "Mes Installations", path: "/MesInstallation" },
+         { label: "Equipements", path: "/equipements" },
       ]
     },
     { label: "Gestion des Entretiens", icon: CalendarCheck, children: [
@@ -112,17 +134,17 @@ const Sidebar = () => {
  
       ]
     },
-    { label: "Gestion des interventions", icon: Server, children: [
+    { label: "Gestion des interventions", icon: Wrench, children: [
       { label: "Liste des Interventions", path: "/Mesintervention" },
     ]
   },
-  { label: "Gestion des Alarmes", icon: Server, children: [
+  { label: "Gestion des Alarmes", icon: AlertCircle, children: [
     { label: "Redéfinir l'alarme", path: "/codes-alarmes/ajouter" },
     { label: "Code Alarme", path: "/ListeCodesAlarmes" },
     { label: "Alarme Active", path: "/ListeAlarmesInstallateur" },
   ]
 },
-{ label: "Reclamations", icon: CalendarCheck, children: [
+{ label: "Reclamations", icon: StickyNote, children: [
   { label: "Liste des reclamations", path: "/ListeReclamationsInstallateur" },
 ]
 },
@@ -158,7 +180,6 @@ const Sidebar = () => {
         <img src="/assets/logo.jpg" alt="Logo" className="w-6 h-6" />
         {isSidebarOpen && <span className="text-lg font-semibold text-gray-800">Starck</span>}
       </div>
- 
       <div className="pt-6 px-2">
         <ul className="space-y-2">
           {menuItems.map(({ label, path, children }) => (
@@ -173,7 +194,6 @@ const Sidebar = () => {
                     {isSidebarOpen && <span className="ml-3">{label}</span>}
                     {isSidebarOpen && <span className="ml-auto">{openMenus[label] ? "▲" : "▼"}</span>}
                   </button>
- 
                   {openMenus[label] && isSidebarOpen && (
                     <ul className="ml-8 mt-1 space-y-1 text-sm text-gray-600">
                       {children.map((child) => (
@@ -202,7 +222,6 @@ const Sidebar = () => {
           ))}
         </ul>
       </div>
- 
       <button
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
         className="absolute top-1/2 -right-3 transform -translate-y-1/2 z-50 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-full px-1.5 py-1 shadow-md"

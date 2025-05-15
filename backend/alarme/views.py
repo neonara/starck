@@ -10,6 +10,7 @@ from rest_framework.permissions import IsAuthenticated
 from installations.models import Installation
 from rest_framework.views import APIView
 from users.permissions import IsInstallateur
+from django.core.cache import cache
 
 
 #alarme code (marbouta bel admin)
@@ -49,9 +50,14 @@ class SupprimerAlarmeCodeView(generics.DestroyAPIView):
 class StatistiquesAlarmeCodesView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated, IsAdminOrInstallateur]
     def get(self, request, *args, **kwargs):
-        stats = AlarmeCode.objects.values('marque', 'type_alarme').annotate(total=Count('id'))
-        return Response(stats)
-    
+       cache_key = "stats:alarme_codes"
+       stats = cache.get(cache_key)
+
+       if not stats:
+        stats = list(AlarmeCode.objects.values('marque', 'type_alarme').annotate(total=Count('id')))
+        cache.set(cache_key, stats, timeout=600)  # 10 minutes
+
+       return Response(stats)
 
 
 
@@ -101,26 +107,39 @@ class StatistiquesAlarmesView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated, IsAdminOrInstallateur]
 
     def get(self, request, *args, **kwargs):
-        stats = AlarmeDeclenchee.objects.filter(est_resolue=False) \
-            .values('code_alarme__gravite') \
+      cache_key = "stats:alarmes_global"
+      stats = cache.get(cache_key)
+  
+      if not stats:
+        stats = list(
+            AlarmeDeclenchee.objects.filter(est_resolue=False)
+            .values('code_alarme__gravite')
             .annotate(total=Count('id'))
-        return Response(stats)
+        )
+        cache.set(cache_key, stats, timeout=600)
+
+      return Response(stats)
+
+        
     
 class StatistiquesAlarmesClientView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
-        installation = Installation.objects.filter(client=request.user).first()
-        if not installation:
-            return Response({"mineures": 0, "majeures": 0, "critiques": 0})
+    def get(self, request, *args, **kwargs):
+        cache_key = f"stats:alarmes_client:{request.user.id}"
+        stats = cache.get(cache_key)
 
-        alertes = AlarmeDeclenchee.objects.filter(installation=installation, est_resolue=False)
-
-        stats = {
-            "mineures": alertes.filter(code_alarme__gravite="mineure").count(),
-            "majeures": alertes.filter(code_alarme__gravite="majeure").count(),
-            "critiques": alertes.filter(code_alarme__gravite="critique").count(),
-        }
+        if not stats:
+            alarmes = AlarmeDeclenchee.objects.filter(
+                installation__client=request.user,
+                est_resolue=False
+            )
+            stats = {
+                "critiques": alarmes.filter(code_alarme__gravite="critique").count(),
+                "majeures": alarmes.filter(code_alarme__gravite="majeure").count(),
+                "mineures": alarmes.filter(code_alarme__gravite="mineure").count(),
+            }
+            cache.set(cache_key, stats, timeout=600)
 
         return Response(stats)
 
@@ -130,11 +149,13 @@ class StatistiquesAlarmesInstallationView(APIView):
     permission_classes = [IsAuthenticated, IsAdminOrInstallateur]
 
     def get(self, request, installation_id):
-        alarmes = AlarmeDeclenchee.objects.filter(
-            installation_id=installation_id,
-            est_resolue=False
-        )
+        cache_key = f"stats:alarmes_installation:{installation_id}"
+        result = cache.get(cache_key)
 
+        if result:
+            return Response(result)
+
+        alarmes = AlarmeDeclenchee.objects.filter(installation_id=installation_id, est_resolue=False)
         counts = {"critique": 0, "majeure": 0, "mineure": 0}
 
         for alarme in alarmes:
@@ -143,29 +164,58 @@ class StatistiquesAlarmesInstallationView(APIView):
                 counts[gravite] += 1
 
         total = sum(counts.values())
+        result = {"total": total, **counts}
+        cache.set(cache_key, result, timeout=600)
 
-        return Response({
-            "total": total,
-            "critique": counts["critique"],
-            "majeure": counts["majeure"],
-            "mineure": counts["mineure"]
-        })
-    
+        return Response(result)
+
+        
 
 
 #partie alarme installateur
 class ListeAlarmesInstallateurView(APIView):
-    """
-    Liste des alarmes déclenchées associées à un installateur (via ses installations).
-    """
     permission_classes = [IsAuthenticated, IsInstallateur]
 
     def get(self, request):
-        user = request.user
+        cache_key = f"liste:alarmes_installateur:{request.user.id}"
+        data = cache.get(cache_key)
+
+        if data:
+            return Response(data)
 
         alarmes = AlarmeDeclenchee.objects.select_related("installation", "code_alarme") \
-            .filter(installation__installateur=user) \
+            .filter(installation__installateur=request.user) \
             .order_by("-date_declenchement")
 
         serializer = AlarmeDeclencheeSerializer(alarmes, many=True)
+        cache.set(cache_key, serializer.data, timeout=300)
+
         return Response(serializer.data)
+
+       
+
+
+
+class StatistiquesAlarmesInstallateurView(APIView):
+    permission_classes = [IsAuthenticated, IsInstallateur]
+
+    def get(self, request):
+        cache_key = f"stats:alarmes_installateur:{request.user.id}"
+        stats = cache.get(cache_key)
+
+        if stats:
+            return Response(stats)
+
+        alarmes = AlarmeDeclenchee.objects.filter(installation__installateur=request.user, est_resolue=False)
+
+        counts = {
+            "critique": alarmes.filter(code_alarme__gravite="critique").count(),
+            "majeure": alarmes.filter(code_alarme__gravite="majeure").count(),
+            "mineure": alarmes.filter(code_alarme__gravite="mineure").count(),
+        }
+
+        total = sum(counts.values())
+        stats = {"total": total, **counts}
+        cache.set(cache_key, stats, timeout=600)
+
+        return Response(stats)

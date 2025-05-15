@@ -580,3 +580,31 @@ class MyClientsListView(APIView):
 
         serializer = UserSerializer(clients, many=True)
         return Response({"results": serializer.data}, status=status.HTTP_200_OK)
+    
+
+
+
+
+class ResendRegistrationLinkView(APIView):
+    permission_classes = [IsAuthenticated, IsAdminOrInstallateur]
+
+    def post(self, request):
+        email = request.data.get('email')
+
+        try:
+            user = User.objects.get(email=email, is_active=False)
+            registration_token = cache.get(f"registration_token:{email}")
+            
+            if not registration_token:
+                registration_token = str(uuid.uuid4())
+                cache.set(f"registration_token:{email}", registration_token, timeout=3600)
+
+            FRONTEND_URL = "http://localhost:5173/complete-registration"
+            registration_link = f"{FRONTEND_URL}?token={registration_token}&email={email}"
+
+            send_registration_link.delay(email, registration_link)
+
+            return Response({"message": "Lien de confirmation renvoyé avec succès."}, status=200)
+
+        except User.DoesNotExist:
+            return Response({"error": "Utilisateur non trouvé ou déjà activé."}, status=404)

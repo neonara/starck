@@ -8,6 +8,8 @@ from intervention.views import (
     ChangerStatutFicheInterventionView,
     HistoriqueInterventionsParInstallationView,
     NombreInterventionsParTechnicienView,
+    TauxResolutionInterventionsView,
+    ListeMesFichesInterventionView,
     TauxResolutionInterventionsView, 
     ListeFicheInterventionClientView, 
     DetailFicheInterventionClientView,

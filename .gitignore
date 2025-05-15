@@ -6,7 +6,6 @@ __pycache__/
 frontend/
 node_module/
 .env.local
-
 node_modules/
 frontend/
 google_credentials/credentials.json

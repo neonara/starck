@@ -2,10 +2,11 @@ import React, { useEffect, useState } from "react";
 import ApiService from "../../../Api/Api";
 import toast from "react-hot-toast";
 import { FaCheck, FaDownload, FaTimes, FaEye, FaTrash  } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 const graviteLabels = {
   critique: "🔴 Critique",
-  majeure: "🟠 Majeure",
+  majeure: "🟡 Majeure",
   mineure: "🟢 Mineure",
 };
 
@@ -17,7 +18,8 @@ const ListeAlarmesDeclenchees = () => {
   const [modalData, setModalData] = useState(null);
   const [showModalExports, setShowModalExports] = useState(false);
   const [exportFormat, setExportFormat] = useState("csv");
-  
+  const navigate = useNavigate();
+
   const fetchAlarmes = async () => {
     try {
       const res = await ApiService.getAlarmesDeclenchees();
@@ -127,14 +129,22 @@ const ListeAlarmesDeclenchees = () => {
         </div>
       </div>
 
-      {/* Task List by Gravité */}
       {filteredByGravite.map((a) => (
-        <div
-          key={a.id}
-          className={`border rounded p-4 mb-2 flex justify-between items-center shadow-sm ${
-            a.est_resolue ? "bg-green-50" : "bg-white"
-          }`}
-        >
+   <div
+  key={a.id}
+  onClick={() => {
+    if (a.installation_id) {
+      navigate(`/dashboard-installation/${a.installation_id}`);
+    } else {
+      toast.error("ID installation manquant");
+    }
+  }}
+  className={`border rounded p-4 mb-2 flex justify-between items-center shadow-sm cursor-pointer hover:bg-gray-50 ${
+    a.est_resolue ? "bg-green-50" : "bg-white"
+  }`}
+>
+
+
           <div className="flex items-center gap-3">
             <input
               type="checkbox"

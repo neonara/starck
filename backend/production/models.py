@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 from installations.models import Installation
-from equipements.models import Equipment
+#from equipements.models import Equipement
 
 User = get_user_model()
 

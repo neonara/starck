@@ -19,7 +19,7 @@ class ReclamationSerializer(serializers.ModelSerializer):
 
     def get_installation_nom(self, obj):
         if obj.installation is not None:
-            return obj.installation.nom  
+            return obj.installation.nom   
         return None
 from rest_framework import serializers
 from .models import Reclamation, ReclamationImage

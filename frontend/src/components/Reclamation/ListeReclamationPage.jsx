@@ -18,7 +18,6 @@ const statusColors = {
   en_cours: "bg-blue-100 text-blue-700",
   resolu: "bg-green-100 text-green-700",
 };
-
 const ListeReclamationsPage = () => {
   const [data, setData] = useState([]);
   const [pageSize, setPageSize] = useState(5);
@@ -41,7 +40,6 @@ const ListeReclamationsPage = () => {
     };
     fetchReclamations();
   }, []);
-
   const handleStatusUpdate = async () => {
     try {
       await ApiService.updateReclamation(selectedReclamation.id, {

@@ -66,7 +66,6 @@ class EntretienSerializer(serializers.ModelSerializer):
     def validate(self, data):
         date_debut = data.get('date_debut', self.instance.date_debut if self.instance else None)
         date_fin = data.get('date_fin', self.instance.date_fin if self.instance else None)
-
         if date_debut and date_fin and date_fin <= date_debut:
             raise serializers.ValidationError({
                 'date_fin': "La date de fin doit être après la date de début"

@@ -21,7 +21,8 @@ const ListeClientsPage = () => {
   const [globalFilter, setGlobalFilter] = useState("");
   const [users, setUsers] = useState([]);
   const [filters, setFilters] = useState({ role: "", is_active: "" });
-
+const [resendLoading, setResendLoading] = useState({});
+const [resendSuccess, setResendSuccess] = useState({});
   const [pageSize, setPageSize] = useState(5);
 
   //  Charger les utilisateurs
@@ -93,6 +94,18 @@ const ListeClientsPage = () => {
     }
   };
   
+const handleResendLink = async (email) => {
+  setResendLoading((prev) => ({ ...prev, [email]: true }));
+  try {
+    await ApiService.resendRegistrationLink(email);
+    toast.success(`Lien envoyé à ${email}`);
+    setResendSuccess((prev) => ({ ...prev, [email]: true }));
+  } catch (err) {
+    toast.error("Erreur lors de l'envoi du lien.");
+  } finally {
+    setResendLoading((prev) => ({ ...prev, [email]: false }));
+  }
+};
 
   const columns = useMemo(() => [
     { header: "Prénom", accessorKey: "first_name" },
@@ -112,25 +125,60 @@ const ListeClientsPage = () => {
           ? new Date(info.getValue()).toLocaleString()
           : "—",
     },
-    {
-      header: "Actions",
-      cell: ({ row }) => (
-        <div className="flex gap-2">
+
+{
+  header: "Statut",
+  accessorKey: "is_active",
+  cell: ({ row }) => (
+    <span
+      className={
+        row.original.is_active
+          ? "text-green-600 font-medium"
+          : "text-red-500 font-medium"
+      }
+    >
+      {row.original.is_active ? "Activé" : "Non activé"}
+    </span>
+  ),
+},
+
+
+{
+  header: "Actions",
+  cell: ({ row }) => (
+    <div className="flex flex-col gap-2">
+      <div className="flex gap-2">
+        <button
+          onClick={() => navigate(`/modifier-client/${row.original.id}`)}
+          className="text-blue-500 hover:text-blue-700"
+        >
+          <FaEdit />
+        </button>
+        <button
+          onClick={() => handleDelete(row)}
+          className="text-red-500 hover:text-red-700"
+        >
+          <FaTrash />
+        </button>
+      </div>
+
+      {!row.original.is_active && (
+        resendSuccess[row.original.email] ? (
+          <span className="text-green-600 text-xs">Lien envoyé</span>
+        ) : (
           <button
-            onClick={() => navigate(`/modifier-client/${row.original.id}`)}
-            className="text-blue-500 hover:text-blue-700"
+            onClick={() => handleResendLink(row.original.email)}
+            disabled={resendLoading[row.original.email]}
+            className="text-sm text-gray-600 hover:underline"
           >
-            <FaEdit />
+            {resendLoading[row.original.email] ? "Envoi..." : "Renvoyer le lien"}
           </button>
-          <button
-  onClick={() => handleDelete(row)}
-  className="text-red-500 hover:text-red-700"
->
-  <FaTrash />
-</button>
-        </div>
-      ),
-    },
+        )
+      )}
+    </div>
+  ),
+},
+
   ], []);
 
   const table = useReactTable({

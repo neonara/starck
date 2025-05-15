@@ -1,0 +1,9 @@
+code_constructeur,marque,type_alarme,gravite,description
+F27,Kstar,Terre,majeure,Mise à la terre anormale
+2001,Huawei,DC,majeure,Tension chaîne d'entrée trop élevé
+2001,Kstar,Terre,mineure,jjjjj
+545,Huawei,AC,critique,oooo
+F27,Kstar,AC,majeure,aaa
+5000,Kstar,Terre,mineure,ttt
+F27,Solax,AC,majeure,alarme mineur
+2001,Huawei,AC,critique,5555

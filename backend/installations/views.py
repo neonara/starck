@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from rest_framework import status, generics, permissions
 from rest_framework.response import Response
 from rest_framework.generics import ListAPIView
-
+from django.core.cache import cache
 from rest_framework.views import APIView
 from .models import Installation
 from .serializers import InstallationSerializer
@@ -20,6 +20,8 @@ class AjouterInstallationView(APIView):
 
         if serializer.is_valid():
             installation = serializer.save()
+            cache.delete("stats:installations_global")
+            cache.delete(f"stats:installations_installateur_{installation.installateur_id}")
             return Response({
                 "message": "Installation ajoutée avec succès.",
                 "installation_id": installation.id
@@ -83,7 +85,8 @@ class DetailsInstallationView(APIView):
     def get(self, request, id): 
         try:
             installation = Installation.objects.get(id=id)
-            serializer = InstallationSerializer(installation)
+            serializer = InstallationSerializer(installation, context={'request': request})
+
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Installation.DoesNotExist:
             return Response({"error": "Installation non trouvée."}, status=status.HTTP_404_NOT_FOUND)
@@ -92,13 +95,23 @@ class StatistiquesInstallationsView(APIView):
     permission_classes = [IsAuthenticated, IsAdminOrInstallateur]
 
     def get(self, request):
-        total_normales = Installation.objects.filter(statut='active').count()
-        total_en_panne = Installation.objects.filter(statut='fault').count()  
+        cache_key = "stats:installations_global"
+        data = cache.get(cache_key)
+        if data:
+            return Response(data)
 
-        return Response({
+        total_normales = Installation.objects.filter(statut='active').count()
+        total_en_panne = Installation.objects.filter(statut='fault').count()
+
+        data = {
             "total_normales": total_normales,
             "total_en_panne": total_en_panne
-        }, status=status.HTTP_200_OK)
+        }
+
+        cache.set(cache_key, data, timeout=3600)
+        return Response(data, status=status.HTTP_200_OK)
+
+
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -132,7 +145,7 @@ class InstallationClientView(APIView):
             etat_fonctionnement = 'En panne' if alarme_critique_active else 'Fonctionnelle'
 
             data = {
-
+                "id": installation.id,
                 "nom": installation.nom,
                 "adresse": installation.adresse,
                 "ville": installation.ville,
@@ -149,7 +162,6 @@ class InstallationClientView(APIView):
                 "etat_fonctionnement": etat_fonctionnement,
             }
 
-            #photo de l'installation
             if installation.photo_installation:
                 data["photo_installation_url"] = request.build_absolute_uri(installation.photo_installation.url)
             else:
@@ -304,3 +316,31 @@ class InstallationGeoDataInstallateurView(ListAPIView):
             latitude__isnull=False,
             longitude__isnull=False
         )
+    
+
+class StatistiquesInstallateurView(APIView):
+    permission_classes = [IsAuthenticated, IsInstallateur]
+
+    def get(self, request):
+        user = request.user
+
+        if user.role != 'installateur':
+            return Response({"error": "Accès non autorisé."}, status=status.HTTP_403_FORBIDDEN)
+
+        cache_key = f"stats:installations_installateur_{user.id}"
+        data = cache.get(cache_key)
+        if data:
+            return Response(data)
+
+        total_installations = Installation.objects.filter(installateur=user).count()
+        total_en_panne = Installation.objects.filter(installateur=user, statut='fault').count()
+        total_normales = Installation.objects.filter(installateur=user, statut='active').count()
+
+        data = {
+            "total_installations": total_installations,
+            "total_en_panne": total_en_panne,
+            "total_normales": total_normales
+        }
+
+        cache.set(cache_key, data, timeout=3600)
+        return Response(data, status=status.HTTP_200_OK)

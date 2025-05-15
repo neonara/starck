@@ -23,7 +23,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('users/', include('users.urls')),
     path('installations/', include('installations.urls')),
-    path('equipements/', include('equipements.urls')),
     path('alarme/', include('alarme.urls')),
     path('notification/', include('notification.urls')),
     path('production/', include('production.urls')),
@@ -32,4 +31,5 @@ urlpatterns = [
     path('reclamation/', include('reclamation.urls')),
     path('rapports/', include('rapports.urls')),
     path('historique/', include('historique.urls')),
+    path("equipements/", include("equipements.urls")),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

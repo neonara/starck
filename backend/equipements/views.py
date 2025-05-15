@@ -1,6 +1,62 @@
-from django.shortcuts import render
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .models import Equipement
+from .serializers import EquipementSerializer
+from installations.models import Installation
+from django.shortcuts import get_object_or_404
+from rest_framework.permissions import AllowAny
 
-# Create your views here.
+from .tasks import generate_qr_code_task
 
-def index(request):
-    return render(request, 'equipements/index.html') 
+class AjouterEquipementView(APIView):
+    def post(self, request):
+        serializer = EquipementSerializer(data=request.data)
+        if serializer.is_valid():
+            equipement = serializer.save()
+
+            generate_qr_code_task.delay(equipement.id)
+
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ModifierEquipementView(APIView):
+    def put(self, request, id):
+        equipement = get_object_or_404(Equipement, id=id)
+        serializer = EquipementSerializer(equipement, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class SupprimerEquipementView(APIView):
+    def delete(self, request, id):
+        equipement = get_object_or_404(Equipement, id=id)
+        equipement.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+class ListerEquipementsParInstallationView(APIView):
+    def get(self, request, installation_id):
+        equipements = Equipement.objects.filter(installation_id=installation_id)
+        serializer = EquipementSerializer(equipements, many=True)
+        return Response(serializer.data)
+
+class DetailsEquipementView(APIView):
+    def get(self, request, id):
+        equipement = get_object_or_404(Equipement, id=id)
+        serializer = EquipementSerializer(equipement)
+        return Response(serializer.data)
+
+
+
+
+class EquipementParQRCodeView(APIView):
+    permission_classes = [AllowAny]
+    def get(self, request, code):
+        try:
+            equipement = Equipement.objects.get(code_unique=code)
+            serializer = EquipementSerializer(equipement, context={"request": request})
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Equipement.DoesNotExist:
+            return Response({"error": "Équipement introuvable."}, status=status.HTTP_404_NOT_FOUND)

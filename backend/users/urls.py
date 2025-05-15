@@ -4,7 +4,8 @@ from .views import (
     RegisterAdminView, RegisterUserView, CompleteRegistrationView,
     GetUserProfileView, GetUserByTokenView, VerifyAdminView,
     LoginView, UpdateProfileView, ForgotPasswordView, ResetPasswordView,
-    LogoutView, UserListView, UserDetailView, UserStatsView,ClientsListView, InstallateursListView, TechniciensListView, MyClientsListView
+    LogoutView, UserListView, UserDetailView, UserStatsView,ClientsListView, InstallateursListView, TechniciensListView, MyClientsListView,
+    ResendRegistrationLinkView
 )
 
 urlpatterns = [
@@ -29,4 +30,6 @@ urlpatterns = [
     path('installateurs/', InstallateursListView.as_view(), name='installateurs-list'),
     path('techniciens/', TechniciensListView.as_view(), name='techniciens-list'),
     path('myclients/', MyClientsListView.as_view(), name='my-clients-list'),
+    path('resend-registration-link/', ResendRegistrationLinkView.as_view(), name='resend_registration_link'),
+
 ]

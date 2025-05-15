@@ -49,6 +49,7 @@ import EntretienDetailModal from "./components/Entretien/EtretienDetailModal";
 import ModifierEntretienPage from "./components/Entretien/ModifierEntretienPage";
 import CalendrierEntretiens from "./components/Entretien/CalendrierEntretiens";
 import StatistiquesEntretiens from "./components/Entretien/StatistiquesEntretiens";
+
 import ListeEntretiensClient from "./components/Entretien/ListeEntretiensClient.jsx";
 import DetailleEntretienClient from "./components/Entretien/DetailleEntretienClient.jsx";
 //Reclamations
@@ -65,11 +66,11 @@ import RapportAlarmesPage from "./components/Rapports/RapportAlarmesPage";
 import RapportProductionClientPage from "./components/Rapports/RapportProductionClientPage";
 import RapportConsommationClientPage from "./components/Rapports/RapportConsommationClientPage";
 import RapportAlarmesClientPage from "./components/Rapports/RapportAlarmesClientPage";
+//Technicien 
+import MesEntretiens from "./components/Utilisateurs/Technicien/MesEntretiens";
 import ListeInterventionsClient from "./components/Intervention/ListeInterventionsClient";
 import DetailleInterventionClient from "./components/Intervention/DetailleInterventionClient";
 
-//Technicien 
-import MesEntretiens from "./Technicien/MesEntretiens.jsx";
 //Installateur
 import ListeUtilisateursPage from "./Installateur/ListeUtilisateursPage";
 import ListeMesInstallationsPage from "./Installateur/ListeMesInstallationsPage.jsx";
@@ -79,6 +80,11 @@ import ListeMesEntretiensInstallateurPage from "./Installateur/ListeMesEntretien
 import CalendrierEntretiensInstallateur from "./Installateur/CalendrierEntretiensInstallateur.jsx";
 import ListeAlarmesInstallateur from "./Installateur/ListeAlarmesInstallateur.jsx";
 import ListeReclamationsInstallateur from "./Installateur/ListeReclamationsInstallateur.jsx";
+import DashboardInstallateur from "./Installateur/Dashboard-installateur.jsx";
+//equipement
+import EquipmentSection from "./components/équipements/EquipmentSection.jsx";
+import ClientEquipmentPage from "./components/Client-dashboard/ClientEquipmentPage.jsx";
+import ScanEquipementPage from "./components/équipements/ScanEquipementPage.jsx";
 
 function App() {
   return (
@@ -145,6 +151,9 @@ function App() {
        
        <Route path="/rapports-production" element={<RapportProductionClientPage />} />
        <Route path="/rapports-consommation" element={<RapportConsommationClientPage />} />
+       <Route path="//rapports-alarme" element={<RapportAlarmesClientPage />} />
+       
+       
        <Route path="/rapports-alarme" element={<RapportAlarmesClientPage />} />
        
        
@@ -167,6 +176,13 @@ function App() {
        
        <Route path="/ListeReclamationsInstallateur" element={<ListeReclamationsInstallateur/>} />
        
+       <Route path="/DashboardInstallateur" element={<DashboardInstallateur/>} />
+
+<Route path="/equipements" element={<EquipmentSection />} />
+<Route path="/client/equipements" element={<ClientEquipmentPage />} />
+<Route path="/equipements/equipements/scan/:code" element={<ScanEquipementPage />} />
+
+       <Route path="/Mesintervention" element={<ListeMesInterventionsPage />} />
 
        <Route path="/Mesintervention" element={<ListeMesInterventionsPage />} />
 

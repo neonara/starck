@@ -58,6 +58,7 @@ const ApiService = {
   getClients: () => api.get("users/clients/"),
   getInstallateurs: () => api.get("users/installateurs/"),
   getTechnicien: () => api.get("users/techniciens/"),
+resendRegistrationLink: (email) => api.post("users/resend-registration-link/", { email }),
 
 //dashboard
 
@@ -107,6 +108,11 @@ getInstallationStats: () => api.get("statistiques/"),
         //getInstallationStats: () => api.get("installations/statistiques/"),
 
     
+<<<<<<< HEAD
+=======
+    updateInstallation: (id, data) => api.put(`installations/modifier-installation/${id}/`, data),
+    getInstallationStats: () => api.get("installations/statistiques/"),
+>>>>>>> dev1
     //updateInstallation: (id, data) => api.put(`installations/modifier-installation/${id}/`, data),
     //getInstallationStats: () => api.get("installations/statistiques/"),
     getInstallationsGeoData: () => api.get("installations/geodata/"),
@@ -226,7 +232,10 @@ envoyerReclamation: (data) => api.post("reclamation/reclamations/envoyer/", data
 getMesReclamations: () => api.get("reclamation/mes-reclamations/"),
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> dev1
 updateReclamation: (id, data) =>
   api.put(`reclamation/reclamations/${id}/`, data, {
     headers: {
@@ -237,7 +246,10 @@ envoyerReclamation: (data) =>
   api.post("reclamation/reclamations/envoyer/", data, {
     headers: { "Content-Type": "multipart/form-data" },
   }),getMesReclamations: () => api.get("reclamation/mes-reclamations/"),
+<<<<<<< HEAD
 >>>>>>> 89daaf5 (chnagment en cours pour resulution du main)
+=======
+>>>>>>> dev1
 deleteReclamation: (id) => api.delete(`reclamation/reclamations/${id}/supprimer/`),
 =======
 >>>>>>> 38b6c1b (resolution conflicts merge)
@@ -320,6 +332,21 @@ getReclamationsInstallateur: () =>api.get("reclamation/reclamations/installateur
 getStatistiquesAlarmesInstallateur: () =>api.get("alarme/statistiques-installateur/"),
 >>>>>>> 89daaf5 (chnagment en cours pour resulution du main)
 
+<<<<<<< HEAD
+=======
+getInstallationsByInstallateur: () =>api.get("installations/mes-installations/"),
+getStatistiquesInstallateurProduction: () => api.get("production/statistiques-installateur/"),
+
+//equipement
+
+  ajouterEquipement: (data) => api.post("equipements/ajouter/", data),
+  modifierEquipement: (id, data) => api.put(`equipements/modifier/${id}/`, data),
+  supprimerEquipement: (id) => api.delete(`equipements/supprimer/${id}/`),
+  getEquipementsParInstallation: (installationId) => api.get(`equipements/installation/${installationId}/`),
+  getDetailsEquipement: (id) => api.get(`equipements/details/${id}/`),
+getEquipementParQRCode: (code) =>
+  api.get(`/equipements/qrcode/${code}/`),
+>>>>>>> dev1
 };
 
 export default ApiService;

@@ -71,8 +71,6 @@ import MesEntretiens from "./components/Utilisateurs/Technicien/MesEntretiens";
 import ListeInterventionsClient from "./components/Intervention/ListeInterventionsClient";
 import DetailleInterventionClient from "./components/Intervention/DetailleInterventionClient";
 
-//Technicien 
-import MesEntretiens from "./Technicien/MesEntretiens.jsx";
 //Installateur
 import ListeUtilisateursPage from "./Installateur/ListeUtilisateursPage";
 import ListeMesInstallationsPage from "./Installateur/ListeMesInstallationsPage.jsx";

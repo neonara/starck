@@ -5,7 +5,6 @@ from installations.models import Installation
 User = get_user_model()
 
 class FicheIntervention(models.Model):
-    """Modèle représentant une fiche d'intervention"""
     
     STATUT_CHOICES = [
         ('en_attente', 'En attente'),
@@ -14,14 +13,11 @@ class FicheIntervention(models.Model):
         ('annulee', 'Annulée')
     ]
     
-<<<<<<< HEAD
-=======
     TYPE_CHOICES = [
     ('diagnostic', 'Diagnostic'),
     ('preventive', 'Préventive'),
     ('curative', 'Curative'),
     ]
->>>>>>> 84e4fecf1fa4ff404ea02293a1d583f37f4d1b7e
 
     
     technicien = models.ForeignKey(
@@ -40,8 +36,6 @@ class FicheIntervention(models.Model):
         verbose_name="Installation concernée"
     )
     
-<<<<<<< HEAD
-=======
     type_intervention = models.CharField(
     max_length=20,
     choices=TYPE_CHOICES,
@@ -49,7 +43,6 @@ class FicheIntervention(models.Model):
     verbose_name="Type d'intervention"
     )
     
->>>>>>> 84e4fecf1fa4ff404ea02293a1d583f37f4d1b7e
     description = models.TextField(verbose_name="Description de l'intervention")
     date_prevue = models.DateTimeField(verbose_name="Date d'intervention prévue")
     date_creation = models.DateTimeField(auto_now_add=True, verbose_name="Date de création")

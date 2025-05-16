@@ -286,7 +286,21 @@ class RappelEntretienAPIView(APIView):
     
 
 
+class MesEntretiens7JoursAPIView(APIView):
+    permission_classes = [IsAuthenticated, IsTechnicien]
 
+    def get(self, request):
+        today = now()
+        dans_7_jours = today + timedelta(days=7)
+
+        entretiens = Entretien.objects.filter(
+            technicien=request.user,
+            date_debut__gte=today,
+            date_debut__lte=dans_7_jours
+        ).select_related('installation')
+
+        serializer = EntretienSerializer(entretiens, many=True)
+        return Response(serializer.data)
 
 
 class MesEntretiensAPIView(APIView):
@@ -299,6 +313,11 @@ class MesEntretiensAPIView(APIView):
 
         serializer = EntretienSerializer(entretiens, many=True)
         return Response(serializer.data)
+
+
+
+
+
 
 
 

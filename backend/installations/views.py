@@ -7,9 +7,12 @@ from rest_framework.views import APIView
 from .models import Installation
 from .serializers import InstallationSerializer
 from users.permissions import IsAdminOrInstallateur,IsInstallateur
+from users.permissions import IsTechnicien
 from rest_framework.permissions import IsAuthenticated
 from users.serializers import UserSerializer
 from .serializers import InstallationGeoSerializer
+from users.permissions import IsAdminOrInstallateurOrTechnicien
+
 User = get_user_model()
 
 class AjouterInstallationView(APIView):
@@ -49,33 +52,36 @@ class SupprimerInstallationView(APIView):
             return Response({"error": "Installation non trouvée."}, status=status.HTTP_404_NOT_FOUND)
 
 class ListerInstallationsView(APIView):
-    permission_classes = [IsAuthenticated, IsAdminOrInstallateur]
+    permission_classes = [IsAuthenticated, IsAdminOrInstallateurOrTechnicien]
 
     def get(self, request):
-        installations = Installation.objects.all()
+        user = request.user
 
-        etat = request.query_params.get('etat', None)
+        if user.role in ['admin', 'technicien']:
+            installations = Installation.objects.all()
+        elif user.role == 'installateur':
+            installations = Installation.objects.filter(installateur=user)
+        else:
+            return Response({"error": "Rôle non autorisé."}, status=403)
+
+        etat = request.query_params.get('etat')
         if etat:
             installations = installations.filter(statut=etat)
 
-        adresse = request.query_params.get('adresse', None)
+        adresse = request.query_params.get('adresse')
         if adresse:
             installations = installations.filter(adresse__icontains=adresse)
 
-        ville = request.query_params.get('ville', None)
+        ville = request.query_params.get('ville')
         if ville:
             installations = installations.filter(ville__icontains=ville)
 
-        nom = request.query_params.get('nom', None) 
+        nom = request.query_params.get('nom')
         if nom:
             installations = installations.filter(nom__icontains=nom)
 
         serializer = InstallationSerializer(installations, many=True)
-
-        if not serializer.data:
-            return Response({"message": "Aucune installation trouvée."}, status=status.HTTP_404_NOT_FOUND)
-
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data, status=200)
 
 class DetailsInstallationView(APIView):
     permission_classes = [IsAuthenticated, IsAdminOrInstallateur]

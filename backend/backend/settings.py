@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'reclamation',
     'rapports',
     'historique',
+    #'django_celery_beat',
     "equipements",
 
 ]
@@ -107,6 +108,8 @@ TEMPLATES = [
     },
 ]
 
+FRONTEND_BASE_URL = "http://localhost:5173"
+
 WSGI_APPLICATION = 'backend.wsgi.application'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173", 
@@ -126,7 +129,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'solar_db',  
         'USER': 'postgres',
-        'PASSWORD': 'youta',
+        'PASSWORD': 'root',
         'HOST': 'localhost',
         'PORT': '5432',
 
@@ -203,6 +206,9 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 broker_connection_retry_on_startup = True
 default_app_config = 'entretien.apps.EntretienConfig'
+
+
+
 
 
 

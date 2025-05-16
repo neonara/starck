@@ -5,7 +5,6 @@ import {
 import { Link, useNavigate } from 'react-router-dom';
 import { toast, Toaster } from 'react-hot-toast';
 import ApiService from "../../Api/Api";
-
 const Navbar = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
@@ -64,7 +63,7 @@ const Navbar = () => {
   return (
     <nav className="fixed top-0 left-64 right-0 z-50 bg-white shadow-sm px-6 py-3 flex justify-between items-center">
       <div className="flex items-center gap-2" />
-
+ 
       <div className="flex items-center gap-4 relative">
         {/* Bouton notifications */}
         <div className="relative">
@@ -142,7 +141,7 @@ const Navbar = () => {
                   </Link>
                 </li>
               </ul>
-
+ 
               <div className="border-t">
                 <button
                   onClick={ApiService.logout}
@@ -159,5 +158,5 @@ const Navbar = () => {
     </nav>
   );
 };
-
+ 
 export default Navbar;

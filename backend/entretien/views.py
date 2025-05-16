@@ -315,6 +315,36 @@ class MesEntretiensAPIView(APIView):
         return Response(serializer.data)
 
 
+class ListeEntretiensTechnicienAPIView(APIView):
+    permission_classes = [IsAuthenticated, IsTechnicien]
+
+    def get(self, request):
+        entretiens = Entretien.objects.filter(
+            technicien=request.user
+        ).select_related('installation')
+
+        serializer = EntretienSerializer(entretiens, many=True)
+        return Response(serializer.data)
+    
+
+from users.permissions import IsTechnicienAndOwner
+
+class ModifierStatutEntretienAPIView(APIView):
+    permission_classes = [IsAuthenticated, IsTechnicienAndOwner]
+
+    def patch(self, request, pk):
+        entretien = get_object_or_404(Entretien, pk=pk)
+
+        self.check_object_permissions(request, entretien) 
+
+        statut = request.data.get("statut")
+        if statut not in ["planifie", "en_cours", "termine", "annule"]:
+            return Response({"error": "Statut invalide"}, status=400)
+
+        entretien.statut = statut
+        entretien.save()
+
+        return Response({"message": "Statut mis à jour avec succès ✅"}, status=200)
 
 
 

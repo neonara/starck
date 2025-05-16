@@ -174,8 +174,6 @@ function App() {
        <Route path="/MesInstallation" element={<ListeMesInstallationsPage />} />
        
        <Route path="/MapInstallateur" element={<InstallationMapInstallateur />} />
-       
-       <Route path="/Mesintervention" element={<ListeMesInterventionsPage />} />
        <Route path="/MesEntrentientinstallateur" element={<ListeMesEntretiensInstallateurPage/>} />
        <Route path="/Calendrier-En-Insta" element={<CalendrierEntretiensInstallateur/>} />
        <Route path="/ListeAlarmesInstallateur" element={<ListeAlarmesInstallateur/>} />
@@ -191,6 +189,7 @@ function App() {
        <Route path="/Mesintervention" element={<ListeMesInterventionsPage />} />
 
        <Route path="/dashboard-technicien" element={<DashboardTechnicien  />} />
+       <Route path="/Mesintervention" element={<ListeMesInterventionsPage />} />
 
        </Route>
   </Routes>

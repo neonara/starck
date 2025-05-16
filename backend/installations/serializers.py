@@ -39,11 +39,11 @@ class InstallationSerializer(serializers.ModelSerializer):
             'client',
             'photo_installation_url',
             'installateur',
-                'type_contrat',
-    'date_mise_en_service',
-    'statut_diagnostic',
-    'diagnostic_realise',
-    'devis_associe',
+            'type_contrat',
+            'date_mise_en_service',
+            'statut_diagnostic',
+            'diagnostic_realise',
+            'devis_associe',
         ]
 
         

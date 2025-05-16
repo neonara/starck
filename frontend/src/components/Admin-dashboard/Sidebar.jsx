@@ -15,20 +15,20 @@ import {
   FileText
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
-import { useUser } from '../../context/UserContext'; 
-
+import { useUser } from '../../context/UserContext';
+ 
 const Sidebar = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [openMenus, setOpenMenus] = useState({});
   const location = useLocation();
-  const { role: userRole } = useUser(); 
-
+  const { role: userRole } = useUser();
+ 
   if (!userRole) return null;
-
+ 
   const toggleMenu = (label) => {
     setOpenMenus((prev) => ({ ...prev, [label]: !prev[label] }));
   };
-
+ 
   //  Menu Admin
   const adminMenuItems = [
     { label: "Tableaux de bord", icon: LayoutGrid, path: "/admin-dashboard" },
@@ -64,13 +64,13 @@ const Sidebar = () => {
     { label: "Rapports", icon: FileText, children: [
         { label: "Rapport de production", path: "/rapport_production" },
         { label: "Rapport de consommation", path: "/rapport_consommation" },
-
+ 
         { label: "Rapports d’historique des alarmes", path: "/rapport_alarme" },
-
+ 
       ]
     },
   ];
-
+ 
   // Menu Client
   const clientMenuItems = [
     {
@@ -116,8 +116,8 @@ const Sidebar = () => {
       ],
     },
   ];
-    
-
+   
+ 
   // Menu Installateur
   const installateurMenuItems = [
     { label: "Tableaux de bord", icon: LayoutGrid, path: "/DashboardInstallateur" },
@@ -133,7 +133,7 @@ const Sidebar = () => {
     { label: "Plan d'action", icon: CalendarCheck, children: [
         { label: "Liste des Entretiens", path: "/MesEntrentientinstallateur" },
         { label: "Calendrier des Entretiens", path: "/Calendrier-En-Insta" },
-
+ 
       ]
     },
     { label: "Gestion des interventions", icon: Wrench, children: [
@@ -185,7 +185,7 @@ const Sidebar = () => {
       </div>
       <div className="pt-6 px-2">
         <ul className="space-y-2">
-          {menuItems.map(({ label, icon: Icon, path, children }) => (
+          {menuItems.map(({ label, path, children }) => (
             <li key={label}>
               {children ? (
                 <>
@@ -234,5 +234,7 @@ const Sidebar = () => {
     </div>
   );
 };
-
+ 
 export default Sidebar;
+ 
+ 

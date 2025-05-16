@@ -13,6 +13,7 @@ from intervention.views import (
     TauxResolutionInterventionsView, 
     ListeFicheInterventionClientView, 
     DetailFicheInterventionClientView,
+    ListeMesFichesInterventionView,
     ExportInterventionsCSVView,
     ExportInterventionsXLSXView
 

@@ -69,7 +69,6 @@ class StatistiquesAlarmeCodesView(generics.GenericAPIView):
 
 
 
-
 #Alarme declenche (marbouta bel installation)
 class AjouterAlarmeView(generics.CreateAPIView):
     permission_classes = [IsAuthenticated, IsAdminOrInstallateur]

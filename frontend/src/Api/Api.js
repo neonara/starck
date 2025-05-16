@@ -208,6 +208,7 @@ updateEntretien: (id, data) => api.put(`entretien/entretiens/${id}/`, data),
 deleteEntretien: (id) => api.delete(`entretien/entretiens/${id}/`),
 getEntretienCalendar: (params) => api.get("entretien/entretiens/calendar/", { params }),
 getEntretienStats: () => api.get("entretien/entretien/statistiques/"),
+
 //technicien
 //entretien
 ajouterRappelEntretien: (entretienId, rappel_datetime) =>
@@ -220,6 +221,7 @@ getEntretienDetail: (id) => {
   return api.get(`entretien/client/entretiens/${id}/`);
 },
 
+getMesEntretiens7Jours: () => api.get("entretien/mes-entretiens-7-jours/"),
 
 //Reclamation
 getReclamations: (params = {}) => api.get("reclamation/reclamations/", { params }),

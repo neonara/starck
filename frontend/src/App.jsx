@@ -50,8 +50,9 @@ import ModifierEntretienPage from "./components/Entretien/ModifierEntretienPage"
 import CalendrierEntretiens from "./components/Entretien/CalendrierEntretiens";
 import StatistiquesEntretiens from "./components/Entretien/StatistiquesEntretiens";
 
-import ListeEntretiensClient from "./components/Entretien/ListeEntretiensClient.jsx";
-import DetailleEntretienClient from "./components/Entretien/DetailleEntretienClient.jsx";
+//import ListeEntretiensClient from "./components/Entretien/ListeEntretiensClient.jsx";
+//import DetailleEntretienClient from "./components/Entretien/DetailleEntretienClient.jsx";
+ 
 //Reclamations
 import ListeReclamationsPage from "./components/Reclamation/ListeReclamationPage";
 import ModifierReclamationPage from "./components/Reclamation/ModifierReclamationPage";
@@ -61,15 +62,18 @@ import ReclamationClient from "./components/Client-dashboard/ReclamationClient";
 import RapportProductionPage from "./components/Rapports/RapportProductionPage";
 import RapportConsommationPage from"./components/Rapports/RapportConsommationPage";
 import InstallationMap from "./components/Installations/InstallationMap";
+//client
 import HistoriqueReclamationsClient from "./components/Client-dashboard/HistoriqueReclamationsClient";
 import RapportAlarmesPage from "./components/Rapports/RapportAlarmesPage";
 import RapportProductionClientPage from "./components/Rapports/RapportProductionClientPage";
 import RapportConsommationClientPage from "./components/Rapports/RapportConsommationClientPage";
 import RapportAlarmesClientPage from "./components/Rapports/RapportAlarmesClientPage";
-//Technicien 
-import MesEntretiens from "./components/Utilisateurs/Technicien/MesEntretiens";
 import ListeInterventionsClient from "./components/Intervention/ListeInterventionsClient";
 import DetailleInterventionClient from "./components/Intervention/DetailleInterventionClient";
+
+//Technicien 
+import MesEntretiens from "./Technicien/MesEntretiens";
+import DashboardTechnicien from "./Technicien/DashboardTechnicien.jsx";
 
 //Installateur
 import ListeUtilisateursPage from "./Installateur/ListeUtilisateursPage";
@@ -119,7 +123,6 @@ function App() {
        <Route path="/installationMap" element={<InstallationMap/>} />
 
        
-       <Route path="/installationMap" element={<InstallationMap/>} />
 
        
        <Route path="/liste-interventions" element={<ListeInterventions/>} />
@@ -151,8 +154,11 @@ function App() {
        
        <Route path="/rapports-production" element={<RapportProductionClientPage />} />
        <Route path="/rapports-consommation" element={<RapportConsommationClientPage />} />
-       <Route path="//rapports-alarme" element={<RapportAlarmesClientPage />} />
+       <Route path="/rapports-alarme" element={<RapportAlarmesClientPage />} />
        
+       
+       <Route path="/client-mes-interventions" element={<ListeInterventionsClient />} />
+       <Route path="/client/details-interventions/:id" element={<DetailleInterventionClient />} />       
        
        <Route path="/rapports-alarme" element={<RapportAlarmesClientPage />} />
        
@@ -161,9 +167,7 @@ function App() {
        <Route path="/client/details-interventions/:id" element={<DetailleInterventionClient />} />
        
        
-       <Route path="/client/mes-entretien" element={<ListeEntretiensClient />} />
-       
-       <Route path="/client/entretiens/:id" element={<DetailleEntretienClient />} />       
+     
        
        <Route path="/MesEntretiens" element={<MesEntretiens />} />
        <Route path="/ListeUtilisateurs" element={<ListeUtilisateursPage />} />
@@ -185,6 +189,8 @@ function App() {
 <Route path="/equipements/equipements/scan/:code" element={<ScanEquipementPage />} />
 
        <Route path="/Mesintervention" element={<ListeMesInterventionsPage />} />
+
+       <Route path="/dashboard-technicien" element={<DashboardTechnicien  />} />
 
        </Route>
   </Routes>

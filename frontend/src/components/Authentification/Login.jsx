@@ -32,7 +32,7 @@ export default function LoginPage() {
  
     try {
 
-      console.log("📦 Données envoyées :", loginData); // 🧪 debug ici
+      console.log("📦 Données envoyées :", loginData); 
  
       const response = await PublicApiService.login(loginData);
  
@@ -56,7 +56,7 @@ export default function LoginPage() {
 
         installateur: "/DashboardInstallateur",
 
-        technicien: "/MesEntretiens",
+        technicien: "/dashboard-technicien",
 
         client: "/client-dashboard",
 

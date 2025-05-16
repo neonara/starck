@@ -85,17 +85,19 @@ const Sidebar = () => {
       ]
     },
   
-    {
-      label: "Mes interventios",
-      icon: LayoutGrid,
-      path: "/client-mes-interventions",
-    },
+   
     {
       label: "Mes plan d'action",
       icon: LayoutGrid,
       path: "/client/mes-entretien",
     },
  
+    {
+      label: "Mes interventions",
+      icon: CalendarCheck,
+      path: "/client-mes-interventions",
+    },
+   
     {
       label: "Réclamations",
       icon: AlertCircle,
@@ -128,7 +130,7 @@ const Sidebar = () => {
          { label: "Equipements", path: "/equipements" },
       ]
     },
-    { label: "Gestion des Entretiens", icon: CalendarCheck, children: [
+    { label: "Plan d'action", icon: CalendarCheck, children: [
         { label: "Liste des Entretiens", path: "/MesEntrentientinstallateur" },
         { label: "Calendrier des Entretiens", path: "/Calendrier-En-Insta" },
 
@@ -152,9 +154,10 @@ const Sidebar = () => {
     // Menu Technicien
     const technicienMenuItems = [
       { label: "Tableaux de bord", icon: LayoutGrid, path: "/dashboard-technicien" },
+      { label: "Equipements", icon: CalendarCheck, path: "/equipements" },
       { label: "Mes interventions", icon: Server, path: "/technicien-interventions" },
       { label: "Mes plan d'action", icon: CalendarCheck, path: "/MesEntretiens" },
-      { label: "Equipements", icon: CalendarCheck, path: "/equipement" },
+      
 
       {
         label: "Rapport Technique",

@@ -14,6 +14,8 @@ from django.utils.dateparse import parse_datetime
 from installations.models import Installation
 from django.contrib.auth import get_user_model
 from django_filters.rest_framework import DjangoFilterBackend
+from django.utils.timezone import now
+from django.db.models.functions import TruncWeek
 from django.db.models import Count
 from django.db.models.functions import TruncMonth
 from django.utils.timezone import now, make_aware
@@ -29,6 +31,13 @@ from utils.google_calendar_service import ajouter_entretien_google_calendar
 from utils.google_calendar_service import supprimer_evenement_google_calendar
 from utils.google_calendar_service import modifier_evenement_google_calendar
 from entretien.tasks import generer_suivant_entretien
+from alarme.models import AlarmeDeclenchee
+from django.db.models import Count
+from users.permissions import IsTechnicien
+from intervention.models import FicheIntervention
+
+
+
 User = get_user_model()
 
 
@@ -421,3 +430,57 @@ class EntretienClientDetailView(generics.RetrieveAPIView):
 
     def get_queryset(self):
         return Entretien.objects.filter(installation__client=self.request.user).select_related('installation', 'technicien')
+    
+
+
+
+
+
+class StatistiquesActivitesTechnicienView(APIView):
+    permission_classes = [IsAuthenticated, IsTechnicien]
+
+    def get(self, request):
+        user = request.user
+        today = now()
+        current_month = today.month
+        current_year = today.year
+
+        #Entretiens du mois courant
+        entretiens = (
+            Entretien.objects.filter(technicien=user, date_debut__month=current_month, date_debut__year=current_year)
+            .annotate(semaine=TruncWeek('date_debut'))
+            .values('semaine')
+            .annotate(total=Count('id'))
+            .order_by('semaine')
+        )
+
+        #  Interventions du mois courant
+        interventions = (
+            FicheIntervention.objects.filter(technicien=user, date_prevue__month=current_month, date_prevue__year=current_year)
+            .annotate(semaine=TruncWeek('date_prevue'))
+            .values('semaine')
+            .annotate(total=Count('id'))
+            .order_by('semaine')
+        )
+
+        # Anomalies critiques non résolues
+
+
+        
+        
+        anomalies_critiques = AlarmeDeclenchee.objects.filter(
+    installation__techniciens=request.user,
+    est_resolue=False,
+    code_alarme__gravite="critique"
+).count()
+
+        total_entretiens = sum(item['total'] for item in entretiens)
+        total_interventions = sum(item['total'] for item in interventions)
+
+        return Response({
+            "entretiens_par_semaine": {item['semaine'].strftime('%d %b'): item['total'] for item in entretiens},
+            "interventions_par_semaine": {item['semaine'].strftime('%d %b'): item['total'] for item in interventions},
+            "anomalies_critiques_non_resolues": anomalies_critiques,
+             "entretiens_par_semaine_total": total_entretiens,
+             "interventions_par_semaine_total": total_interventions
+        })

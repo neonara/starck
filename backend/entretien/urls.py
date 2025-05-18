@@ -5,6 +5,8 @@ from .views import (
     EntretienDetailAPIView,
     EntretienCalendarAPIView,
     EntretienStatistiquesView,
+    ListeEntretiensTechnicienAPIView,
+    ModifierStatutEntretienAPIView,
     RappelEntretienAPIView,
     MesEntretiensAPIView, 
     MesEntretiensInstallateurAPIView,
@@ -12,15 +14,11 @@ from .views import (
     EntretienStatistiquesView,
     EntretiensClientAPIView,
     EntretienClientDetailView,
-<<<<<<< HEAD
-    MesEntretiens7JoursAPIView
-=======
-    MesEntretiensAPIView,
-    MesEntretiensInstallateurAPIView,
-    RappelEntretienAPIView,
-    ListeEntretiensTechnicienAPIView,
-    ModifierStatutEntretienAPIView
->>>>>>> dev2
+    MesEntretiens7JoursAPIView,
+    StatistiquesActivitesTechnicienView
+
+    
+
 )
 
 urlpatterns = [
@@ -53,6 +51,9 @@ urlpatterns = [
 
     path("client/entretiens/", EntretiensClientAPIView.as_view(), name="entretiens-client"),
     path("client/entretiens/<int:pk>/", EntretienClientDetailView.as_view(), name="detail-entretien-client"),
+
+     path("dashboard/technicien/activites-mensuelles/", StatistiquesActivitesTechnicienView.as_view(), name="stats_tech_dashboard"),
+
 
 ]
 

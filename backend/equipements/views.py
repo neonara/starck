@@ -8,7 +8,8 @@ from django.shortcuts import get_object_or_404
 from rest_framework.permissions import AllowAny
 from users.permissions import IsAdminOrInstallateur,IsInstallateur
 from users.permissions import IsTechnicien
-from users.permissions import IsAdminOrInstallateurOrTechnicien
+from users.permissions import IsAdminOrInstallateurOrTechnicien,IsClient
+from users.permissions import IsAdminInstallateurOrClient
 
 from rest_framework.permissions import IsAuthenticated
 from .tasks import generate_qr_code_task
@@ -47,12 +48,18 @@ class SupprimerEquipementView(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 class ListerEquipementsParInstallationView(APIView):
-    permission_classes = [IsAuthenticated, IsAdminOrInstallateurOrTechnicien]
+    permission_classes = [IsAuthenticated, IsAdminInstallateurOrClient]
 
     def get(self, request, installation_id):
-        equipements = Equipement.objects.filter(installation_id=installation_id)
+        if request.user.role == 'client':
+            installation = get_object_or_404(Installation, id=installation_id, client=request.user)
+        else:
+            installation = get_object_or_404(Installation, id=installation_id)
+
+        equipements = Equipement.objects.filter(installation=installation)
         serializer = EquipementSerializer(equipements, many=True)
         return Response(serializer.data)
+
 
 class DetailsEquipementView(APIView):
     permission_classes = [IsAuthenticated, IsAdminOrInstallateurOrTechnicien]
@@ -68,7 +75,6 @@ class DetailsEquipementView(APIView):
 class EquipementParQRCodeView(APIView):
     permission_classes = [IsAuthenticated, IsAdminOrInstallateurOrTechnicien]
 
-    permission_classes = [AllowAny]
     def get(self, request, code):
         try:
             equipement = Equipement.objects.get(code_unique=code)

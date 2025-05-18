@@ -15,7 +15,8 @@ class AdminRegistrationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'email', 'password', 'confirm_password', 'role']
+        fields = ['id', 'email', 'first_name', 'last_name', 'phone_number', 'role', 'is_active', 'is_verified']
+        read_only_fields = ('id', 'email', 'is_verified')
         extra_kwargs = {
             'password': {'write_only': True}  
         }
@@ -139,4 +140,4 @@ class UserSerializer(serializers.ModelSerializer):
 class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('first_name', 'last_name', 'role', 'is_active')
+        fields = ('first_name', 'last_name', 'role', 'is_active','phone_number')

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: Arial, sans-serif; font-size: 12px; }
+    h1, h2 { color: #333; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+    th, td { border: 1px solid #ddd; padding: 6px; text-align: left; }
+    th { background-color: #f0f0f0; }
+  </style>
+  <title>Rapport Technique</title>
+</head>
+<body>
+  <h1>Rapport technique de {{ technicien.get_full_name }}</h1>
+  <p>Date : {{ date|date:"d/m/Y" }}</p>
+
+  <h2>📌 Interventions</h2>
+  <table>
+    <thead>
+      <tr><th>Installation</th><th>Date</th><th>Type</th><th>Statut</th></tr>
+    </thead>
+    <tbody>
+      {% for i in interventions %}
+      <tr>
+        <td>{{ i.installation }}</td>
+        <td>{{ i.date }}</td>
+        <td>{{ i.type }}</td>
+        <td>{{ i.statut }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h2>🛠️ Entretiens</h2>
+  <table>
+    <thead>
+      <tr><th>Installation</th><th>Date</th><th>Type</th><th>Statut</th></tr>
+    </thead>
+    <tbody>
+      {% for e in entretiens %}
+      <tr>
+        <td>{{ e.installation }}</td>
+        <td>{{ e.date }}</td>
+        <td>{{ e.type }}</td>
+        <td>{{ e.statut }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>

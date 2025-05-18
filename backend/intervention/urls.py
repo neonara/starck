@@ -15,7 +15,9 @@ from intervention.views import (
     DetailFicheInterventionClientView,
     ListeMesFichesInterventionView,
     ExportInterventionsCSVView,
-    ExportInterventionsXLSXView
+    ExportInterventionsXLSXView,
+    ListeFichesInterventionTechnicienView,
+    DetailFicheInterventionTechnicienView
 
 )
 
@@ -32,6 +34,10 @@ urlpatterns = [
     path('interventions/mes-interventions/', ListeMesFichesInterventionView.as_view(), name='mes-fiches-intervention'),
     path('interventions/export/csv/', ExportInterventionsCSVView.as_view(), name='export-interventions-csv'),
     path('interventions/export/xlsx/', ExportInterventionsXLSXView.as_view(), name='export-interventions-xlsx'),
+
+    path('technicien/interventions/', ListeFichesInterventionTechnicienView.as_view(), name='technicien-fiches'),
+    path('technicien/intervention/<int:pk>/', DetailFicheInterventionTechnicienView.as_view(), name='technicien-fiche-detail'),
+    path('technicien/intervention/<int:pk>/statut/', ChangerStatutFicheInterventionView.as_view(), name='changer-statut-fiche'),
 
 
     path("client/interventions/", ListeFicheInterventionClientView.as_view(), name="interventions-client"),

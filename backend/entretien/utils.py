@@ -14,6 +14,18 @@ def notifier_technicien_entretien(entretien):
         )
 
 
+def notifier_client_entretien(entretien):
+    client = getattr(entretien.installation, "client", None)
+    if client:
+        Notification.objects.create(
+            utilisateur=client,
+            type_notification='maintenance',
+            titre="Nouvel entretien planifié",
+            message=f"Un entretien '{entretien.get_type_entretien_display()}' est prévu pour votre installation {entretien.installation.nom}, le {entretien.date_debut.strftime('%d/%m/%Y à %Hh')}.",
+            canal='in_app',
+            installation_associee=entretien.installation,
+            priorite=1
+        )
 
 
 

@@ -49,6 +49,7 @@ class FicheInterventionDetailSerializer(serializers.ModelSerializer):
     technicien_details = UserSerializer(source='technicien', read_only=True)
     installation_details = InstallationSerializer(source='installation', read_only=True)
     statut_display = serializers.CharField(source='get_statut_display', read_only=True)
+    installation_nom = serializers.CharField(source='installation.nom', read_only=True)
     class Meta:
         model = FicheIntervention
         fields = [
@@ -56,7 +57,7 @@ class FicheInterventionDetailSerializer(serializers.ModelSerializer):
             'technicien_details', 'installation_details',
             'description','type_intervention', 'date_prevue', 'date_creation',
             'date_modification', 'statut', 'statut_display',
-            'commentaire'
+            'commentaire', 'installation_nom',
         ]
         
 

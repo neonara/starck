@@ -705,3 +705,175 @@ class ExportRapportAlarmesClientPDFView(APIView):
         if pisa_status.err:
             return Response({"error": "Erreur génération PDF"}, status=500)
         return response
+
+
+#technicien
+
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from intervention.models import FicheIntervention
+from entretien.models import Entretien
+from datetime import datetime
+from django.db.models import Count, Avg
+from users.permissions import IsTechnicien
+from django.db.models.functions import TruncMonth
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def rapport_technique_technicien(request):
+    user = request.user
+
+    if user.role != 'technicien':
+        return Response({"error": "Accès réservé aux techniciens"}, status=403)
+
+    interventions = FicheIntervention.objects.filter(technicien=user)
+    entretiens = Entretien.objects.filter(technicien=user)
+
+    # KPI
+    kpi = {
+        "total_interventions": interventions.count(),
+        "total_entretiens": entretiens.count(),
+        "moyenne_duree_entretiens": entretiens.aggregate(avg=Avg("duree_estimee"))["avg"] or 0
+    }
+
+    # Groupement par type
+    types_intervention = interventions.values("type_intervention").annotate(count=Count("id"))
+    types_entretien = entretiens.values("type_entretien").annotate(count=Count("id"))
+
+    # Groupement par mois (PostgreSQL compatible)
+    interventions_par_mois = (
+        interventions
+        .annotate(month=TruncMonth("date_prevue"))
+        .values("month")
+        .annotate(count=Count("id"))
+        .order_by("month")
+    )
+
+    entretiens_par_mois = (
+        entretiens
+        .annotate(month=TruncMonth("date_debut"))
+        .values("month")
+        .annotate(count=Count("id"))
+        .order_by("month")
+    )
+
+    def format_month_data(queryset):
+        return [
+            {
+                "month": item["month"].strftime("%Y-%m"),
+                "count": item["count"]
+            } for item in queryset
+        ]
+
+    return Response({
+        "kpi": kpi,
+        "graphiques": {
+            "types_intervention": list(types_intervention),
+            "types_entretien": list(types_entretien),
+            "interventions_par_mois": format_month_data(interventions_par_mois),
+            "entretiens_par_mois": format_month_data(entretiens_par_mois),
+        }
+    })
+
+
+import openpyxl
+from openpyxl.utils import get_column_letter
+from django.http import HttpResponse
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsTechnicien])
+def export_rapport_technicien_excel(request):
+    user = request.user
+    interventions = FicheIntervention.objects.filter(technicien=user)
+    entretiens = Entretien.objects.filter(technicien=user)
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Rapport Technique"
+
+    # En-têtes
+    headers = [
+        "Type", "Installation", "Date prévue", "Statut", "Durée (min)", "Description/Notes"
+    ]
+    ws.append(headers)
+
+    # Interventions
+    for i in interventions:
+        ws.append([
+            "Intervention",
+            i.installation.nom if i.installation else "",
+            i.date_prevue.strftime("%Y-%m-%d %H:%M"),
+            i.get_statut_display(),
+            "",  # Pas de durée estimée sur intervention
+            i.description or "",
+        ])
+
+    # Entretiens
+    for e in entretiens:
+        ws.append([
+            "Entretien",
+            e.installation.nom if e.installation else "",
+            e.date_debut.strftime("%Y-%m-%d %H:%M") if e.date_debut else "",
+            e.get_statut_display(),
+            e.duree_estimee,
+            e.notes or "",
+        ])
+
+    # Auto-width
+    for col_num, _ in enumerate(headers, 1):
+        ws.column_dimensions[get_column_letter(col_num)].width = 25
+
+    # Réponse HTTP
+    response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    response["Content-Disposition"] = "attachment; filename=rapport_technicien.xlsx"
+    wb.save(response)
+    return response
+
+from django.template.loader import render_to_string
+from django.http import HttpResponse
+from django.utils.timezone import now
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from entretien.models import Entretien
+from intervention.models import FicheIntervention
+from xhtml2pdf import pisa 
+
+class ExportRapportTechnicienPDFView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        technicien = request.user
+
+        entretiens = Entretien.objects.filter(technicien=technicien)
+        interventions = FicheIntervention.objects.filter(technicien=technicien)
+
+        data_entretiens = [{
+            "installation": e.installation.nom,
+            "date": e.date_debut.strftime("%Y-%m-%d %H:%M"),
+            "type": e.get_type_entretien_display(),
+            "statut": e.get_statut_display()
+        } for e in entretiens]
+
+        data_interventions = [{
+            "installation": i.installation.nom,
+            "date": i.date_prevue.strftime("%Y-%m-%d %H:%M"),
+            "type": i.get_type_intervention_display(),
+            "statut": i.get_statut_display()
+        } for i in interventions]
+
+        html = render_to_string("rapport_pdf.html", {
+            "technicien": technicien,
+            "date": now(),
+            "entretiens": data_entretiens,
+            "interventions": data_interventions
+        })
+
+        response = HttpResponse(content_type="application/pdf")
+        response["Content-Disposition"] = f'attachment; filename="rapport_technicien_{now().date()}.pdf"'
+
+        pisa_status = pisa.CreatePDF(html, dest=response)
+        if pisa_status.err:
+            return Response({"error": "Erreur génération PDF"}, status=500)
+        return response

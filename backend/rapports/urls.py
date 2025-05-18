@@ -5,7 +5,11 @@ from .views import( RapportProductionMensuelleView, ExporterRapportProductionVie
     ExportRapportAlarmesClientExcelView,
     ExportRapportProductionClientPDFView,
     ExportRapportConsommationClientPDFView,
-    ExportRapportAlarmesClientPDFView,)
+    ExportRapportAlarmesClientPDFView,
+    rapport_technique_technicien,
+    export_rapport_technicien_excel,
+    ExportRapportTechnicienPDFView
+    )
 from django.urls import path
 
 urlpatterns = [
@@ -31,6 +35,10 @@ urlpatterns = [
     path("client/export/production/pdf", ExportRapportProductionClientPDFView.as_view(), name="export_production_pdf_client"),
     path("client/export/consommation/pdf", ExportRapportConsommationClientPDFView.as_view(), name="export_consommation_pdf_client"),
     path("client/export/alarmes/pdf", ExportRapportAlarmesClientPDFView.as_view(), name="export_alarmes_pdf_client"),
+
+    path("technicien/", rapport_technique_technicien, name="rapport-technique-technicien"),
+    path("technicien/export/excel/", export_rapport_technicien_excel, name="export-rapport-excel"),
+    path("technicien/export/pdf/", ExportRapportTechnicienPDFView.as_view(), name="export-rapport-pdf"),
 
 ]
 

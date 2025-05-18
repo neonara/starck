@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf.urls.static import static
 from django.conf import settings
+from entretien.views import start_google_auth, google_auth_callback
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -32,4 +33,8 @@ urlpatterns = [
     path('rapports/', include('rapports.urls')),
     path('historique/', include('historique.urls')),
     path("equipements/", include("equipements.urls")),
+
+    #calendar
+    path("oauth2/login/", start_google_auth, name="google_auth_start"),
+    path("oauth2callback", google_auth_callback, name="google_auth_callback"),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

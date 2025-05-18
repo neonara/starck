@@ -25,7 +25,6 @@ SECRET_KEY = 'django-insecure-42-%ky1ul55v(qi0=*^do-515uo*b88f@a&v&@m5+9d4bdb#*p
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['.onrender.com', 'localhost', '127.0.0.1']
 
 
 
@@ -70,6 +69,10 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 
+ALLOWED_HOSTS = [
+    "localhost",
+    "127.0.0.1",
+]
 
 
 MIDDLEWARE = [
@@ -122,8 +125,7 @@ CSRF_COOKIE_HTTPONLY = False
 CORS_ALLOW_CREDENTIALS = True
 
 
-import os
-RENDER = os.environ.get('RENDER', False)
+
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
@@ -241,10 +243,12 @@ CACHES = {
         "LOCATION": "redis://localhost:6379/0", 
     }
 }
-
+import os
 # Google OAuth - pour synchronisation personnelle de chaque utilisateur
-GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
-GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+from decouple import config 
+
+GOOGLE_CLIENT_ID = config("GOOGLE_CLIENT_ID")
+GOOGLE_CLIENT_SECRET = config("GOOGLE_CLIENT_SECRET")
 LOGIN_URL = '/admin/login/'
-SITE_BASE_URL = "https://starck-aya.onrender.com"
+SITE_BASE_URL = os.getenv("SITE_BASE_URL", "http://localhost:8000")
 GOOGLE_REDIRECT_URI = f"{SITE_BASE_URL}/oauth2callback"

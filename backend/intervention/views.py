@@ -348,3 +348,27 @@ class ExportInterventionsXLSXView(APIView):
         )
         response['Content-Disposition'] = 'attachment; filename="interventions.xlsx"'
         return response
+    
+
+# Technicien
+
+from users.permissions import IsTechnicien
+class ListeFichesInterventionTechnicienView(generics.ListAPIView):
+    """
+    Liste des fiches d'intervention du technicien connecté.
+    """
+    serializer_class = FicheInterventionDetailSerializer
+    permission_classes = [IsAuthenticated, IsTechnicien]
+
+    def get_queryset(self):
+        user = self.request.user
+
+        return FicheIntervention.objects.filter(technicien=user).order_by('-date_prevue')
+    
+class DetailFicheInterventionTechnicienView(generics.RetrieveAPIView):
+    serializer_class = FicheInterventionDetailSerializer
+    permission_classes = [IsAuthenticated,IsTechnicien]
+
+    def get_queryset(self):
+        user = self.request.user
+        return FicheIntervention.objects.filter(technicien=user)

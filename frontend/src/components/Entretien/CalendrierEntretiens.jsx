@@ -58,6 +58,8 @@ const CalendrierEntretiens = () => {
           </h2>
         </div>
 
+
+
         <FullCalendar
           plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
           initialView="dayGridMonth"

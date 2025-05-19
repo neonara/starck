@@ -101,7 +101,7 @@ const Dashboard = () => {
                 series={[installationStats.total_normales, installationStats.total_en_panne]}
                 options={{
                   labels: ["Fonctionnelles", "En panne"],
-                  colors: ["#10b981", "#ef4444"],
+                  colors: ["#60a5fa", "#ef4444"],
                   legend: { position: "bottom" },
                   dataLabels: { enabled: true },
                   plotOptions: { pie: { donut: { size: "70%" } } },
@@ -121,7 +121,7 @@ const Dashboard = () => {
   ]}
   options={{
     labels: ["Critiques", "Majeures", "Mineures"],
-    colors: ["#ef4444", "#facc15", "#22c55e"],
+    colors: ["#ef4444", "#fb923c", "#facc15"],
     legend: { position: "bottom" },
     dataLabels: {
       enabled: true,

@@ -15,8 +15,9 @@ import {
   FileText
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
-import { useUser } from '../../context/UserContext';
- 
+import { useUser } from '../../context/UserContext'; 
+//import { label } from 'three/tsl';
+
 const Sidebar = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [openMenus, setOpenMenus] = useState({});
@@ -54,7 +55,6 @@ const Sidebar = () => {
     { label: "Plan d'action", icon: CalendarCheck, children: [
         { label: "Liste des Entretiens", path: "/liste-entretiens" },
         { label: "Calendrier des Entretiens", path: "/calendrier-entretiens" },
-        { label: "Statistiques des Entretiens", path: "/statistiques-entretiens" },
       ]
     },
     { label: "Reclamations", icon:StickyNote, children: [
@@ -90,11 +90,17 @@ const Sidebar = () => {
       icon: LayoutGrid,
       path: "/client-mes-interventions",
     },
+      
+   
     {
       label: "Mes plan d'action",
       icon: LayoutGrid,
-      path: "/client/mes-entretien",
+      children: [
+        { label: "Mes Entretien", path: "/client/mes-entretien" },
+        { label: "Calendrie Entretien", path: "/client/clanddar" },
+      ]
     },
+
  
     {
       label: "Réclamations",
@@ -128,7 +134,7 @@ const Sidebar = () => {
          { label: "Equipements", path: "/equipements" },
       ]
     },
-    { label: "Gestion des Entretiens", icon: CalendarCheck, children: [
+    { label: "Plan d'action", icon: CalendarCheck, children: [
         { label: "Liste des Entretiens", path: "/MesEntrentientinstallateur" },
         { label: "Calendrier des Entretiens", path: "/Calendrier-En-Insta" },
  
@@ -152,16 +158,21 @@ const Sidebar = () => {
     // Menu Technicien
     const technicienMenuItems = [
       { label: "Tableaux de bord", icon: LayoutGrid, path: "/dashboard-technicien" },
-      { label: "Mes interventions", icon: Server, path: "/technicien-interventions" },
-      { label: "Mes plan d'action", icon: CalendarCheck, path: "/MesEntretiens" },
-      { label: "Equipements", icon: CalendarCheck, path: "/equipement" },
+      { label: "Equipements", icon: CalendarCheck, path: "/equipements" },
+      { label: "Mes interventions", icon: Server, path: "/liste-intervention-technicien" },
+      { label: "Mes plan d'action", 
+        icon: CalendarCheck, 
+        children: [
+          { label: "Liste Entretien", path: "/liste-entretien-technicien"},
+          { label: "Calendrie Entretien", path: "/technicien/calendrier"},
+        ]
+      },
 
       {
         label: "Rapport Technique",
         icon: BarChart3,
         children: [
-          { label: "Rapports interventions", path: "/rapports-interventions-technicien" },
-          { label: "Documents techniques", path: "/docs-techniques-technicien" }
+          { label: "Documents techniques", path: "/technicien/rapport" }
         ]
       },
     ];
@@ -182,7 +193,7 @@ const Sidebar = () => {
       </div>
       <div className="pt-6 px-2">
         <ul className="space-y-2">
-          {menuItems.map(({ label, path, children }) => (
+          {menuItems.map(({  label, path, children, icon: Icon }) => (
             <li key={label}>
               {children ? (
                 <>
@@ -233,5 +244,3 @@ const Sidebar = () => {
 };
  
 export default Sidebar;
- 
- 

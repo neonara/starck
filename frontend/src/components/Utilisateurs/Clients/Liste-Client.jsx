@@ -25,7 +25,6 @@ const [resendLoading, setResendLoading] = useState({});
 const [resendSuccess, setResendSuccess] = useState({});
   const [pageSize, setPageSize] = useState(5);
 
-  //  Charger les utilisateurs
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -45,7 +44,6 @@ const [resendSuccess, setResendSuccess] = useState({});
     fetchUsers();
   }, [globalFilter, filters]);
 
-  //  Charger les exports(historique)
   const loadExports = async () => {
     try {
       const res = await ApiService.exportHistorique.getExports();
@@ -80,7 +78,6 @@ const [resendSuccess, setResendSuccess] = useState({});
     }
   };
 
-  // Suppression utilisateur
   const handleDelete = async (row) => {
     if (confirm(`Supprimer ${row.original.first_name} ${row.original.last_name} ?`)) {
       try {
@@ -117,14 +114,6 @@ const handleResendLink = async (email) => {
       cell: (info) => info.getValue() || "—"
     },
     { header: "Rôle", accessorKey: "role" },
-    {
-      header: "Dernière connexion",
-      accessorKey: "last_login",
-      cell: (info) =>
-        info.getValue()
-          ? new Date(info.getValue()).toLocaleString()
-          : "—",
-    },
 
 {
   header: "Statut",
@@ -249,21 +238,21 @@ const handleResendLink = async (email) => {
               <FaDownload /> Télécharger
             </button>
             {showExportOptions && (
-              <div className="absolute right-0 mt-2 w-40 bg-white border rounded shadow z-50">
-                <button
-                  onClick={(e) => { e.preventDefault(); handleExportClick("csv"); }}
-                  className="block w-full px-4 py-2 text-left hover:bg-gray-100"
-                >
-                  Exporter en CSV
-                </button>
-                <button
-                  onClick={(e) => { e.preventDefault(); handleExportClick("xlsx"); }}
-                  className="block w-full px-4 py-2 text-left hover:bg-gray-100"
-                >
-                  Exporter en Excel
-                </button>
-              </div>
-            )}
+  <div className="absolute right-0 mt-2 w-40 bg-white border rounded shadow z-50">
+    <button
+      onClick={(e) => { e.preventDefault(); handleExportClick("pdf"); }}
+      className="block w-full px-4 py-2 text-left hover:bg-gray-100"
+    >
+      Exporter en PDF
+    </button>
+    <button
+      onClick={(e) => { e.preventDefault(); handleExportClick("xlsx"); }}
+      className="block w-full px-4 py-2 text-left hover:bg-gray-100"
+    >
+      Exporter en Excel
+    </button>
+  </div>
+)}
           </div>
           <button
             onClick={() => navigate("/user-management")}
@@ -344,7 +333,6 @@ const handleResendLink = async (email) => {
         </div>
       </div>
 
-      {/* Modale des exports */}
       {showModalExports && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-lg p-6 w-[600px]">

@@ -5,7 +5,6 @@ from installations.models import Installation
 User = get_user_model()
 
 class FicheIntervention(models.Model):
-    """Modèle représentant une fiche d'intervention"""
     
     STATUT_CHOICES = [
         ('en_attente', 'En attente'),

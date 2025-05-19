@@ -162,20 +162,28 @@ class CompleteRegistrationView(APIView):
         token = request.data.get('token')
         password = request.data.get('password')
         confirm_password = request.data.get('confirm_password')
+        first_name = request.data.get('first_name', '').strip()
+        last_name = request.data.get('last_name', '').strip()
+        phone_number = request.data.get('phone_number', '').strip()  # si ce champ existe dans ton modèle
 
         if password != confirm_password:
             return Response({"error": "Les mots de passe ne correspondent pas."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             user = User.objects.get(email=email)
-        
+
             cached_token = cache.get(f"registration_token:{email}")
             if cached_token and cached_token == token:
+                user.first_name = first_name
+                user.last_name = last_name
+                user.phone_number = phone_number  
                 user.set_password(password)
                 user.is_active = True
                 user.save()
-         
+
                 cache.delete(f"registration_token:{email}")
+                cache.delete("user_list")  
+
                 return Response({"message": "Inscription complétée avec succès."}, status=status.HTTP_200_OK)
             else:
                 return Response({"error": "Token invalide."}, status=status.HTTP_400_BAD_REQUEST)

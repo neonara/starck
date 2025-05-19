@@ -25,6 +25,7 @@ class ListeAlarmeCodesView(generics.ListAPIView):
     permission_classes = [IsAuthenticated, IsAdminOrInstallateur]
     queryset = AlarmeCode.objects.all().order_by('marque')
     serializer_class = AlarmeCodeSerializer
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
     filterset_fields = ['marque', 'type_alarme', 'gravite']
     search_fields = ['description', 'code_constructeur']
 

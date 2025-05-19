@@ -6,6 +6,7 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
+
 @receiver(post_save, sender=AlarmeDeclenchee)
 def notifier_creation_alarme(sender, instance, created, **kwargs):
     if created:
@@ -17,8 +18,7 @@ def notifier_creation_alarme(sender, instance, created, **kwargs):
         if installation.installateur:
             destinataires.add(installation.installateur)
 
-        if installation.technicien_assigne:
-            destinataires.add(installation.technicien_assigne)
+        destinataires.update(installation.techniciens.all())
 
         if installation.client:
             destinataires.add(installation.client)
@@ -41,7 +41,6 @@ def notifier_creation_alarme(sender, instance, created, **kwargs):
                 priorite=1 if code.gravite == "critique" else 3
             )
 
-
 #notifs en cas de resolution de l'alarme
 
 
@@ -56,11 +55,10 @@ def notifier_alarme_resolution(sender, instance, created, **kwargs):
         if installation.installateur:
             destinataires.add(installation.installateur)
 
+        destinataires.update(installation.techniciens.all())
+
         if installation.client:
             destinataires.add(installation.client)
-
-        if installation.technicien_assigne:
-            destinataires.add(installation.technicien_assigne)
 
         admins = User.objects.filter(role="admin")
         destinataires.update(admins)

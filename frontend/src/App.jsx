@@ -53,11 +53,7 @@ import CalendrierEntretiens from "./components/Entretien/CalendrierEntretiens";
 
 import ListeEntretiensClient from "./components/Entretien/ListeEntretiensClient.jsx";
 import DetailleEntretienClient from "./components/Entretien/DetailleEntretienClient.jsx";
-//import ListeEntretiensClient from "./components/Entretien/ListeEntretiensClient.jsx";
-//import DetailleEntretienClient from "./components/Entretien/DetailleEntretienClient.jsx";
-//import ListeEntretiensClient from "./components/Entretien/ListeEntretiensClient.jsx";
-//import DetailleEntretienClient from "./components/Entretien/DetailleEntretienClient.jsx";
- 
+
 //Reclamations
 import ListeReclamationsPage from "./components/Reclamation/ListeReclamationPage";
 import ModifierReclamationPage from "./components/Reclamation/ModifierReclamationPage";
@@ -84,8 +80,11 @@ import DashboardTechnicien from "./Technicien/DashboardTechnicien.jsx";
 import CalendrierEntretiensTechnicien from"./Technicien/CalendrierEntretiensTechnicien.jsx";
 import ListeInterventionsTechnicien from "./Technicien/ListeInterventionsTechnicien.jsx";
 import ModalModifierStatutIntervention from "./Technicien/ModalModifierStatutIntervention.jsx";
-import RapportTechniqueTechnicien from "./Technicien/RapportTechniqueTechnicien.jsx"
-//import DashboardTechnicien from "./Technicien/DashboardTechnicien.jsx";
+import RapportTechniqueTechnicien from "./Technicien/RapportTechniqueTechnicien.jsx";
+//Technicien 
+import MesEntretiens from "./Technicien/MesEntretiens";
+import DashboardTechnicien from "./Technicien/DashboardTechnicien.jsx";
+
 //Installateur
 import ListeUtilisateursPage from "./Installateur/ListeUtilisateursPage";
 import ListeMesInstallationsPage from "./Installateur/ListeMesInstallationsPage.jsx";
@@ -164,7 +163,13 @@ function App() {
        
        
        <Route path="/rapports-production" element={<RapportProductionClientPage />} />
-       <Route path="/rapports-consommation" element={<RapportConsommationClientPage />} />       
+       <Route path="/rapports-consommation" element={<RapportConsommationClientPage />} />
+       <Route path="/rapports-alarme" element={<RapportAlarmesClientPage />} />
+       
+       
+       <Route path="/client-mes-interventions" element={<ListeInterventionsClient />} />
+       <Route path="/client/details-interventions/:id" element={<DetailleInterventionClient />} />       
+       
        <Route path="/rapports-alarme" element={<RapportAlarmesClientPage />} />
        
        
@@ -224,6 +229,7 @@ function App() {
       <Route path="/client/equipements" element={<ClientEquipmentPage />} />
       <Route path="/equipements/equipements/scan/:code" element={<ScanEquipementPage />} />
 
+       <Route path="/dashboard-technicien" element={<DashboardTechnicien  />} />
        <Route path="/Mesintervention" element={<ListeMesInterventionsPage />} />
        <Route path="/dashboard-technicien" element={<DashboardTechnicien  />} />
 

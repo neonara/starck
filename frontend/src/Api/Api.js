@@ -108,8 +108,8 @@ getInstallationStats: () => api.get("installations/statistiques/"),
 
 
     
-    updateInstallation: (id, data) => api.put(`installations/modifier-installation/${id}/`, data),
-    getInstallationStats: () => api.get("installations/statistiques/"),
+    //updateInstallation: (id, data) => api.put(`installations/modifier-installation/${id}/`, data),
+    //getInstallationStats: () => api.get("installations/statistiques/"),
 
     getInstallationsGeoData: () => api.get("installations/geodata/"),
 

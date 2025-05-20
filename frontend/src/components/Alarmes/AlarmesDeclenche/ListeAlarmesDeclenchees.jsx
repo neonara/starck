@@ -102,79 +102,99 @@ const ListeAlarmesDeclenchees = () => {
           ))}
         </div>
 
-        {/* Export Button */}
         <div className="relative">
           <button
             onClick={() => setShowExportOptions(!showExportOptions)}
-            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+             className="flex items-center gap-2 px-3 py-1 border rounded text-sm text-gray-700 hover:bg-gray-100"
           >
             <FaDownload /> Exporter
           </button>
-          {showExportOptions && (
-            <div className="absolute right-0 mt-2 bg-white border rounded shadow z-50">
-              <button
-                onClick={() => handleExportClick("csv")}
-                className="block px-4 py-2 w-full hover:bg-gray-100 text-left"
-              >
-                Export CSV
-              </button>
-              <button
-                onClick={() => handleExportClick("xlsx")}
-                className="block px-4 py-2 w-full hover:bg-gray-100 text-left"
-              >
-                Export Excel
-              </button>
-            </div>
-          )}
+         {showExportOptions && (
+  <div className="absolute right-0 mt-2 bg-white border rounded shadow z-50">
+    <button
+      onClick={() => handleExportClick("pdf")}
+      className="block px-4 py-2 w-full hover:bg-gray-100 text-left"
+    >
+      Export PDF
+    </button>
+    <button
+      onClick={() => handleExportClick("xlsx")}
+      className="block px-4 py-2 w-full hover:bg-gray-100 text-left"
+    >
+      Export Excel
+    </button>
+   
+  </div>
+)}
+
         </div>
       </div>
 
-      {filteredByGravite.map((a) => (
-   <div
-  key={a.id}
-  onClick={() => {
-    if (a.installation_id) {
-      navigate(`/dashboard-installation/${a.installation_id}`);
-    } else {
-      toast.error("ID installation manquant");
-    }
-  }}
-  className={`border rounded p-4 mb-2 flex justify-between items-center shadow-sm cursor-pointer hover:bg-gray-50 ${
-    a.est_resolue ? "bg-green-50" : "bg-white"
-  }`}
->
-
-
-          <div className="flex items-center gap-3">
-            <input
-              type="checkbox"
-              checked={a.est_resolue}
-              onChange={() => markAsResolved(a.id)}
-              disabled={a.est_resolue}
-              className="h-4 w-4"
-            />
-            <div>
-              <p className="font-semibold">{a.installation_nom}</p>
-              <p className="text-sm text-gray-600">Code : {a.code_constructeur}</p>
-              <p className="text-xs text-gray-500">{new Date(a.date_declenchement).toLocaleString()}</p>
-            </div>
-          </div>
-          <div className="flex gap-2 items-center">
-            <span
-              className={`text-xs px-3 py-1 rounded-full font-medium ${
-                a.est_resolue
-                  ? "bg-green-100 text-green-700"
-                  : "bg-red-100 text-red-700"
-              }`}
-            >
-              {a.est_resolue ? "Résolue" : "Non résolue"}
-            </span>
-            <button onClick={() => setModalData(a)} className="text-blue-600">
-              <FaEye />
-            </button>
-          </div>
+    {filteredByGravite.map((a) => (
+  <div
+    key={a.id}
+    onClick={() => {
+      if (a.installation_id) {
+        navigate(`/dashboard-installation/${a.installation_id}`);
+      } else {
+        toast.error("ID installation manquant");
+      }
+    }}
+    className={`flex justify-between items-center rounded-lg border p-4 shadow-sm mb-3 transition hover:shadow-md hover:bg-gray-50 ${
+      a.est_resolue ? "opacity-60 line-through" : "bg-white"
+    }`}
+  >
+    <div className="flex items-start gap-4">
+      <input
+        type="checkbox"
+        checked={a.est_resolue}
+        onChange={() => markAsResolved(a.id)}
+        disabled={a.est_resolue}
+        className="mt-1 accent-blue-600 w-5 h-5"
+      />
+      <div>
+        <p className="font-medium text-gray-800 text-base">{a.installation_nom}</p>
+        <p className="text-sm text-gray-500">Code : {a.code_constructeur}</p>
+        <div className="mt-1 flex items-center gap-3 text-xs text-gray-400">
+          <span>📅 {new Date(a.date_declenchement).toLocaleDateString()}</span>
+          <span
+            className={`px-2 py-0.5 rounded-full text-white font-semibold ${
+              a.gravite === "critique"
+                ? "bg-red-500"
+                : a.gravite === "majeure"
+                ? "bg-yellow-500"
+                : "bg-green-500"
+            }`}
+          >
+            {a.gravite}
+          </span>
         </div>
-      ))}
+      </div>
+    </div>
+
+    <div className="flex items-center gap-4">
+      <span
+        className={`text-xs px-3 py-1 rounded-full font-medium ${
+          a.est_resolue
+            ? "bg-green-100 text-green-700"
+            : "bg-red-100 text-red-700"
+        }`}
+      >
+        {a.est_resolue ? "Résolue" : "Non résolue"}
+      </span>
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          setModalData(a);
+        }}
+        className="text-blue-600 hover:text-blue-800"
+      >
+        <FaEye />
+      </button>
+    </div>
+  </div>
+))}
+
 
       {modalData && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">

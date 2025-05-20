@@ -35,7 +35,12 @@ const Dashboard = () => {
           acc[cur.code_alarme__gravite] = cur.total;
           return acc;
         }, {});
-        setAlarmStats(alarmTotals);
+setAlarmStats({
+  critique: alarmTotals.critique ?? 0,
+  majeure: alarmTotals.majeure ?? 0,
+  mineure: alarmTotals.mineure ?? 0
+});
+
         setProdStats(prodData.data);
       } catch (error) {
         console.error("Erreur chargement stats", error);
@@ -101,7 +106,7 @@ const Dashboard = () => {
                 series={[installationStats.total_normales, installationStats.total_en_panne]}
                 options={{
                   labels: ["Fonctionnelles", "En panne"],
-                  colors: ["#10b981", "#ef4444"],
+                  colors: ["#60a5fa", "#ef4444"],
                   legend: { position: "bottom" },
                   dataLabels: { enabled: true },
                   plotOptions: { pie: { donut: { size: "70%" } } },
@@ -121,15 +126,19 @@ const Dashboard = () => {
   ]}
   options={{
     labels: ["Critiques", "Majeures", "Mineures"],
-    colors: ["#ef4444", "#facc15", "#22c55e"],
+    colors: ["#ef4444", "#fb923c", "#facc15"],
     legend: { position: "bottom" },
     dataLabels: {
       enabled: true,
       formatter: (val, opts) => {
-        const total = alarmStats.critique + alarmStats.majeure + alarmStats.mineure;
-        const value = opts.w.config.series[opts.seriesIndex];
-        return total === 0 ? "0%" : `${((value / total) * 100).toFixed(1)}%`;
-      }
+  const critique = alarmStats.critique ?? 0;
+  const majeure = alarmStats.majeure ?? 0;
+  const mineure = alarmStats.mineure ?? 0;
+  const total = critique + majeure + mineure;
+  const value = opts.w.config.series[opts.seriesIndex];
+  return total === 0 ? "0%" : `${((value / total) * 100).toFixed(1)}%`;
+}
+
     },
     plotOptions: { pie: { donut: { size: "70%" } } },
     tooltip: { y: { formatter: (val) => `${val.toFixed(0)} alarme(s)` } }

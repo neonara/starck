@@ -11,24 +11,25 @@ import {
   ClipboardCheck,
   StickyNote,
   AlertCircle,
-  BarChart3, 
+  BarChart3,
   FileText
 } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useUser } from '../../context/UserContext';
- 
+import { motion, AnimatePresence } from 'framer-motion';
+
 const Sidebar = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [openMenus, setOpenMenus] = useState({});
   const location = useLocation();
   const { role: userRole } = useUser();
- 
+
   if (!userRole) return null;
- 
+
   const toggleMenu = (label) => {
     setOpenMenus((prev) => ({ ...prev, [label]: !prev[label] }));
   };
- 
+
   //  Menu Admin
   const adminMenuItems = [
     { label: "Tableaux de bord", icon: LayoutGrid, path: "/admin-dashboard" },
@@ -93,12 +94,6 @@ const Sidebar = () => {
     },
  
     {
-      label: "Mes interventions",
-      icon: CalendarCheck,
-      path: "/client-mes-interventions",
-    },
-   
-    {
       label: "Réclamations",
       icon: AlertCircle,
       children: [
@@ -156,8 +151,13 @@ const Sidebar = () => {
       { label: "Tableaux de bord", icon: LayoutGrid, path: "/dashboard-technicien" },
       { label: "Equipements", icon: CalendarCheck, path: "/equipements" },
       { label: "Mes interventions", icon: Server, path: "/technicien-interventions" },
-      { label: "Mes plan d'action", icon: CalendarCheck, path: "/MesEntretiens" },
-      
+      { label: "Mes plan d'action", 
+        icon: CalendarCheck, 
+        children: [
+          { label: "Rappel Entretien", path: "/MesEntretiens"},
+          { label: "Liste Entretien", path: "/liste-entretien-technicien"},
+        ]
+      },
 
       {
         label: "Rapport Technique",
@@ -177,45 +177,86 @@ const Sidebar = () => {
     userRole === "technicien" ? technicienMenuItems :
     [];
  
-  return (
-    <div className={` ${isSidebarOpen ? 'w-64' : 'w-16'} bg-white border-r border-gray-200 transition-all duration-300 ease-in-out h-screen fixed top-0 left-0 z-40 overflow-x-hidden`}>
-      <div className="flex items-center gap-2 px-4 pt-6">
+   return (
+    <motion.div
+      animate={{ width: isSidebarOpen ? 256 : 64 }} 
+      transition={{ duration: 0.3, ease: 'easeInOut' }}
+      className="bg-white border-r border-gray-200 h-screen fixed top-0 left-0 z-40 overflow-hidden flex flex-col"
+    >
+      <div className="flex items-center gap-2 px-4 pt-6 h-16 shrink-0">
         <img src="/assets/logo.jpg" alt="Logo" className="w-6 h-6" />
-        {isSidebarOpen && <span className="text-lg font-semibold text-gray-800">Starck</span>}
+        {isSidebarOpen && (
+          <motion.span
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -10 }}
+            className="text-lg font-semibold text-gray-800"
+          >
+            Starck
+          </motion.span>
+        )}
       </div>
-      <div className="pt-6 px-2">
-        <ul className="space-y-2">
-          {menuItems.map(({ label, path, children }) => (
+
+      <nav className="flex-1 overflow-y-auto pt-6 px-2">
+        <ul className="space-y-1">
+          {menuItems.map(({ label, path, children, icon: Icon }) => (
             <li key={label}>
               {children ? (
                 <>
                   <button
                     onClick={() => toggleMenu(label)}
-                    className={`flex items-center w-full px-3 py-2 rounded-md text-sm font-medium transition ${location.pathname.includes(label.toLowerCase()) ? 'bg-blue-100 text-blue-600' : 'text-gray-700 hover:bg-gray-100'}`}
+                    className={`flex items-center w-full px-3 py-2 rounded-md text-sm font-medium transition-colors
+                      ${
+                        location.pathname.includes(label.toLowerCase())
+                          ? 'bg-blue-100 text-blue-600'
+                          : 'text-gray-700 hover:bg-gray-100'
+                      }
+                    `}
                   >
                     <Icon size={18} />
-                    {isSidebarOpen && <span className="ml-3">{label}</span>}
-                    {isSidebarOpen && <span className="ml-auto">{openMenus[label] ? "▲" : "▼"}</span>}
+                    {isSidebarOpen && <span className="ml-3 flex-1 text-left">{label}</span>}
+                    {isSidebarOpen && (
+                      <motion.span
+                        animate={{ rotate: openMenus[label] ? 180 : 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="ml-auto"
+                      >
+                        ▼
+                      </motion.span>
+                    )}
                   </button>
-                  {openMenus[label] && isSidebarOpen && (
-                    <ul className="ml-8 mt-1 space-y-1 text-sm text-gray-600">
-                      {children.map((child) => (
-                        <li key={child.label}>
-                          <Link
-                            to={child.path}
-                            className={`block px-2 py-1 rounded hover:text-blue-600 ${location.pathname === child.path ? 'text-blue-600' : ''}`}
-                          >
-                            {child.label}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
+
+                  <AnimatePresence initial={false}>
+                    {openMenus[label] && isSidebarOpen && (
+                      <motion.ul
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="ml-8 mt-1 overflow-hidden text-sm text-gray-600"
+                      >
+                        {children.map((child) => (
+                          <li key={child.label}>
+                            <Link
+                              to={child.path}
+                              className={`block px-2 py-1 rounded hover:text-blue-600 transition-colors
+                                ${location.pathname === child.path ? 'text-blue-600 font-semibold' : ''}
+                              `}
+                            >
+                              {child.label}
+                            </Link>
+                          </li>
+                        ))}
+                      </motion.ul>
+                    )}
+                  </AnimatePresence>
                 </>
               ) : (
                 <Link
                   to={path}
-                  className={`flex items-center w-full px-3 py-2 rounded-md text-sm font-medium transition ${location.pathname === path ? 'bg-blue-100 text-blue-600' : 'text-gray-700 hover:bg-gray-100'}`}
+                  className={`flex items-center w-full px-3 py-2 rounded-md text-sm font-medium transition-colors
+                    ${location.pathname === path ? 'bg-blue-100 text-blue-600' : 'text-gray-700 hover:bg-gray-100'}
+                  `}
                 >
                   <Icon size={18} />
                   {isSidebarOpen && <span className="ml-3">{label}</span>}
@@ -224,17 +265,17 @@ const Sidebar = () => {
             </li>
           ))}
         </ul>
-      </div>
+      </nav>
+
       <button
         onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-        className="absolute top-1/2 -right-3 transform -translate-y-1/2 z-50 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-full px-1.5 py-1 shadow-md"
+        className="absolute top-1/2 -right-3 transform -translate-y-1/2 z-50 bg-blue-100 hover:bg-blue-200 text-blue-600 rounded-full px-1.5 py-1 shadow-md transition-colors"
+        aria-label={isSidebarOpen ? "Fermer la sidebar" : "Ouvrir la sidebar"}
       >
         {isSidebarOpen ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
       </button>
-    </div>
+    </motion.div>
   );
 };
- 
+
 export default Sidebar;
- 
- 

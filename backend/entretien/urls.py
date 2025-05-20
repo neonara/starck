@@ -21,11 +21,8 @@ from .views import (
     ModifierStatutEntretienAPIView, 
     TechnicienCalendarAPIView,
     ClientCalendarAPIView,
-    
-    MesEntretiens7JoursAPIView,
-    StatistiquesActivitesTechnicienView
-
-    
+    StatistiquesActivitesTechnicienView,
+    MesEntretiens7JoursAPIView
 
 )
 
@@ -41,7 +38,6 @@ urlpatterns = [
     path('entretiens/mes-entretiens/', MesEntretiensAPIView.as_view(), name='mes-entretiens'),
     path('entretiens/mes-entretiens-installateur/', MesEntretiensInstallateurAPIView.as_view(), name='mes-entretiens-installateur'),  
     path('entretiens/calendar-installateur/', EntretienCalendarInstallateurAPIView.as_view(), name='entretien-calendar-installateur'),
-    path('mes-entretiens-7-jours/', MesEntretiens7JoursAPIView.as_view(), name='mes_entretiens_7_jours'),
 
 
     path("client/entretiens/", EntretiensClientAPIView.as_view(), name="entretiens-client"),
@@ -62,8 +58,8 @@ urlpatterns = [
     path("client/entretiens/<int:pk>/", EntretienClientDetailView.as_view(), name="detail-entretien-client"),
 
 
-    
-     path("dashboard/technicien/activites-mensuelles/", StatistiquesActivitesTechnicienView.as_view(), name="stats_tech_dashboard"),
+    path("dashboard/technicien/activites-mensuelles/", StatistiquesActivitesTechnicienView.as_view(), name="stats_tech_dashboard"),
+    path('mes-entretiens-7-jours/', MesEntretiens7JoursAPIView.as_view(), name='mes_entretiens_7_jours'),
 
 
 ]

@@ -1,5 +1,0 @@
-installation__nom,code_alarme__code_constructeur,code_alarme__marque,code_alarme__type_alarme,code_alarme__gravite,date_declenchement,est_resolue
-I1,1125,Huawei,AC,critique,2025-04-24 21:05:19.394433+00:00,False
-I1,1125,Huawei,AC,critique,2025-04-24 21:24:10.503923+00:00,True
-I1,1125,Huawei,AC,critique,2025-04-24 21:27:54.694429+00:00,False
-I1,1125,Huawei,AC,critique,2025-04-24 21:11:01.515409+00:00,True

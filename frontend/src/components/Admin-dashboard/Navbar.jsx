@@ -59,7 +59,8 @@ const Navbar = () => {
   useEffect(() => {
     setHasNewNotif(true);
   }, []);
-  
+  const unreadCount = notifications.filter((n) => !n.is_read).length;
+
   return (
     <nav className="fixed top-0 left-64 right-0 z-50 bg-white shadow-sm px-6 py-3 flex justify-between items-center">
       <div className="flex items-center gap-2" />
@@ -68,18 +69,20 @@ const Navbar = () => {
         {/* Bouton notifications */}
         <div className="relative">
         <button
-  onClick={() => {
-    setHasNewNotif(false);
-    navigate("/notification");
-  }}
-  className="relative rounded-full border p-2 text-gray-500 hover:bg-gray-100"
->
-  <Bell className="w-5 h-5" />
+    onClick={() => {
+      setHasNewNotif(false);
+      navigate("/notification");
+    }}
+    className="relative rounded-full border p-2 text-gray-500 hover:bg-gray-100"
+  >
+    <Bell className="w-5 h-5" />
 
-  {hasNewNotif && (
-    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-600 rounded-full" />
-  )}
-</button>
+    {unreadCount > 0 && (
+      <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] leading-none font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+        {unreadCount > 99 ? "99+" : unreadCount}
+      </span>
+    )}
+  </button>
 
 
           {notifOpen && (

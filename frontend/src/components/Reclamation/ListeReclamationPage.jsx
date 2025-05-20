@@ -120,16 +120,17 @@ const handleDeleteExport = async (id) => {
         cell: (info) => {
           const images = info.row.original.images;
           return images && images.length > 0 ? (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setSelectedImages(images);
-                setShowImagesModal(true);
-              }}
-              className="text-blue-600 underline hover:text-blue-800 text-sm"
-            >
-              Voir les photos ({images.length})
-            </button>
+<button
+  onClick={(e) => {
+    e.stopPropagation();
+    setSelectedImages(images);
+    setShowImagesModal(true);
+  }}
+  className="px-3 py-1 rounded-lg bg-blue-50 text-blue-700 text-sm font-medium hover:bg-blue-100 transition"
+>
+  📷 Voir ({images.length})
+</button>
+
           ) : (
             <span className="text-gray-400 italic">Aucune</span>
           );

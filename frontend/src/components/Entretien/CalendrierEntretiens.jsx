@@ -52,7 +52,7 @@ const CalendrierEntretiens = () => {
   return (
     <div className="max-w-[95%] mx-auto pt-6">
       <div className="rounded-lg bg-white shadow border border-gray-200 p-4">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex justify-center " style={{ marginBottom: '50px' }}>
           <h2 className="text-2xl font-semibold text-gray-800 flex items-center">
             📆 Calendrier des entretiens
           </h2>

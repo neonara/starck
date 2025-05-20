@@ -366,7 +366,7 @@ getInstallationsGeoDataInstallateur: () => api.get("installations/mes-installati
 getMesInterventions: (params) => api.get("intervention/interventions/mes-interventions/", { params }),
 getMesEntretiensInstallateur: () => api.get("entretien/entretiens/mes-entretiens-installateur/"),
 getCalendarEntretiensInstallateur: (params) => api.get("entretien/entretiens/calendar-installateur/", { params }),
-getAlarmesInstallateur: () => api.get("alarme/liste/installateur/"),
+getAlarmesInstallateur: () => api.get("alarme/statistiques-installateur/"),
 getReclamationsInstallateur: () =>api.get("reclamation/reclamations/installateur/"),
 
 getStatistiquesInstallateurProduction: () => api.get("production/statistiques-installateur/"),

@@ -82,8 +82,8 @@ import ListeInterventionsTechnicien from "./Technicien/ListeInterventionsTechnic
 import ModalModifierStatutIntervention from "./Technicien/ModalModifierStatutIntervention.jsx";
 import RapportTechniqueTechnicien from "./Technicien/RapportTechniqueTechnicien.jsx";
 //Technicien 
-import MesEntretiens from "./Technicien/MesEntretiens";
-import DashboardTechnicien from "./Technicien/DashboardTechnicien.jsx";
+//import MesEntretiens from "./Technicien/MesEntretiens";
+//import DashboardTechnicien from "./Technicien/DashboardTechnicien.jsx";
 
 //Installateur
 import ListeUtilisateursPage from "./Installateur/ListeUtilisateursPage";

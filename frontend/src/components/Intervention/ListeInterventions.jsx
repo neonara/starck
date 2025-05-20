@@ -40,62 +40,48 @@ const [exports, setExports] = useState([]);
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchInterventions = async () => {
-      try {
-        const params = {
+ useEffect(() => {
+  const fetchInterventionsAndTechniciens = async () => {
+    try {
+      const [interventionRes, techRes] = await Promise.all([
+        ApiService.getInterventions({
           statut: statutFilter || undefined,
           technicien: technicienFilter || undefined,
           type_intervention: typeFilter || undefined,
           search: globalFilter || undefined,
-        };
+        }),
+        ApiService.getTechnicien(), 
+      ]);
 
-        const res = await ApiService.getInterventions(params); 
-        const interventions = res.data.results || res.data;
+      const interventions = interventionRes.data.results || interventionRes.data;
+      const allTechniciens = Array.isArray(techRes.data)
+        ? techRes.data
+        : techRes.data.results || [];
 
-        if (Array.isArray(interventions)) {
-          setData(interventions);
+      setData(Array.isArray(interventions) ? interventions : []);
 
-          const uniqueTechs = [
-            ...new Map(
-              interventions
-                .map((interv) => {
-                  const tech = interv.technicien_details || interv.technicien;
-                  if (typeof tech === "object" && tech !== null) {
-                    return [
-                      tech.id,
-                      {
-                        id: tech.id,
-                        nom: `${tech.first_name || ""} ${tech.last_name || ""}`.trim() || tech.email,
-                      },
-                    ];
-                  }
-                  return null;
-                })
-                .filter(Boolean)
-            ).values(),
-          ];
-          setTechniciensDisponibles(uniqueTechs);
-        } else {
-          console.error("Les données reçues ne sont pas un tableau:", interventions);
-          setData([]);
-          setTechniciensDisponibles([]);
-        }
-      } catch (err) {
-        console.error("Erreur lors du chargement des interventions", err);
-        toast.error("Erreur de chargement ❌");
-        setData([]);
-        setTechniciensDisponibles([]);
-      }
-    };
+      const techniciensFormates = allTechniciens.map((tech) => ({
+        id: tech.id,
+        nom: `${tech.first_name || ""} ${tech.last_name || ""}`.trim() || tech.email,
+      }));
 
-    fetchInterventions();
-  }, [ statutFilter, technicienFilter, typeFilter, globalFilter]);
+      setTechniciensDisponibles(techniciensFormates);
+    } catch (err) {
+      console.error("Erreur chargement interventions ou techniciens :", err);
+      toast.error("Erreur de chargement ❌");
+      setData([]);
+      setTechniciensDisponibles([]);
+    }
+  };
+
+  fetchInterventionsAndTechniciens();
+}, [statutFilter, technicienFilter, typeFilter, globalFilter]);
+
 
 const handleExportClick = async (format) => {
   setShowExportOptions(false);
   try {
-    await ApiService.exportHistorique.exportInterventions({ format }); // 👈 utilise maintenant cette méthode
+    await ApiService.exportHistorique.exportInterventions({ format }); 
     toast.success(`Export ${format.toUpperCase()} lancé ✅`);
     setShowModalExports(true);
     setTimeout(() => loadExports(), 1000);

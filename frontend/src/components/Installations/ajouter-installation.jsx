@@ -39,17 +39,39 @@ const AjouterInstallation = () => {
     fetchUsers();
   }, []);
 
-  const handleAdresseChange = async (e) => {
-    const adresse = e.target.value;
-    setFormData({ ...formData, adresse });
-    if (adresse.length > 5) {
-      const coords = await geocodeAdresse(adresse);
-      if (coords) {
-        setFormData(prev => ({ ...prev, latitude: coords.latitude, longitude: coords.longitude }));
-      }
-    }
-  };
 
+  const geocodeAdresse = async (adresse) => {
+  try {
+    const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(adresse)}`);
+    const data = await response.json();
+    if (data && data.length > 0) {
+      const { lat, lon } = data[0];
+      toast.success("📍 Coordonnées récupérées avec succès !");
+      return { latitude: parseFloat(lat).toFixed(6), longitude: parseFloat(lon).toFixed(6) };
+    } else {
+      toast.error("❌ Adresse non trouvée");
+      return null;
+    }
+  } catch (error) {
+    toast.error("Erreur lors de la récupération des coordonnées");
+    return null;
+  }
+};
+const handleAdresseChange = (e) => {
+  const adresse = e.target.value;
+  setFormData(prev => ({ ...prev, adresse }));
+};
+
+const handleFindCoords = async () => {
+  if (!formData.adresse.trim()) {
+    toast.error("Veuillez saisir une adresse d'abord.");
+    return;
+  }
+  const coords = await geocodeAdresse(formData.adresse);
+  if (coords) {
+    setFormData(prev => ({ ...prev, latitude: coords.latitude, longitude: coords.longitude }));
+  }
+};
   const handleChange = (e) => {
     const { name, value, type, files, checked } = e.target;
     if (type === "file") {
@@ -151,22 +173,74 @@ Object.entries(errors).forEach(([field, msg]) => toast.error(`${field}: ${msg}`)
       </section>
 
       {/* Coordonnées */}
-      <section className="bg-white p-6 rounded-xl shadow space-y-6">
-        <h2 className={sectionTitle}>
-          Coordonnées et emplacement
-          <button className="text-sm text-blue-600" onClick={() => toggleSection("location")}>{sections.location ? "Réduire ▲" : "Afficher ▼"}</button>
-        </h2>
-        {sections.location && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <input name="latitude" placeholder="Latitude" value={formData.latitude} onChange={handleChange} className={inputStyle} required />
-            <input name="longitude" placeholder="Longitude" value={formData.longitude} onChange={handleChange} className={inputStyle} required />
-            <input name="adresse" placeholder="Adresse" value={formData.adresse} onChange={handleAdresseChange} className={inputStyle} />
-            <input name="ville" placeholder="Ville" value={formData.ville} onChange={handleChange} className={inputStyle} />
-            <input name="code_postal" placeholder="Code postal" value={formData.code_postal} onChange={handleChange} className={inputStyle} />
-            <input name="pays" placeholder="Pays" value={formData.pays} onChange={handleChange} className={inputStyle} />
-          </div>
-        )}
-      </section>
+<section className="bg-white p-6 rounded-xl shadow space-y-6">
+  <h2 className={sectionTitle}>
+    Coordonnées et emplacement
+    <button className="text-sm text-blue-600" onClick={() => toggleSection("location")}>
+      {sections.location ? "Réduire ▲" : "Afficher ▼"}
+    </button>
+  </h2>
+  {sections.location && (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <input
+        name="latitude"
+        placeholder="Latitude"
+        value={formData.latitude}
+        onChange={handleChange}
+        className={inputStyle}
+        required
+      />
+      <input
+        name="longitude"
+        placeholder="Longitude"
+        value={formData.longitude}
+        onChange={handleChange}
+        className={inputStyle}
+        required
+      />
+      <div className="flex gap-2">
+        <input
+          name="adresse"
+          placeholder="Adresse"
+          value={formData.adresse}
+          onChange={handleAdresseChange}
+          className={`${inputStyle} flex-1`}
+        />
+        <button
+          type="button"
+          onClick={handleFindCoords}
+          disabled={!formData.adresse.trim()}
+          className={`px-3 py-1 text-sm rounded text-white ${
+            formData.adresse.trim() ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-400 cursor-not-allowed"
+          }`}
+        >
+          📍 Trouver coord.
+        </button>
+      </div>
+      <input
+        name="ville"
+        placeholder="Ville"
+        value={formData.ville}
+        onChange={handleChange}
+        className={inputStyle}
+      />
+      <input
+        name="code_postal"
+        placeholder="Code postal"
+        value={formData.code_postal}
+        onChange={handleChange}
+        className={inputStyle}
+      />
+      <input
+        name="pays"
+        placeholder="Pays"
+        value={formData.pays}
+        onChange={handleChange}
+        className={inputStyle}
+      />
+    </div>
+  )}
+</section>
 
       {/* Utilisateurs liés */}
       <section className="bg-white p-6 rounded-xl shadow space-y-6">

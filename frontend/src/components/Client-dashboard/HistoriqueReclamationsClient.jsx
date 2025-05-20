@@ -83,9 +83,9 @@ const HistoriqueReclamationsClient = () => {
                             setSelectedImages(rec.images);
                             setShowImagesModal(true);
                           }}
-                          className="text-blue-600 underline hover:text-blue-800 text-sm"
+                          className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-blue-50 text-blue-700 text-sm font-medium hover:bg-blue-100 transition"
                         >
-                          Voir les photos ({rec.images.length})
+                          📷 Voir ({rec.images.length})
                         </button>
                       ) : (
                         <span className="text-gray-400 italic">Aucune</span>

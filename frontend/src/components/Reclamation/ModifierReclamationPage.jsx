@@ -177,15 +177,22 @@ const ModifierReclamationPage = () => {
         </select>
       </div>
 
-      <div className="flex justify-end">
-        <button
-          onClick={handleUpdate}
-          disabled={totalImages > 5}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
-        >
-          Enregistrer
-        </button>
-      </div>
+      <div className="flex justify-end gap-4">
+  <button
+    onClick={() => navigate("/list_reclamations")}
+    className="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400 transition"
+  >
+    Annuler
+  </button>
+  <button
+    onClick={handleUpdate}
+    disabled={totalImages > 5}
+    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
+  >
+    Enregistrer
+  </button>
+</div>
+
     </div>
   );
 };

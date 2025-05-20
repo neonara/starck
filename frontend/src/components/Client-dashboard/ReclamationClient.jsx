@@ -3,6 +3,7 @@ import ApiService from "../../Api/Api";
 import { Toaster, toast } from "react-hot-toast";
 import { Loader2 } from "lucide-react";
 import { Dialog } from "@headlessui/react";
+import { useNavigate } from "react-router-dom";
 
 const FormulaireEnvoyerReclamation = () => {
   const [formData, setFormData] = useState({
@@ -12,6 +13,7 @@ const FormulaireEnvoyerReclamation = () => {
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData(prev => ({
@@ -36,7 +38,7 @@ const FormulaireEnvoyerReclamation = () => {
     data.append("message", formData.message);
 
     images.forEach((file) => {
-      data.append("images", file); // ✅ plusieurs fichiers avec même clé
+      data.append("images", file); 
     });
 
     try {
@@ -44,6 +46,7 @@ const FormulaireEnvoyerReclamation = () => {
       toast.success("Réclamation envoyée ✅");
       setFormData({ sujet: "", message: "" });
       setImages([]);
+      navigate("/liste-reclamations");
     } catch (error) {
       console.error(error);
       toast.error("Erreur lors de l'envoi ❌");
@@ -133,12 +136,23 @@ const FormulaireEnvoyerReclamation = () => {
 
 
           {/* Bouton envoyer */}
-          <button
-            type="submit"
-            className="flex items-center justify-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
-          >
-            Envoyer
-          </button>
+          <div className="flex justify-center gap-4">
+  <button
+    type="button"
+    onClick={() => navigate("/liste-reclamations")}
+    className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-6 py-3 rounded-lg font-semibold transition"
+  >
+    Annuler
+  </button>
+
+  <button
+    type="submit"
+    className="flex items-center justify-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
+  >
+    Envoyer
+  </button>
+</div>
+
         </form>
       </div>
 

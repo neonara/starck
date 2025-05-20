@@ -102,7 +102,7 @@ const ListeAlarmesInstallateur = () => {
         <div className="relative">
           <button
             onClick={() => setShowExportOptions(!showExportOptions)}
-            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            className="flex items-center gap-2 px-3 py-1 border rounded text-sm text-gray-700 hover:bg-gray-100"
           >
             <FaDownload /> Exporter
           </button>

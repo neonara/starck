@@ -15,6 +15,8 @@ class InstallationSerializer(serializers.ModelSerializer):
     client = UserSerializer(read_only=True)
     installateur = UserSerializer(read_only=True)
     photo_installation_url = serializers.SerializerMethodField() 
+    type_contrat_display = serializers.CharField(source='get_type_contrat_display', read_only=True)
+
     class Meta:
         model = Installation
         fields = [
@@ -40,6 +42,7 @@ class InstallationSerializer(serializers.ModelSerializer):
             'photo_installation_url',
             'installateur',
             'type_contrat',
+            'type_contrat_display',
             'date_mise_en_service',
             'statut_diagnostic',
             'diagnostic_realise',
@@ -59,8 +62,9 @@ class InstallationSerializer(serializers.ModelSerializer):
         if image and image.size > 5 * 1024 * 1024:
             raise serializers.ValidationError("Image trop lourde (max 5MB).")
         return image
-
-
+    
+    def get_type_contrat_display(self, obj):
+        return obj.get_type_contrat_display()
 
     def create(self, validated_data):
         client_email = validated_data.pop('client_email').strip().lower()

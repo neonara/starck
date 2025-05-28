@@ -57,7 +57,7 @@ class ListeFicheInterventionView(generics.ListAPIView):
             
         return queryset
 
-
+from .utils import notifier_creation_intervention
 
 class CreerFicheInterventionView(generics.CreateAPIView):
     serializer_class = FicheInterventionCreateSerializer
@@ -69,9 +69,12 @@ class CreerFicheInterventionView(generics.CreateAPIView):
         self.perform_create(serializer)
 
         instance = serializer.instance
-        detail_serializer = FicheInterventionDetailSerializer(instance)
 
+        notifier_creation_intervention(instance)
+
+        detail_serializer = FicheInterventionDetailSerializer(instance)
         return Response(detail_serializer.data, status=status.HTTP_201_CREATED)
+    
 
 from rest_framework.views import APIView
 from rest_framework.response import Response

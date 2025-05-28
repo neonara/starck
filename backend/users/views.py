@@ -164,7 +164,7 @@ class CompleteRegistrationView(APIView):
         confirm_password = request.data.get('confirm_password')
         first_name = request.data.get('first_name', '').strip()
         last_name = request.data.get('last_name', '').strip()
-        phone_number = request.data.get('phone_number', '').strip()  # si ce champ existe dans ton modèle
+        phone_number = request.data.get('phone_number', '').strip()  
 
         if password != confirm_password:
             return Response({"error": "Les mots de passe ne correspondent pas."}, status=status.HTTP_400_BAD_REQUEST)

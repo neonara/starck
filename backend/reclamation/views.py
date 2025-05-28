@@ -40,7 +40,6 @@ class EnvoyerReclamationView(APIView):
         if serializer.is_valid():
             reclamation = serializer.save(client=request.user)
 
-            # 🖼️ Traitement des images envoyées
             images = request.FILES.getlist('images')
             if len(images) > 5:
                 return Response({"images": ["Maximum 5 images autorisées."]},
@@ -55,7 +54,7 @@ class EnvoyerReclamationView(APIView):
 
 class MesReclamationsView(generics.ListAPIView):
     serializer_class = ReclamationSerializer
-    permission_classes = [permissions.IsAuthenticated, IsClient]  # Client connecté
+    permission_classes = [permissions.IsAuthenticated, IsClient]  
 
     def get_queryset(self):
         return Reclamation.objects.filter(client=self.request.user).order_by('-date_envoi')
@@ -105,15 +104,12 @@ class ReclamationsInstallateurView(generics.ListAPIView):
     search_fields = ['client__email', 'sujet', 'message', 'statut']
 
     def get_queryset(self):
-        # Récupérer l’utilisateur installateur connecté
         installateur = self.request.user
 
-        # Obtenir tous les ID des installations où il est installateur
         installations_ids = Installation.objects.filter(
             installateur=installateur
         ).values_list('id', flat=True)
 
-        # Retourner les réclamations liées à ces installations
         return Reclamation.objects.filter(
             installation_id__in=installations_ids
         ).select_related('client', 'installation').order_by('-date_envoi')

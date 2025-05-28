@@ -516,19 +516,47 @@ class ClientCalendarAPIView(APIView):
         return Response(data)
 
 #entretient partie installateur
+from django.db.models import Q
+
+from users.permissions import IsInstallateur
+
 class MesEntretiensInstallateurAPIView(APIView):
     permission_classes = [IsAuthenticated, IsInstallateur]
 
     def get(self, request):
         user = request.user
-        
+        search = request.GET.get("search", "")
+        statut = request.GET.get("statut")
+        technicien_id = request.GET.get("technicien_id")
+        installation_id = request.GET.get("installation_id")
+
         entretiens = Entretien.objects.filter(
             installation__installateur=user
         ).select_related('installation', 'technicien')
 
+        # Filtres dynamiques
+        if search:
+            entretiens = entretiens.filter(
+                Q(installation__nom__icontains=search) |
+                Q(type_entretien__icontains=search) |
+                Q(statut__icontains=search) |
+                Q(technicien__first_name__icontains=search) |
+                Q(technicien__last_name__icontains=search)
+            )
+
+        if statut:
+            entretiens = entretiens.filter(statut=statut)
+
+        if technicien_id:
+            entretiens = entretiens.filter(technicien__id=technicien_id)
+
+        if installation_id:
+            entretiens = entretiens.filter(installation__id=installation_id)
+
         serializer = EntretienSerializer(entretiens, many=True)
         return Response(serializer.data)
-    
+
+
 
 class EntretienCalendarInstallateurAPIView(APIView):
     """Vue calendrier pour l'installateur connecté"""
@@ -663,4 +691,19 @@ def google_auth_callback(request):
     )
 
     print(f"✅ Token Google enregistré pour {user.email}")
-    return redirect("/")  # ou autre vue de succès
+    return redirect("/") 
+
+
+from rest_framework.generics import RetrieveAPIView
+from entretien.serializers import EntretienDetailSerializer
+class EntretienInstallateurDetailView(RetrieveAPIView):
+    serializer_class = EntretienDetailSerializer
+    permission_classes = [IsAuthenticated, IsInstallateur]
+
+    def get_object(self):
+        # Récupère uniquement si l'entretien appartient à un client du bon installateur
+        return get_object_or_404(
+            Entretien.objects.select_related("installation", "technicien"),
+            pk=self.kwargs["pk"],
+            installation__installateur=self.request.user
+        )

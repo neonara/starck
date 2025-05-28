@@ -74,3 +74,16 @@ class EntretienSerializer(serializers.ModelSerializer):
         return data
     
 
+
+class EntretienDetailSerializer(serializers.ModelSerializer):
+    installation_details = InstallationSerializer(source="installation", read_only=True)
+    technicien_details = UserSerializer(source="technicien", read_only=True)
+
+    class Meta:
+        model = Entretien
+        fields = [
+            "id", "titre", "type_entretien", "statut",
+            "date_debut", "date_fin", "duree_estimee",
+            "installation", "technicien", "notes",
+            "installation_details", "technicien_details"
+        ]

@@ -14,6 +14,9 @@ jobs:
       matrix:
         python-version: [3.11]
 
+    env:  
+      GOOGLE_CLIENT_ID: 175823609179-4dl8hde40vg0e7gh1f2ehg0dtpflg3so.apps.googleusercontent.com
+
     steps:
     - uses: actions/checkout@v4
 

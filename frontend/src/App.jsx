@@ -28,7 +28,7 @@ import EditInstallation from "./components/Installations/modifier-installation";
 //Clients
 import ListeClientsPage from "./components/Utilisateurs/Clients/Liste-Client";
 import ModifierClientPage from "./components/Utilisateurs/Clients/modifier-client";
-import CalendrierEntretiensClient from "./components/Entretien/CalendrierEntretiensClient.jsx";
+import CalendrierEntretiensClient from "./components/Entretien/CalendrierEntretiensClient";
 
 
 //notifications

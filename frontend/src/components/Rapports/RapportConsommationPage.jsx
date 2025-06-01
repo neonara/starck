@@ -2,13 +2,13 @@ import React, { useEffect, useState } from "react";
 import ApiService from "../../Api/Api";
 import Chart from "react-apexcharts";
 import dayjs from "dayjs";
- 
+
 const RapportConsommationPage = () => {
   const [installations, setInstallations] = useState([]);
   const [installationId, setInstallationId] = useState("");
   const [mois, setMois] = useState(dayjs().format("YYYY-MM"));
   const [donnees, setDonnees] = useState([]);
- 
+
   const fetchInstallations = async () => {
     try {
       const res = await ApiService.getInstallations();
@@ -17,7 +17,7 @@ const RapportConsommationPage = () => {
       console.error("Erreur installations :", err);
     }
   };
- 
+
   const fetchRapport = async () => {
     try {
       const res = await ApiService.rapports.getRapportConsommationMensuelle(
@@ -29,23 +29,23 @@ const RapportConsommationPage = () => {
       console.error("Erreur chargement rapport :", err);
     }
   };
- 
+
   useEffect(() => {
     fetchInstallations();
   }, []);
- 
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (installationId && mois) fetchRapport();
   };
- 
+
   const handleExportExcel = async () => {
     try {
       const res = await ApiService.rapports.exportRapportConsommation({
         installation_id: installationId,
         mois,
       });
- 
+
       const blob = new Blob([res.data], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
@@ -58,14 +58,14 @@ const RapportConsommationPage = () => {
       console.error("Erreur export Excel :", err);
     }
   };
- 
+
   const handleExportPDF = async () => {
     try {
       const res = await ApiService.rapports.exportRapportConsommationPDF({
         installation_id: installationId,
         mois,
       });
- 
+
       const blob = new Blob([res.data], { type: "application/pdf" });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -76,76 +76,74 @@ const RapportConsommationPage = () => {
       console.error("Erreur export PDF :", err);
     }
   };
- 
+
   return (
-<div className="p-8 text-gray-800">
-<h2 className="text-2xl font-bold mb-6">Rapport de Consommation Mensuelle</h2>
- 
-      {/* Formulaire de filtre */}
-<form
+    <div className="p-6 text-gray-800">
+      <h2 className="text-2xl font-bold mb-6 text-blue-700 text-center">
+        Rapport de Consommation Mensuelle
+      </h2>
+
+      <form
         onSubmit={handleSubmit}
-        className="mb-6 flex flex-wrap items-center gap-4"
->
-<select
+        className="mb-6 flex flex-col sm:flex-row sm:items-center gap-4 justify-center"
+      >
+        <select
           value={installationId}
           onChange={(e) => setInstallationId(e.target.value)}
-          className="border border-gray-300 p-2 rounded w-full sm:w-auto"
->
-<option value="">-- Sélectionner une installation --</option>
+          className="border border-gray-300 rounded-xl px-4 py-2 text-gray-800 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:outline-none transition-all duration-200"
+        >
+          <option value="">-- Sélectionner une installation --</option>
           {installations.map((inst) => (
-<option key={inst.id} value={inst.id}>
+            <option key={inst.id} value={inst.id}>
               {inst.nom}
-</option>
+            </option>
           ))}
-</select>
- 
+        </select>
+
         <input
           type="month"
           value={mois}
           onChange={(e) => setMois(e.target.value)}
-          className="border border-gray-300 p-2 rounded"
+          className="border border-gray-300 rounded-xl px-4 py-2 text-gray-800 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:outline-none transition-all duration-200"
         />
- 
+
         <button
           type="submit"
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
->
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+        >
           Générer
-</button>
-</form>
- 
-      {/* Résultats */}
-      {donnees.length > 0 && (
-<div className="grid md:grid-cols-2 gap-8">
-          {/* Tableau de consommation */}
-<div>
-<h3 className="text-lg font-semibold mb-2">Tableau de consommation</h3>
-<div className="overflow-x-auto">
-<table className="w-full border border-gray-300 text-sm">
-<thead className="bg-gray-100">
-<tr>
-<th className="p-2 border">Date</th>
-<th className="p-2 border">Consommation (kWh)</th>
-</tr>
-</thead>
-<tbody>
+        </button>
+      </form>
+
+      {donnees.length > 0 ? (
+        <div className="grid md:grid-cols-2 gap-8 pt-8">
+          <div>
+            <h3 className="text-lg font-semibold mb-2">Données de consommation</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full border border-gray-300 text-sm">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="p-2 border">Date</th>
+                    <th className="p-2 border">Consommation (kWh)</th>
+                  </tr>
+                </thead>
+                <tbody>
                   {donnees.map((item, index) => (
-<tr key={index} className="hover:bg-gray-50">
-<td className="p-2 border">{item.jour}</td>
-<td className="p-2 border">
+                    <tr key={index} className="hover:bg-gray-50">
+                      <td className="p-2 border">{item.jour}</td>
+                      <td className="p-2 border">
                         {item.consommation_kwh.toFixed(2)}
-</td>
-</tr>
+                      </td>
+                    </tr>
                   ))}
-</tbody>
-</table>
-</div>
-</div>
- 
-          {/* Graphique */}
-<div>
-<h3 className="text-lg font-semibold mb-2">Graphique de consommation</h3>
-<Chart
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-lg font-semibold mb-2">Graphique de consommation</h3>
+            <Chart
               type="line"
               height={320}
               options={{
@@ -154,9 +152,10 @@ const RapportConsommationPage = () => {
                   categories: donnees.map((d) => d.jour),
                   title: { text: "Jour" },
                 },
-                yaxis: { title: { text: "kWh" } },
+                yaxis: {
+                  title: { text: "kWh" },
+                },
                 stroke: { curve: "smooth" },
-                tooltip: { enabled: true },
               }}
               series={[
                 {
@@ -165,29 +164,32 @@ const RapportConsommationPage = () => {
                 },
               ]}
             />
-</div>
- 
-          {/* Boutons d’export */}
-<div className="md:col-span-2 flex justify-end gap-4 mt-4">
-<button
+          </div>
+
+          <div className="md:col-span-2 flex justify-end gap-4 mt-4">
+            <button
               type="button"
               onClick={handleExportExcel}
               className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
->
+            >
               📤 Exporter Excel
-</button>
-<button
+            </button>
+            <button
               type="button"
               onClick={handleExportPDF}
               className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
->
+            >
               📄 Exporter PDF
-</button>
-</div>
-</div>
+            </button>
+          </div>
+        </div>
+      ) : (
+        <p className="text-gray-600 text-center mt-8">
+          Aucune donnée pour ce mois.
+        </p>
       )}
-</div>
+    </div>
   );
 };
- 
+
 export default RapportConsommationPage;

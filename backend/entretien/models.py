@@ -2,6 +2,7 @@ from django.db import models
 from django.utils import timezone
 from installations.models import Installation
 from django.contrib.auth import get_user_model
+from django.conf import settings
 
 User = get_user_model()
 
@@ -26,13 +27,38 @@ class Entretien(models.Model):
         ('normale', 'Normale'),
         ('basse', 'Basse'),
     ]
+    PERIODE = [
+    (1, '1 mois'),
+    (3, '3 mois'),
+    (6, '6 mois'),
+    (12, '12 mois'),
+]
+    
+    periode_recurrence = models.PositiveIntegerField(
+    choices=PERIODE,
+    null=True,
+    blank=True,
+    help_text="Créer automatiquement un entretien récurrent après cette période (en mois)"
+    )
     titre = models.CharField(max_length=100, blank=True, verbose_name="Titre personnalisé")
     installation = models.ForeignKey(
         Installation, 
         on_delete=models.CASCADE, 
         related_name='entretiens'
     )
-    
+    event_id_google = models.CharField(
+    max_length=200,
+    null=True,
+    blank=True,
+    verbose_name="ID de l'événement Google Calendar"
+    )
+    lien_evenement_google = models.URLField(
+    blank=True,
+    null=True,
+    verbose_name="Lien vers l’événement Google Calendar"
+    )
+    entretien_parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, related_name='doublons')
+
     type_entretien = models.CharField(
         max_length=20, 
         choices=TYPE_ENTRETIEN,
@@ -150,3 +176,27 @@ class RappelEntretien(models.Model):
 
     def __str__(self):
         return f"Rappel pour entretien {self.entretien_id} à {self.rappel_datetime}"
+
+
+
+class GoogleToken(models.Model):
+    utilisateur = models.OneToOneField(User, on_delete=models.CASCADE, related_name="google_token")
+    access_token = models.TextField()
+    refresh_token = models.TextField()
+    expires_at = models.DateTimeField()
+    token_type = models.CharField(max_length=50)
+
+    def __str__(self):
+        return f"GoogleToken({self.utilisateur.email})"
+
+class EvenementGoogleParUtilisateur(models.Model):
+    utilisateur = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    entretien = models.ForeignKey('Entretien', on_delete=models.CASCADE, related_name="evenements_google")
+    event_id = models.CharField(max_length=255)
+    calendar_id = models.CharField(max_length=255, default='primary')
+
+    class Meta:
+        unique_together = ('utilisateur', 'entretien')
+
+    def __str__(self):
+        return f"{self.utilisateur.email} - {self.entretien.id}"

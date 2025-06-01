@@ -6,36 +6,39 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import frLocale from "@fullcalendar/core/locales/fr";
 import toast from "react-hot-toast";
- 
+//import "@fullcalendar/daygrid/main.css";
+//import "@fullcalendar/timegrid/main.css";
+
 const statusColors = {
-  planifie: "border-l-4 border-blue-500 bg-blue-50",
-  en_cours: "border-l-4 border-yellow-500 bg-yellow-50",
-  termine: "border-l-4 border-green-500 bg-green-50",
-  annule: "border-l-4 border-red-500 bg-red-50"
+  planifie: "#3b82f6",     // Bleu
+  en_cours: "#facc15",     // Jaune
+  termine: "#22c55e",      // Vert
+  annule: "#ef4444"        // Rouge
 };
- 
+
 const CalendrierEntretiens = () => {
   const [events, setEvents] = useState([]);
- 
+
   useEffect(() => {
     const fetchEvents = async () => {
       const now = new Date();
-      const start = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
-      const end = new Date(now.getFullYear(), now.getMonth() + 2, 0).toISOString();
- 
+
       try {
-        const res = await ApiService.getEntretienCalendar({ start_date: start, end_date: end });
+        const res = await ApiService.getEntretienCalendar();
         const formatted = res.data.map((e) => ({
           id: e.id,
-          title: `${e.title} [${e.priority}]`,
+          title: `${e.title}`,
           start: e.start,
           end: e.end,
+          backgroundColor: statusColors[e.status] || "#60a5fa",
+          borderColor: "transparent",
+          textColor: "#fff",
+          classNames: ["fc-google-event"],
           extendedProps: {
             statut: e.status,
-            priorite: e.priority,
             technicien: e.technicien,
-            installation_id: e.installation_id
-          }
+            installation_id: e.installation_id,
+          },
         }));
         setEvents(formatted);
       } catch (err) {
@@ -45,45 +48,93 @@ const CalendrierEntretiens = () => {
     };
     fetchEvents();
   }, []);
- 
-  const renderEventContent = (eventInfo) => {
-    const { statut, technicien } = eventInfo.event.extendedProps;
-    const colorClass = statusColors[statut] || "bg-gray-50 border-l-4 border-gray-400";
- 
-    return (
-<div className={`rounded px-2 py-1 text-sm shadow-sm ${colorClass}`}>
-<strong className="block text-gray-800 truncate">{eventInfo.event.title}</strong>
-        {technicien && <span className="block text-gray-500 text-xs">👷 {technicien}</span>}
-</div>
-    );
-  };
- 
+
   return (
-<div className="p-6 max-w-7xl mx-auto">
-<div className="rounded-lg bg-white shadow-lg p-6">
-<h2 className="text-2xl font-bold text-gray-800 mb-4">📅 Calendrier des entretiens</h2>
-<FullCalendar
+    <div className="max-w-[95%] mx-auto pt-6">
+      <div className="rounded-lg bg-white shadow border border-gray-200 p-4">
+        <div className="flex justify-center " style={{ marginBottom: '50px' }}>
+          <h2 className="text-2xl font-semibold text-gray-800 flex items-center">
+            📆 Calendrier des entretiens
+          </h2>
+        </div>
+
+
+
+        <FullCalendar
           plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
           initialView="dayGridMonth"
           headerToolbar={{
             left: "prev,next today",
             center: "title",
-            right: "dayGridMonth,timeGridWeek,timeGridDay"
+            right: "dayGridMonth,timeGridWeek,timeGridDay",
           }}
           locale={frLocale}
           events={events}
           height="auto"
-          eventContent={renderEventContent}
+          dayMaxEventRows={3}
+          eventDisplay="block"
           eventClick={(info) => {
             const entretienId = info.event.id;
             window.location.href = `/details-entretien/${entretienId}`;
           }}
-          dayMaxEventRows={4}
-          eventDisplay="block"
+          eventMouseEnter={(info) => {
+            const tooltip = document.createElement("div");
+            tooltip.innerHTML = `
+            <div style="font-weight: 600;color: #444; margin-bottom: 4px;">${info.event.title}</div>
+            <div style="font-size: 0.85rem; color: #444;">Technicien : ${info.event.extendedProps.technicien || "Non assigné"}</div>`;
+            tooltip.style.position = "absolute";
+            tooltip.style.zIndex = "1000";
+            tooltip.style.background = "#fff";
+            tooltip.style.border = "1px solid #ccc";
+            tooltip.style.padding = "6px 10px";
+            tooltip.style.borderRadius = "6px";
+            tooltip.style.boxShadow = "0 4px 10px rgba(0,0,0,0.1)";
+            tooltip.style.pointerEvents = "none";
+            tooltip.id = "event-tooltip";
+            document.body.appendChild(tooltip);
+            info.el.addEventListener("mousemove", (e) => {
+              tooltip.style.top = e.pageY + 15 + "px";
+              tooltip.style.left = e.pageX + 15 + "px";
+            });
+          }}
+          eventMouseLeave={() => {
+            const tooltip = document.getElementById("event-tooltip");
+            if (tooltip) tooltip.remove();
+          }}
         />
-</div>
-</div>
+      </div>
+
+      {/* Styles custom Google-like */}
+      <style>{`
+        .fc .fc-button {
+          background-color: #1a73e8;
+          border: none;
+          border-radius: 6px;
+          padding: 6px 12px;
+          font-weight: 500;
+        }
+        .fc .fc-button:hover {
+          background-color: #1765c1;
+        }
+        .fc .fc-button-primary:disabled {
+          background-color: #cbd5e1;
+        }
+        .fc .fc-event.fc-google-event {
+          border-radius: 4px;
+          font-size: 0.9rem;
+          padding: 2px 4px;
+        }
+        .fc .fc-toolbar-title {
+          font-size: 1.25rem;
+          font-weight: 600;
+          color: #1f2937;
+        }
+        .fc .fc-daygrid-event-dot {
+          display: none;
+        }
+      `}</style>
+    </div>
   );
 };
- 
+
 export default CalendrierEntretiens;

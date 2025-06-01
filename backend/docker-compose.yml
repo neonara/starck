@@ -1,8 +1,0 @@
-
-services:
-  redis:
-    image: redis:7
-    container_name: redis_starck
-    ports:
-      - "6379:6379"
-    restart: always

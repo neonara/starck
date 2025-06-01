@@ -19,7 +19,7 @@ const AlarmesChart = ({ data }) => {
     datasets: [
       {
         data: [data.critique || 0, data.majeure || 0, data.mineure || 0],
-        backgroundColor: ["#ef4444", "#f97316", "#facc15"],
+        backgroundColor: ["#ef4444", "#facc15", "#22c55e"],
         borderWidth: 1,
         cutout: "80%",
       },
@@ -51,11 +51,11 @@ const AlarmesChart = ({ data }) => {
           <span>{data.critique || 0}</span>
         </div>
         <div className="flex justify-between items-center">
-          <span className="flex items-center gap-1"><span className="w-3 h-3 bg-[#f97316] rounded-full"></span>Majeure</span>
+          <span className="flex items-center gap-1"><span className="w-3 h-3 bg-[#facc15] rounded-full"></span>Majeure</span>
           <span>{data.majeure || 0}</span>
         </div>
         <div className="flex justify-between items-center">
-          <span className="flex items-center gap-1"><span className="w-3 h-3 bg-[#facc15] rounded-full"></span>Mineure</span>
+          <span className="flex items-center gap-1"><span className="w-3 h-3 bg-[#22c55e] rounded-full"></span>Mineure</span>
           <span>{data.mineure || 0}</span>
         </div>
       </div>

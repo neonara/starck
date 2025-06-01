@@ -2,14 +2,17 @@ from django.contrib.auth import get_user_model
 from rest_framework import status, generics, permissions
 from rest_framework.response import Response
 from rest_framework.generics import ListAPIView
-
+from django.core.cache import cache
 from rest_framework.views import APIView
 from .models import Installation
 from .serializers import InstallationSerializer
 from users.permissions import IsAdminOrInstallateur,IsInstallateur
+from users.permissions import IsTechnicien
 from rest_framework.permissions import IsAuthenticated
 from users.serializers import UserSerializer
 from .serializers import InstallationGeoSerializer
+from users.permissions import IsAdminOrInstallateurOrTechnicien
+
 User = get_user_model()
 
 class AjouterInstallationView(APIView):
@@ -20,6 +23,8 @@ class AjouterInstallationView(APIView):
 
         if serializer.is_valid():
             installation = serializer.save()
+            cache.delete("stats:installations_global")
+            cache.delete(f"stats:installations_installateur_{installation.installateur_id}")
             return Response({
                 "message": "Installation ajoutée avec succès.",
                 "installation_id": installation.id
@@ -47,33 +52,36 @@ class SupprimerInstallationView(APIView):
             return Response({"error": "Installation non trouvée."}, status=status.HTTP_404_NOT_FOUND)
 
 class ListerInstallationsView(APIView):
-    permission_classes = [IsAuthenticated, IsAdminOrInstallateur]
+    permission_classes = [IsAuthenticated, IsAdminOrInstallateurOrTechnicien]
 
     def get(self, request):
-        installations = Installation.objects.all()
+        user = request.user
 
-        etat = request.query_params.get('etat', None)
+        if user.role in ['admin', 'technicien']:
+            installations = Installation.objects.all()
+        elif user.role == 'installateur':
+            installations = Installation.objects.filter(installateur=user)
+        else:
+            return Response({"error": "Rôle non autorisé."}, status=403)
+
+        etat = request.query_params.get('etat')
         if etat:
             installations = installations.filter(statut=etat)
 
-        adresse = request.query_params.get('adresse', None)
+        adresse = request.query_params.get('adresse')
         if adresse:
             installations = installations.filter(adresse__icontains=adresse)
 
-        ville = request.query_params.get('ville', None)
+        ville = request.query_params.get('ville')
         if ville:
             installations = installations.filter(ville__icontains=ville)
 
-        nom = request.query_params.get('nom', None) 
+        nom = request.query_params.get('nom')
         if nom:
             installations = installations.filter(nom__icontains=nom)
 
         serializer = InstallationSerializer(installations, many=True)
-
-        if not serializer.data:
-            return Response({"message": "Aucune installation trouvée."}, status=status.HTTP_404_NOT_FOUND)
-
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.data, status=200)
 
 class DetailsInstallationView(APIView):
     permission_classes = [IsAuthenticated, IsAdminOrInstallateur]
@@ -83,7 +91,8 @@ class DetailsInstallationView(APIView):
     def get(self, request, id): 
         try:
             installation = Installation.objects.get(id=id)
-            serializer = InstallationSerializer(installation)
+            serializer = InstallationSerializer(installation, context={'request': request})
+
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Installation.DoesNotExist:
             return Response({"error": "Installation non trouvée."}, status=status.HTTP_404_NOT_FOUND)
@@ -92,13 +101,23 @@ class StatistiquesInstallationsView(APIView):
     permission_classes = [IsAuthenticated, IsAdminOrInstallateur]
 
     def get(self, request):
-        total_normales = Installation.objects.filter(statut='active').count()
-        total_en_panne = Installation.objects.filter(statut='fault').count()  
+        cache_key = "stats:installations_global"
+        data = cache.get(cache_key)
+        if data:
+            return Response(data)
 
-        return Response({
+        total_normales = Installation.objects.filter(statut='active').count()
+        total_en_panne = Installation.objects.filter(statut='fault').count()
+
+        data = {
             "total_normales": total_normales,
             "total_en_panne": total_en_panne
-        }, status=status.HTTP_200_OK)
+        }
+
+        cache.set(cache_key, data, timeout=3600)
+        return Response(data, status=status.HTTP_200_OK)
+
+
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -119,13 +138,10 @@ class InstallationClientView(APIView):
         try:
 
             user = request.user
-
-            installation = Installation.objects.filter(client=user).first()
- 
+            installation = Installation.objects.filter(client=user).first() 
             if not installation:
 
                 return Response({"error": "Aucune installation trouvée"}, status=404)
-                    # Déterminer l'état de fonctionnement
             alarme_critique_active = AlarmeDeclenchee.objects.filter(
                 installation=installation,
                 code_alarme__gravite='critique',
@@ -135,16 +151,23 @@ class InstallationClientView(APIView):
             etat_fonctionnement = 'En panne' if alarme_critique_active else 'Fonctionnelle'
 
             data = {
-
+                "id": installation.id,
                 "nom": installation.nom,
-                "ville": getattr(installation, "ville", "—"),
-                "etat": getattr(installation, "statut", "—"),
+                "adresse": installation.adresse,
+                "ville": installation.ville,
+                "code_postal": installation.code_postal,
+                "pays": installation.pays,
                 "latitude": installation.latitude,
                 "longitude": installation.longitude,
-                'etat_fonctionnement': etat_fonctionnement,
+                "type_installation": installation.type_installation,
+                "statut": installation.statut,
+                "capacite_kw": installation.capacite_kw,
+                "date_installation": installation.date_installation,
+                "expiration_garantie": installation.expiration_garantie,
+                "reference_contrat": installation.reference_contrat,
+                "etat_fonctionnement": etat_fonctionnement,
             }
 
-            #photo de l'installation
             if installation.photo_installation:
                 data["photo_installation_url"] = request.build_absolute_uri(installation.photo_installation.url)
             else:
@@ -299,3 +322,31 @@ class InstallationGeoDataInstallateurView(ListAPIView):
             latitude__isnull=False,
             longitude__isnull=False
         )
+    
+
+class StatistiquesInstallateurView(APIView):
+    permission_classes = [IsAuthenticated, IsInstallateur]
+
+    def get(self, request):
+        user = request.user
+
+        if user.role != 'installateur':
+            return Response({"error": "Accès non autorisé."}, status=status.HTTP_403_FORBIDDEN)
+
+        cache_key = f"stats:installations_installateur_{user.id}"
+        data = cache.get(cache_key)
+        if data:
+            return Response(data)
+
+        total_installations = Installation.objects.filter(installateur=user).count()
+        total_en_panne = Installation.objects.filter(installateur=user, statut='fault').count()
+        total_normales = Installation.objects.filter(installateur=user, statut='active').count()
+
+        data = {
+            "total_installations": total_installations,
+            "total_en_panne": total_en_panne,
+            "total_normales": total_normales
+        }
+
+        cache.set(cache_key, data, timeout=3600)
+        return Response(data, status=status.HTTP_200_OK)

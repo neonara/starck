@@ -3,15 +3,17 @@ import ApiService from "../../Api/Api";
 import { Toaster, toast } from "react-hot-toast";
 import { Loader2 } from "lucide-react";
 import { Dialog } from "@headlessui/react";
+import { useNavigate } from "react-router-dom";
 
 const FormulaireEnvoyerReclamation = () => {
   const [formData, setFormData] = useState({
     sujet: "",
     message: "",
   });
+  const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false); // 👉 Pour ouvrir la confirmation
-  const [pendingSubmit, setPendingSubmit] = useState(false); // 👉 Pour attendre la vraie confirmation
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData(prev => ({
@@ -20,12 +22,31 @@ const FormulaireEnvoyerReclamation = () => {
     }));
   };
 
+  const handleFileChange = (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length > 5) {
+      toast.error("Vous pouvez téléverser jusqu'à 5 images.");
+      return;
+    }
+    setImages(files);
+  };
+
   const handleSend = async () => {
     setLoading(true);
+    const data = new FormData();
+    data.append("sujet", formData.sujet);
+    data.append("message", formData.message);
+
+    images.forEach((file) => {
+      data.append("images", file); 
+    });
+
     try {
-      await ApiService.envoyerReclamation(formData);
+      await ApiService.envoyerReclamation(data);
       toast.success("Réclamation envoyée ✅");
       setFormData({ sujet: "", message: "" });
+      setImages([]);
+      navigate("/liste-reclamations");
     } catch (error) {
       console.error(error);
       toast.error("Erreur lors de l'envoi ❌");
@@ -37,7 +58,6 @@ const FormulaireEnvoyerReclamation = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // 👉 Avant d'envoyer, ouvrir une popup de confirmation
     setIsConfirmDialogOpen(true);
   };
 
@@ -77,13 +97,62 @@ const FormulaireEnvoyerReclamation = () => {
             />
           </div>
 
-          {/* Bouton Envoyer */}
-          <button
-            type="submit"
-            className="flex items-center justify-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
-          >
-            Envoyer
-          </button>
+          {/* Images */}
+          <div className="w-full">
+  <label className="block text-sm font-medium text-gray-700 mb-1">
+    Joindre des images (max 5)
+  </label>
+
+  <label
+    htmlFor="imageUpload"
+    className="flex items-center justify-center w-full border-2 border-dashed border-gray-300 bg-gray-50 text-gray-500 rounded-lg py-8 px-4 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition"
+  >
+    {images.length === 0
+      ? "Aucun fichier n’a été sélectionné"
+      : `${images.length} fichier(s) sélectionné(s)`}
+    <input
+      id="imageUpload"
+      type="file"
+      accept="image/*"
+      multiple
+      onChange={handleFileChange}
+      className="hidden"
+    />
+  </label>
+
+  {images.length > 0 && (
+    <div className="flex gap-2 flex-wrap mt-3">
+      {images.map((file, i) => (
+        <img
+          key={i}
+          src={URL.createObjectURL(file)}
+          alt={`preview-${i}`}
+          className="w-16 h-16 object-cover rounded border"
+        />
+      ))}
+    </div>
+  )}
+</div>
+
+
+          {/* Bouton envoyer */}
+          <div className="flex justify-center gap-4">
+  <button
+    type="button"
+    onClick={() => navigate("/liste-reclamations")}
+    className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-6 py-3 rounded-lg font-semibold transition"
+  >
+    Annuler
+  </button>
+
+  <button
+    type="submit"
+    className="flex items-center justify-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
+  >
+    Envoyer
+  </button>
+</div>
+
         </form>
       </div>
 

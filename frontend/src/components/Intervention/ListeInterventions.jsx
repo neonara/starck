@@ -34,68 +34,82 @@ const ListeInterventionPage = () => {
   const [statutFilter, setStatutFilter] = useState("");
   const [technicienFilter, setTechnicienFilter] = useState("");
   const [techniciensDisponibles, setTechniciensDisponibles] = useState([]);
+  const [typeFilter, setTypeFilter] = useState("");
+const [showModalExports, setShowModalExports] = useState(false);
+const [exports, setExports] = useState([]);
 
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchInterventions = async () => {
-      try {
-        const params = {
-          statut: statutFilter || undefined,
-          technicien_id: technicienFilter || undefined,
-        };
-
-        const res = await ApiService.getInterventions({ params });
-        const interventions = res.data.results || res.data;
-
-        if (Array.isArray(interventions)) {
-          setData(interventions);
-
-          const uniqueTechs = [
-            ...new Map(
-              interventions
-                .map((interv) => {
-                  const tech = interv.technicien_details || interv.technicien;
-                  if (typeof tech === "object" && tech !== null) {
-                    return [
-                      tech.id,
-                      {
-                        id: tech.id,
-                        nom: `${tech.first_name || ""} ${tech.last_name || ""}`.trim() || tech.email,
-                      },
-                    ];
-                  }
-                  return null;
-                })
-                .filter(Boolean)
-            ).values(),
-          ];
-          setTechniciensDisponibles(uniqueTechs);
-        } else {
-          console.error("Les données reçues ne sont pas un tableau:", interventions);
-          setData([]);
-          setTechniciensDisponibles([]);
-        }
-      } catch (err) {
-        console.error("Erreur lors du chargement des interventions", err);
-        toast.error("Erreur de chargement ❌");
-        setData([]);
-        setTechniciensDisponibles([]);
-      }
-    };
-
-    fetchInterventions();
-  }, [ statutFilter, technicienFilter]);
-
-  const handleExportClick = async (format) => {
-    setShowExportOptions(false);
+ useEffect(() => {
+  const fetchInterventionsAndTechniciens = async () => {
     try {
-      await ApiService.exportInterventions({ format });
-      toast.success(`Export ${format.toUpperCase()} lancé ✅`);
+      const [interventionRes, techRes] = await Promise.all([
+        ApiService.getInterventions({
+          statut: statutFilter || undefined,
+          technicien: technicienFilter || undefined,
+          type_intervention: typeFilter || undefined,
+          search: globalFilter || undefined,
+        }),
+        ApiService.getTechnicien(), 
+      ]);
+
+      const interventions = interventionRes.data.results || interventionRes.data;
+      const allTechniciens = Array.isArray(techRes.data)
+        ? techRes.data
+        : techRes.data.results || [];
+
+      setData(Array.isArray(interventions) ? interventions : []);
+
+      const techniciensFormates = allTechniciens.map((tech) => ({
+        id: tech.id,
+        nom: `${tech.first_name || ""} ${tech.last_name || ""}`.trim() || tech.email,
+      }));
+
+      setTechniciensDisponibles(techniciensFormates);
     } catch (err) {
-      toast.error("Erreur lors de l'export ❌");
+      console.error("Erreur chargement interventions ou techniciens :", err);
+      toast.error("Erreur de chargement ❌");
+      setData([]);
+      setTechniciensDisponibles([]);
     }
   };
+
+  fetchInterventionsAndTechniciens();
+}, [statutFilter, technicienFilter, typeFilter, globalFilter]);
+
+
+const handleExportClick = async (format) => {
+  setShowExportOptions(false);
+  try {
+    await ApiService.exportHistorique.exportInterventions({ format }); 
+    toast.success(`Export ${format.toUpperCase()} lancé ✅`);
+    setShowModalExports(true);
+    setTimeout(() => loadExports(), 1000);
+  } catch (err) {
+    toast.error("Erreur export ❌");
+  }
+};
+
+
+const loadExports = async () => {
+  try {
+    const res = await ApiService.exportHistorique.getExports();
+    setExports(res.data.results.filter(e => e.nom.includes("interventions")));
+  } catch {
+    toast.error("Erreur de chargement des exports");
+  }
+};
+
+const handleDeleteExport = async (id) => {
+  try {
+    await ApiService.exportHistorique.deleteExport(id);
+    loadExports();
+    toast.success("Fichier supprimé ✅");
+  } catch {
+    toast.error("Erreur suppression ❌");
+  }
+};
+
 
   const columns = useMemo(
     () => [
@@ -128,6 +142,24 @@ const ListeInterventionPage = () => {
           return date ? new Date(date).toLocaleDateString() : "—";
         },
       },
+      {
+        header: "TYPE",
+        accessorKey: "type_intervention",
+        cell: (info) => {
+          const type = info.getValue();
+          switch (type) {
+            case "diagnostic":
+              return "Diagnostic";
+            case "preventive":
+              return "Préventive";
+            case "curative":
+              return "Curative";
+            default:
+              return "—";
+          }
+        }
+      },
+
       {
         header: "STATUT",
         accessorKey: "statut",
@@ -180,41 +212,11 @@ const ListeInterventionPage = () => {
     data,
     columns,
     initialState: { pagination: { pageSize } },
-    state: { globalFilter },
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     onGlobalFilterChange: setGlobalFilter,
-    filterFns: {
-      fuzzy: (row, columnId, value) => {
-        const searchValue = value.toLowerCase();
-        const rowData = row.original;
-
-        // Recherche dans l'installation
-        const installation = rowData.installation_details || rowData.installation;
-        if (installation?.nom?.toLowerCase().includes(searchValue)) return true;
-
-        // Recherche dans le technicien
-        const tech = rowData.technicien_details || rowData.technicien;
-        if (tech) {
-          const techName = `${tech.first_name || ''} ${tech.last_name || ''}`.trim().toLowerCase();
-          if (techName.includes(searchValue)) return true;
-          if (tech.email?.toLowerCase().includes(searchValue)) return true;
-        }
-
-        // Recherche dans la date
-        if (rowData.date_prevue) {
-          const date = new Date(rowData.date_prevue).toLocaleDateString().toLowerCase();
-          if (date.includes(searchValue)) return true;
-        }
-
-        // Recherche dans le statut
-        if (rowData.statut?.toLowerCase().includes(searchValue)) return true;
-
-        return false;
-      }
-    },
-    globalFilterFn: 'fuzzy'
+    state: {},
   });
 
   useEffect(() => {
@@ -225,10 +227,8 @@ const ListeInterventionPage = () => {
     <div className="pt-24 px-6 w-full">
       <Toaster />
 
-      {/* Header avec filtres et actions */}
-      <div className="flex justify-between items-center mb-4">
-        {/* Choix nombre d'éléments */}
-        <div className="flex gap-2 items-center">
+       <div className="flex flex-wrap justify-between items-center gap-4 mb-4">
+        <div className="flex flex-wrap gap-2 items-center">
           <label className="text-sm text-gray-600">Afficher</label>
           <select
             value={pageSize}
@@ -241,11 +241,10 @@ const ListeInterventionPage = () => {
               </option>
             ))}
           </select>
-          <span className="text-sm text-gray-600">Technicien  </span>
         </div>
 
         {/* Filtres et actions */}
-        <div className="flex gap-4 items-center">
+<div className="flex flex-wrap justify-between items-center gap-4 mb-4">
           
 
           <select
@@ -260,6 +259,17 @@ const ListeInterventionPage = () => {
               </option>
             ))}
           </select>
+        <select
+          value={typeFilter}
+          onChange={(e) => setTypeFilter(e.target.value)}
+          className="border text-gray-500 rounded px-2 py-1 text-sm"
+        >
+          <option value="">Tous les types</option>
+          <option value="diagnostic">Diagnostic</option>
+          <option value="preventive">Préventive</option>
+          <option value="curative">Curative</option>
+        </select>
+
 
           <input
             type="text"
@@ -274,22 +284,22 @@ const ListeInterventionPage = () => {
               onClick={() => setShowExportOptions(!showExportOptions)}
               className="flex items-center gap-2 px-3 py-1 border rounded text-sm text-gray-700 hover:bg-gray-100"
             >
-              <FaDownload /> Télécharger
+              <FaDownload /> Exporter
             </button>
             {showExportOptions && (
               <div className="absolute right-0 mt-2 w-40 bg-white border rounded shadow z-50">
-                <button
-                  onClick={() => handleExportClick("csv")}
-                  className="block w-full px-4 py-2 text-left hover:bg-gray-100"
-                >
-                  Exporter en CSV
-                </button>
-                <button
-                  onClick={() => handleExportClick("xlsx")}
-                  className="block w-full px-4 py-2 text-left hover:bg-gray-100"
-                >
-                  Exporter en Excel
-                </button>
+              <button
+    onClick={() => handleExportClick("pdf")}
+    className="block w-full px-4 py-2 text-left hover:bg-gray-100"
+  >
+    Exporter en PDF
+  </button>
+  <button
+    onClick={() => handleExportClick("xlsx")}
+    className="block w-full px-4 py-2 text-left hover:bg-gray-100"
+  >
+    Exporter en Excel
+  </button>
               </div>
             )}
           </div>
@@ -380,6 +390,51 @@ const ListeInterventionPage = () => {
           </div>
         </div>
       </div>
+      {showModalExports && (
+  <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+    <div className="bg-white p-6 rounded shadow w-[600px]">
+      <h2 className="text-lg font-bold mb-4">📁 Historique d’exports – Interventions</h2>
+      <table className="w-full text-sm">
+        <thead className="bg-gray-100">
+          <tr>
+            <th className="text-left py-2 px-3">Fichier</th>
+            <th className="text-left py-2 px-3">Créé le</th>
+            <th className="text-left py-2 px-3">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {exports.map((exp) => (
+            <tr key={exp.id} className="hover:bg-gray-50">
+              <td className="py-2 px-3">{exp.nom}</td>
+              <td className="py-2 px-3">{new Date(exp.date_creation).toLocaleString()}</td>
+              <td className="py-2 px-3 flex gap-2">
+                <a href={exp.fichier} download>
+                  <FaDownload className="text-blue-600 cursor-pointer" />
+                </a>
+                <FaTrash
+                  className="text-red-500 cursor-pointer"
+                  onClick={() => handleDeleteExport(exp.id)}
+                />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p className="text-xs mt-4 text-gray-500">
+        10 fichiers maximum sont conservés pendant 3 jours.
+      </p>
+      <div className="flex justify-end mt-4">
+        <button
+          className="px-4 py-1 border rounded text-gray-600 hover:bg-gray-100"
+          onClick={() => setShowModalExports(false)}
+        >
+          Fermer
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
     </div>
   );
 };

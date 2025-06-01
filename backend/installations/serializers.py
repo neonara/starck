@@ -14,7 +14,9 @@ class InstallationSerializer(serializers.ModelSerializer):
     installateur_email = serializers.EmailField(write_only=True, required=False)
     client = UserSerializer(read_only=True)
     installateur = UserSerializer(read_only=True)
-    
+    photo_installation_url = serializers.SerializerMethodField() 
+    type_contrat_display = serializers.CharField(source='get_type_contrat_display', read_only=True)
+
     class Meta:
         model = Installation
         fields = [
@@ -37,14 +39,22 @@ class InstallationSerializer(serializers.ModelSerializer):
             'reference_contrat',
             'photo_installation',
             'client',
+            'photo_installation_url',
             'installateur',
+            'type_contrat',
+            'type_contrat_display',
+            'date_mise_en_service',
+            'statut_diagnostic',
+            'diagnostic_realise',
+            'devis_associe',
         ]
+
         
     def get_photo_installation_url(self, obj):
-        request = self.context.get('request')
+      request = self.context.get('request', None)
+      if request and obj.photo_installation and hasattr(obj.photo_installation, 'url'):
         try:
-            if obj.photo_installation and hasattr(obj.photo_installation, 'url'):
-                return request.build_absolute_uri(obj.photo_installation.url)
+            return request.build_absolute_uri(obj.photo_installation.url)
         except Exception as e:
             print("Erreur image:", e)
         return None
@@ -52,8 +62,9 @@ class InstallationSerializer(serializers.ModelSerializer):
         if image and image.size > 5 * 1024 * 1024:
             raise serializers.ValidationError("Image trop lourde (max 5MB).")
         return image
-
-
+    
+    def get_type_contrat_display(self, obj):
+        return obj.get_type_contrat_display()
 
     def create(self, validated_data):
         client_email = validated_data.pop('client_email').strip().lower()
@@ -107,6 +118,18 @@ class InstallationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"date_installation": "La date d'installation est requise."})
         if not data.get('capacite_kw'):
             raise serializers.ValidationError({"capacite_kw": "La capacité en kW est requise."})
+        
+
+        type_contrat = data.get('type_contrat')
+        if type_contrat == 'exploitation' and not data.get('date_mise_en_service'):
+           raise serializers.ValidationError({
+              "date_mise_en_service": "La date de mise en service est requise pour un contrat d'exploitation."
+        })
+        if type_contrat in ['preventive_curative', 'exploitation_curative']:
+            if not data.get('devis_associe'):
+               raise serializers.ValidationError({
+                   "devis_associe": "Un devis est requis pour les contrats de type curatif ou préventif."
+            })
 
         return data
 

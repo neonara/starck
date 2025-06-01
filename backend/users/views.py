@@ -162,20 +162,28 @@ class CompleteRegistrationView(APIView):
         token = request.data.get('token')
         password = request.data.get('password')
         confirm_password = request.data.get('confirm_password')
+        first_name = request.data.get('first_name', '').strip()
+        last_name = request.data.get('last_name', '').strip()
+        phone_number = request.data.get('phone_number', '').strip()  
 
         if password != confirm_password:
             return Response({"error": "Les mots de passe ne correspondent pas."}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             user = User.objects.get(email=email)
-        
+
             cached_token = cache.get(f"registration_token:{email}")
             if cached_token and cached_token == token:
+                user.first_name = first_name
+                user.last_name = last_name
+                user.phone_number = phone_number  
                 user.set_password(password)
                 user.is_active = True
                 user.save()
-         
+
                 cache.delete(f"registration_token:{email}")
+                cache.delete("user_list")  
+
                 return Response({"message": "Inscription complétée avec succès."}, status=status.HTTP_200_OK)
             else:
                 return Response({"error": "Token invalide."}, status=status.HTTP_400_BAD_REQUEST)
@@ -196,7 +204,8 @@ class GetUserProfileView(APIView):
             "email": user.email,
             "first_name": user.first_name if user.first_name else "Non défini",
             "last_name": user.last_name if user.last_name else "Non défini",
-            "role": user.role
+            "role": user.role,
+            "phone_number": user.phone_number if user.phone_number else ""
         }
 
         cache.set(cache_key, user_data, timeout=600)
@@ -579,3 +588,31 @@ class MyClientsListView(APIView):
 
         serializer = UserSerializer(clients, many=True)
         return Response({"results": serializer.data}, status=status.HTTP_200_OK)
+    
+
+
+
+
+class ResendRegistrationLinkView(APIView):
+    permission_classes = [IsAuthenticated, IsAdminOrInstallateur]
+
+    def post(self, request):
+        email = request.data.get('email')
+
+        try:
+            user = User.objects.get(email=email, is_active=False)
+            registration_token = cache.get(f"registration_token:{email}")
+            
+            if not registration_token:
+                registration_token = str(uuid.uuid4())
+                cache.set(f"registration_token:{email}", registration_token, timeout=3600)
+
+            FRONTEND_URL = "http://localhost:5173/complete-registration"
+            registration_link = f"{FRONTEND_URL}?token={registration_token}&email={email}"
+
+            send_registration_link.delay(email, registration_link)
+
+            return Response({"message": "Lien de confirmation renvoyé avec succès."}, status=200)
+
+        except User.DoesNotExist:
+            return Response({"error": "Utilisateur non trouvé ou déjà activé."}, status=404)

@@ -15,6 +15,7 @@ import {
   FaEdit,
   FaTrash,
   FaPlus,
+  FaDownload
 } from "react-icons/fa";
 import toast, { Toaster } from "react-hot-toast";
  
@@ -34,7 +35,10 @@ const ListeEntretiensPage = () => {
   const [installationFilter, setInstallationFilter] = useState("");
   const [techniciens, setTechniciens] = useState([]);
   const [installations, setInstallations] = useState([]);
- 
+ const [showExportOptions, setShowExportOptions] = useState(false);
+const [showModalExports, setShowModalExports] = useState(false);
+const [exports, setExports] = useState([]);
+
   const navigate = useNavigate();
  
   useEffect(() => {
@@ -47,7 +51,7 @@ const ListeEntretiensPage = () => {
         if (installationFilter) params.installation_id = installationFilter;
  
         const res = await ApiService.getAllEntretiens(params);
-        setData(res.data);
+        setData(res.data.results || res.data);
       } catch (err) {
         console.error("Erreur chargement entretiens", err);
         toast.error("Erreur de chargement ❌");
@@ -72,12 +76,46 @@ const ListeEntretiensPage = () => {
     };
     loadFilters();
   }, []);
+const handleExportClick = async (format) => {
+  setShowExportOptions(false);
+  try {
+    await ApiService.exportHistorique.exportEntretiens(format);
+    toast.success(`Export ${format.toUpperCase()} lancé ✅`);
+    setShowModalExports(true);
+    setTimeout(() => loadExports(), 1000);
+  } catch (err) {
+    console.error("Erreur export :", err);
+    toast.error("Erreur export ❌");
+  }
+};
+
+const loadExports = async () => {
+  try {
+    const res = await ApiService.exportHistorique.getExports();
+    setExports(res.data.results.filter((e) => e.nom.includes("entretiens")));
+  } catch {
+    toast.error("Erreur de chargement des exports");
+  }
+};
+
+const handleDeleteExport = async (id) => {
+  try {
+    await ApiService.exportHistorique.deleteExport(id);
+    loadExports();
+    toast.success("Fichier supprimé ✅");
+  } catch {
+    toast.error("Erreur suppression ❌");
+  }
+};
  
+
+
+
   const columns = useMemo(() => [
     {
       header: "Installation",
-      accessorKey: "installation_details.nom",
-      cell: (info) => info.row.original.installation_details?.nom || "—",
+      accessorKey: "installation_nom",
+      cell: (info) => info.getValue() || "—",
     },
     {
       header: "Type",
@@ -165,8 +203,8 @@ const ListeEntretiensPage = () => {
 <div className="pt-24 px-6 w-full">
 <Toaster />
  
-      <div className="flex flex-wrap justify-between items-center mb-4 gap-4">
-<div className="flex gap-2 items-center">
+    <div className="flex flex-wrap justify-between items-center gap-4 mb-4">
+        <div className="flex flex-wrap gap-2 items-center">
 <label className="text-sm text-gray-600">Afficher</label>
 <select
             value={pageSize}
@@ -222,13 +260,48 @@ const ListeEntretiensPage = () => {
             className="border px-3 py-1 rounded w-64 text-sm"
           />
  
-          <button
-            onClick={() => navigate("/ajouter-entretien")}
-            className="flex items-center gap-2 px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
->
-<FaPlus /> Planifier
-</button>
+<div className="flex items-center gap-3 ml-auto">
+  <div className="relative">
+    <button
+      type="button"
+      onClick={() => setShowExportOptions(!showExportOptions)}
+      className="flex items-center gap-2 px-3 py-1 border rounded text-sm text-gray-700 hover:bg-gray-100"
+    >
+      <FaDownload /> Télécharger
+    </button>
+    {showExportOptions && (
+      <div className="absolute right-0 mt-2 w-40 bg-white border rounded shadow z-50">
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            handleExportClick("pdf");
+          }}
+          className="block w-full px-4 py-2 text-left hover:bg-gray-100"
+        >
+          Exporter en PDF
+        </button>
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            handleExportClick("xlsx");
+          }}
+          className="block w-full px-4 py-2 text-left hover:bg-gray-100"
+        >
+          Exporter en Excel
+        </button>
+      </div>
+    )}
+  </div>
+
+  <button
+    onClick={() => navigate("/ajouter-entretien")}
+    className="flex items-center gap-2 px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
+  >
+    <FaPlus /> Planifier
+  </button>
 </div>
+</div>
+
 </div>
  
       <div className="overflow-x-auto w-full mt-4">
@@ -273,8 +346,89 @@ const ListeEntretiensPage = () => {
               ))}
 </tbody>
 </table>
+<div className="mt-4 flex justify-between text-sm items-center">
+  <span>
+    Affichage de {data.length > 0 ? table.getPaginationRowModel().rows[0]?.index + 1 : 0}
+    {" "}à{" "}
+    {data.length > 0 ? table.getPaginationRowModel().rows[table.getPaginationRowModel().rows.length - 1]?.index + 1 : 0}
+    {" "}sur {data.length} entrées
+  </span>
+  <div className="space-x-2">
+    <button
+      onClick={() => table.previousPage()}
+      disabled={!table.getCanPreviousPage()}
+      className="px-3 py-1 rounded border text-gray-600 disabled:opacity-50"
+    >
+      Précédent
+    </button>
+    <button
+      onClick={() => table.nextPage()}
+      disabled={!table.getCanNextPage()}
+      className="px-3 py-1 rounded border text-gray-600 disabled:opacity-50"
+    >
+      Suivant
+    </button>
+  </div>
+</div>
+
 </div>
 </div>
+{showModalExports && (
+  <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+    <div className="bg-white p-6 rounded shadow w-[600px]">
+      <h2 className="text-lg font-bold mb-4">📁 Historique d’exports – Entretiens</h2>
+      <table className="w-full text-sm">
+        <thead className="bg-gray-100">
+          <tr>
+            <th className="text-left py-2 px-3">Fichier</th>
+            <th className="text-left py-2 px-3">Créé le</th>
+            <th className="text-left py-2 px-3">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {exports.map((exp) => (
+            <tr key={exp.id} className="hover:bg-gray-50">
+              <td className="py-2 px-3">{exp.nom}</td>
+              <td className="py-2 px-3">{new Date(exp.date_creation).toLocaleString()}</td>
+              <td className="py-2 px-3 flex gap-2">
+               <button
+  onClick={() => {
+    const link = document.createElement("a");
+    link.href = exp.fichier;
+    link.setAttribute("download", exp.nom);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }}
+>
+  <FaDownload className="text-blue-600 cursor-pointer" />
+</button>
+
+                <FaTrash
+                  className="text-red-500 cursor-pointer"
+                  onClick={() => handleDeleteExport(exp.id)}
+                />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <p className="text-xs mt-4 text-gray-500">
+        10 fichiers maximum sont conservés pendant 3 jours.
+      </p>
+      <div className="flex justify-end mt-4">
+        <button
+          className="px-4 py-1 border rounded text-gray-600 hover:bg-gray-100"
+          onClick={() => setShowModalExports(false)}
+        >
+          Fermer
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
 </div>
   );
 };

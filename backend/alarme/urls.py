@@ -14,6 +14,8 @@ from .views import (
     StatistiquesAlarmeCodesView,
     StatistiquesAlarmesClientView,
     StatistiquesAlarmesInstallationView,
+    ListeAlarmesInstallateurView,
+    StatistiquesAlarmesInstallateurView,
     ListeAlarmesInstallateurView
 )
 
@@ -38,5 +40,6 @@ urlpatterns = [
     path("stats-client/", StatistiquesAlarmesClientView.as_view()),
     path("stats/<int:installation_id>/", StatistiquesAlarmesInstallationView.as_view(), name="statistiques-alarmes-installation"),
     path('liste/installateur/', ListeAlarmesInstallateurView.as_view(), name='liste-alarmes-installateur'),
+    path("statistiques-installateur/", StatistiquesAlarmesInstallateurView.as_view(), name="statistiques-alarmes-installateur"),
 
 ]

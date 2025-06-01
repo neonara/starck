@@ -3,3 +3,11 @@ backend/backend/__pycache__s
 __pycache__/
 *.pyc__pycache__/
 *.py[cod]
+frontend/
+node_module/
+.env.local
+node_modules/
+frontend/
+google_credentials/credentials.json
+backend/google_credentials/starck-calendar-key.json
+backend/backend/.env

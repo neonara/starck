@@ -1,0 +1,6 @@
+nom,type_installation,statut,capacite_kw,ville,date_installation
+I7,commercial,inactive,50.00,tunis,2025-05-02
+I1,residential,active,33.00,hiboun,2025-04-17
+I3,industrial,maintenance,29.00,Midoun,2025-04-08
+I4,commercial,inactive,50.00,borj ras,2025-04-08
+I2,commercial,inactive,34.00,Houmt souk,2025-04-01

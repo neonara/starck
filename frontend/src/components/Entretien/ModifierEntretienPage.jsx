@@ -61,36 +61,48 @@ const ModifierEntretienPage = () => {
  
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const dateDebut = new Date(form.date_debut);
+    const duree = parseInt(form.duree_estimee);
+    const dateFin = new Date(dateDebut.getTime() + duree * 60000); 
     const cleaned = {
-      ...form,
-      duree_estimee: parseInt(form.duree_estimee),
       installation: parseInt(form.installation),
+      type_entretien: form.type_entretien,
+      date_debut: form.date_debut,
+      date_fin: dateFin.toISOString(), 
+      duree_estimee: duree,
+      statut: form.statut,
+      priorite: form.priorite,
       technicien: form.technicien ? parseInt(form.technicien) : null,
+      notes: form.notes,
     };
-    console.log("Données envoyées à updateEntretien :", cleaned);
+
+
+    console.log("🧾 Payload envoyé :", cleaned);
+
     try {
       await ApiService.updateEntretien(id, cleaned);
       toast.success("✅ Entretien mis à jour");
       navigate("/liste-entretiens");
     } catch (err) {
-      console.error("Erreur update :", err);
-      toast.error("❌ Erreur mise à jour");
+      if (err.response) {
+        console.error("🛑 Erreur backend :", err.response.data);
+        toast.error("❌ Erreur : " + JSON.stringify(err.response.data));
+      } else {
+        console.error("❌ Erreur inconnue :", err);
+        toast.error("❌ Erreur inconnue");
+      }
     }
+
   };
  
   if (!installations.length || !techniciens.length) return <p className="p-6">Chargement...</p>;
  
   return (
-<div className="min-h-screen bg-blue-50 p-8">
+<div className="min-h-screen p-8">
 <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-xl p-8">
 <div className="flex justify-between items-center mb-4">
 <h2 className="text-3xl font-bold text-gray-800">Modifier l'entretien</h2>
-<button
-            onClick={() => navigate(`/liste-entretiens/`)}
-            className="text-sm text-blue-600 hover:underline flex items-center gap-1"
->
-<ArrowUpRight size={16} /> Retour
-</button>
+
 </div>
  
         <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-6">

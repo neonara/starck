@@ -1,0 +1,5 @@
+installation__nom,code_alarme__code_constructeur,code_alarme__marque,code_alarme__type_alarme,code_alarme__gravite,date_declenchement,est_resolue
+A1,2001,Kstar,Terre,mineure,2025-05-12 20:29:12.466044+00:00,False
+A1,545,Huawei,AC,critique,2025-05-12 20:30:22.532896+00:00,False
+A1,F27,Kstar,AC,majeure,2025-05-12 20:31:58.136080+00:00,False
+A1,2001,Huawei,AC,critique,2025-05-12 20:32:58.933877+00:00,True

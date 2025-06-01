@@ -30,6 +30,7 @@ import ListeClientsPage from "./components/Utilisateurs/Clients/Liste-Client";
 import ModifierClientPage from "./components/Utilisateurs/Clients/modifier-client";
 import CalendrierEntretiensClient from "./components/Entretien/CalendrierEntretiensClient";
 
+
 //notifications
 import NotificationsPage from "./components/notifications/notifications";
 //historique
@@ -191,7 +192,6 @@ function App() {
        
        
        <Route path="/client/mes-entretien" element={<ListeEntretiensClient />} />
-       <Route path="/client/clanddar" element={<CalendrierEntretiensClient />} />
        
        <Route path="//rapports-alarme" element={<RapportAlarmesClientPage />} />
        

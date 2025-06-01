@@ -1,4 +1,4 @@
-# starck
+# stark
 # Solar Installation Management Platform
 
 ## Project Overview

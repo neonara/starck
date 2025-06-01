@@ -192,7 +192,6 @@ function App() {
        
        
        <Route path="/client/mes-entretien" element={<ListeEntretiensClient />} />
-       <Route path="/client/clanddar" element={<CalendrierEntretiensClient />} />
        
        <Route path="//rapports-alarme" element={<RapportAlarmesClientPage />} />
        

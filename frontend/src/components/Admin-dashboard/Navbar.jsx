@@ -33,7 +33,8 @@ const Navbar = () => {
     const token = localStorage.getItem("accessToken");
     if (!token) return;
 
-    const socket = new WebSocket(`ws://localhost:8000/ws/notifications/?token=${token}`);
+    const socket = new WebSocket(`ws://${window.location.hostname}:8000/ws/notifications/?token=${token}`);
+
 
     socket.onopen = () => console.log("WebSocket connecté");
     socket.onmessage = (e) => {

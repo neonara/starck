@@ -36,7 +36,6 @@ const InstallationDetailsModal = ({ isOpen, setIsOpen, installation }) => {
             <div className="space-y-2 text-gray-500">
               <p><strong>📅 Date Installation :</strong> {installation.date_installation}</p>
               <p><strong>🛡️ Fin de garantie :</strong> {installation.expiration_garantie || "—"}</p>
-              <p><strong>📄 Référence Contrat :</strong> {installation.reference_contrat || "—"}</p>
               <p><strong>⚙️ Statut :</strong> {installation.statut}</p>
             </div>
           </div>

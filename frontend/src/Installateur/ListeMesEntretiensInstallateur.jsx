@@ -8,7 +8,7 @@ import {
   getSortedRowModel,
   flexRender,
 } from "@tanstack/react-table";
-import { FaSort, FaSortUp, FaSortDown,FaDownload ,FaTrash } from "react-icons/fa";
+import { FaSort, FaSortUp, FaSortDown, FaDownload, FaTrash } from "react-icons/fa";
 import toast, { Toaster } from "react-hot-toast";
 
 const statutColors = {
@@ -22,54 +22,51 @@ const ListeMesEntretiensInstallateurPage = () => {
   const [data, setData] = useState([]);
   const [pageSize, setPageSize] = useState(5);
   const [globalFilter, setGlobalFilter] = useState("");
+  const [statutFilter, setStatutFilter] = useState("");
+  const [technicienFilter, setTechnicienFilter] = useState("");
+  const [installationFilter, setInstallationFilter] = useState("");
+  const [techniciens, setTechniciens] = useState([]);
+  const [installations, setInstallations] = useState([]);
   const [showExportOptions, setShowExportOptions] = useState(false);
-const [exports, setExports] = useState([]);
-const [showModalExports, setShowModalExports] = useState(false);
+  const [exports, setExports] = useState([]);
+  const [showModalExports, setShowModalExports] = useState(false);
 
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchEntretiens = async () => {
       try {
-        const res = await ApiService.getMesEntretiensInstallateur();
-        setData(res.data);
+        const params = {};
+        if (globalFilter) params.search = globalFilter;
+        if (statutFilter) params.statut = statutFilter;
+        if (technicienFilter) params.technicien_id = technicienFilter;
+        if (installationFilter) params.installation_id = installationFilter;
+
+        const res = await ApiService.getMesEntretiensInstallateur(params);
+        setData(res.data.results || res.data || []);
       } catch (err) {
         console.error("Erreur chargement entretiens", err);
         toast.error("Erreur de chargement ❌");
       }
     };
     fetchEntretiens();
+  }, [globalFilter, statutFilter, technicienFilter, installationFilter]);
+
+  useEffect(() => {
+    const loadFilters = async () => {
+      try {
+        const [techRes, instRes] = await Promise.all([
+          ApiService.getTechnicien(),
+          ApiService.getInstallations(),
+        ]);
+        setTechniciens(techRes.data.results || techRes.data);
+        setInstallations(instRes.data.results || instRes.data);
+      } catch (err) {
+        console.error("Erreur chargement filtres", err);
+      }
+    };
+    loadFilters();
   }, []);
-const handleExportClick = async (format) => {
-  setShowExportOptions(false);
-  try {
-    await ApiService.exportHistorique.exportEntretiens(format);
-    toast.success(`Export ${format.toUpperCase()} lancé ✅`);
-    setShowModalExports(true);
-    setTimeout(() => loadExports(), 1000);
-  } catch {
-    toast.error("Erreur export ❌");
-  }
-};
-
-const loadExports = async () => {
-  try {
-    const res = await ApiService.exportHistorique.getExports();
-    setExports(res.data.results.filter((e) => e.nom.includes("entretiens")));
-  } catch {
-    toast.error("Erreur chargement exports ❌");
-  }
-};
-
-const handleDeleteExport = async (id) => {
-  try {
-    await ApiService.exportHistorique.deleteExport(id);
-    loadExports();
-    toast.success("Fichier supprimé ✅");
-  } catch {
-    toast.error("Erreur suppression ❌");
-  }
-};
 
   const columns = useMemo(() => [
     {
@@ -102,21 +99,30 @@ const handleDeleteExport = async (id) => {
         </span>
       ),
     },
+    {
+      header: "Technicien",
+      accessorKey: "technicien_details",
+      cell: (info) => {
+        const val = info.getValue();
+        return val ? `${val.first_name ?? ""} ${val.last_name ?? ""}` : "—";
+      },
+    },
   ], []);
 
   const table = useReactTable({
     data,
     columns,
     initialState: { pagination: { pageSize } },
-    state: { globalFilter },
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+    state: { globalFilter },
     onGlobalFilterChange: setGlobalFilter,
     globalFilterFn: (row, columnId, filterValue) => {
       const value = row.getValue(columnId);
       return String(value).toLowerCase().includes(filterValue.toLowerCase());
     },
+
   });
 
   useEffect(() => {
@@ -126,10 +132,8 @@ const handleDeleteExport = async (id) => {
   return (
     <div className="pt-24 px-6 w-full">
       <Toaster />
-
-      {/* Header */}
-      <div className="flex justify-between items-center mb-4">
-        <div className="flex gap-2 items-center">
+      <div className="flex flex-wrap justify-between items-center gap-4 mb-4">
+        <div className="flex flex-wrap gap-2 items-center">
           <label className="text-sm text-gray-600">Afficher</label>
           <select
             value={pageSize}
@@ -137,50 +141,38 @@ const handleDeleteExport = async (id) => {
             className="border rounded px-2 py-1 text-gray-700 text-sm"
           >
             {[5, 10, 20].map((size) => (
-              <option key={size} value={size}>
-                {size}
-              </option>
+              <option key={size} value={size}>{size}</option>
             ))}
           </select>
         </div>
 
-        <div className="flex gap-3 items-center">
-          <div className="relative">
-  <button
-    onClick={() => setShowExportOptions(!showExportOptions)}
-    className="flex items-center gap-2 px-3 py-1 border rounded text-sm text-gray-700 hover:bg-gray-100"
-  >
-              <FaDownload /> Exporter
-  </button>
-  {showExportOptions && (
-    <div className="absolute right-0 mt-2 w-40 bg-white border rounded shadow z-50">
-      <button
-        onClick={(e) => { e.preventDefault(); handleExportClick("pdf"); }}
-        className="block w-full px-4 py-2 text-left hover:bg-gray-100"
-      >
-        Exporter PDF
-      </button>
-      <button
-        onClick={(e) => { e.preventDefault(); handleExportClick("xlsx"); }}
-        className="block w-full px-4 py-2 text-left hover:bg-gray-100"
-      >
-        Exporter Excel
-      </button>
-    </div>
-  )}
-</div>
+        <div className="flex flex-wrap gap-3 items-center">
+          <select value={statutFilter} onChange={(e) => setStatutFilter(e.target.value)} className="border rounded px-2 py-1 text-gray-700 text-sm">
+            <option value="">Tous les statuts</option>
+            <option value="planifie">Planifié</option>
+            <option value="en_cours">En cours</option>
+            <option value="termine">Terminé</option>
+            <option value="annule">Annulé</option>
+          </select>
 
-          <input
-            type="text"
-            placeholder="🔍 Rechercher..."
-            value={globalFilter ?? ""}
-            onChange={(e) => setGlobalFilter(e.target.value)}
-            className="border px-3 py-1 rounded w-64 text-sm"
-          />
+          <select value={technicienFilter} onChange={(e) => setTechnicienFilter(e.target.value)} className="border rounded px-2 py-1 text-gray-700 text-sm">
+            <option value="">Tous les techniciens</option>
+            {techniciens.map((t) => (
+              <option key={t.id} value={t.id}>{t.first_name} {t.last_name}</option>
+            ))}
+          </select>
+
+          <select value={installationFilter} onChange={(e) => setInstallationFilter(e.target.value)} className="border rounded px-2 py-1 text-gray-700 text-sm">
+            <option value="">Toutes les installations</option>
+            {installations.map((i) => (
+              <option key={i.id} value={i.id}>{i.nom}</option>
+            ))}
+          </select>
+
+          <input type="text" placeholder="🔍 Rechercher..." value={globalFilter ?? ""} onChange={(e) => setGlobalFilter(e.target.value)} className="border px-3 py-1 rounded w-64 text-sm" />
         </div>
       </div>
 
-      {/* Table */}
       <div className="overflow-x-auto w-full mt-4">
         <div className="bg-white rounded-xl shadow p-6 w-full">
           <table className="w-full table-auto text-sm text-left text-gray-800">
@@ -188,11 +180,7 @@ const handleDeleteExport = async (id) => {
               {table.getHeaderGroups().map((headerGroup) => (
                 <tr key={headerGroup.id}>
                   {headerGroup.headers.map((header) => (
-                    <th
-                      key={header.id}
-                      onClick={header.column.getToggleSortingHandler()}
-                      className="px-4 py-2 cursor-pointer whitespace-nowrap"
-                    >
+                    <th key={header.id} onClick={header.column.getToggleSortingHandler()} className="px-4 py-2 cursor-pointer whitespace-nowrap">
                       <div className="flex items-center gap-1">
                         {flexRender(header.column.columnDef.header, header.getContext())}
                         {{ asc: <FaSortUp />, desc: <FaSortDown /> }[
@@ -205,101 +193,40 @@ const handleDeleteExport = async (id) => {
               ))}
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {table.getRowModel().rows.map((row) => (
-                <tr
-                  key={row.id}
-                  className="hover:bg-gray-100 cursor-pointer"
-                  onClick={() => navigate(`/details-entretien/${row.original.id}`)}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className="px-4 py-2 whitespace-nowrap">
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </td>
-                  ))}
+              {table.getRowModel().rows.length === 0 ? (
+                <tr>
+                  <td colSpan={columns.length} className="text-center py-4 text-gray-500">
+                    Aucun entretien trouvé avec les filtres appliqués.
+                  </td>
                 </tr>
-              ))}
+              ) : (
+                table.getRowModel().rows.map((row) => (
+                  <tr key={row.id} className="hover:bg-gray-100 cursor-pointer" onClick={() => navigate(`/detail_entretien_installateur/${row.original.id}`)}>
+                    {row.getVisibleCells().map((cell) => (
+                      <td key={cell.id} className="px-4 py-2 whitespace-nowrap">
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </td>
+                    ))}
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
-
-          {/* Pagination */}
           <div className="flex justify-between items-center mt-4 text-sm text-gray-700">
             <div>
-              Page {table.getState().pagination.pageIndex + 1} sur{" "}
-              {table.getPageCount()}
+              Page {table.getState().pagination.pageIndex + 1} sur {table.getPageCount()}
             </div>
             <div className="flex gap-2">
-              <button
-                onClick={() => table.previousPage()}
-                disabled={!table.getCanPreviousPage()}
-                className="px-3 py-1 border rounded disabled:opacity-50"
-              >
+              <button onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()} className="px-3 py-1 border rounded disabled:opacity-50">
                 Précédent
               </button>
-              <button
-                onClick={() => table.nextPage()}
-                disabled={!table.getCanNextPage()}
-                className="px-3 py-1 border rounded disabled:opacity-50"
-              >
+              <button onClick={() => table.nextPage()} disabled={!table.getCanNextPage()} className="px-3 py-1 border rounded disabled:opacity-50">
                 Suivant
               </button>
             </div>
           </div>
         </div>
       </div>
-      {showModalExports && (
-  <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
-    <div className="bg-white p-6 rounded shadow w-[600px]">
-      <h2 className="text-lg font-bold mb-4">📁 Historique d’exports – Entretiens</h2>
-      <table className="w-full text-sm">
-        <thead className="bg-gray-100">
-          <tr>
-            <th className="text-left py-2 px-3">Fichier</th>
-            <th className="text-left py-2 px-3">Créé le</th>
-            <th className="text-left py-2 px-3">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {exports.map((exp) => (
-            <tr key={exp.id} className="hover:bg-gray-50">
-              <td className="py-2 px-3">{exp.nom}</td>
-              <td className="py-2 px-3">{new Date(exp.date_creation).toLocaleString()}</td>
- <td className="py-2 px-3 flex gap-2">
-<button
-  type="button"
-  onClick={() => {
-    const link = document.createElement("a");
-    link.href = exp.fichier;
-    link.setAttribute("download", exp.nom);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }}
->
-  <FaDownload className="text-blue-600 cursor-pointer" />
-</button>
-
-
-                      <FaTrash
-                        className="text-red-500 cursor-pointer"
-                        onClick={() => handleDeleteExport(exp.id)}
-                      />
-                    </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <div className="flex justify-end mt-4">
-        <button
-          className="px-4 py-1 border rounded"
-          onClick={() => setShowModalExports(false)}
-        >
-          Fermer
-        </button>
-      </div>
-    </div>
-  </div>
-)}
-
     </div>
   );
 };

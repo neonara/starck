@@ -141,8 +141,8 @@ const ClientDashboard = () => {
 
   {/* Dates contrôle et visite */}
   <div className="text-sm pl-4 text-gray-600  space-y-1">
-  <p className="text-sm flex text-gray-400">Dernier contrôle : {data.dernier_controle ? dayjs(data.dernier_controle).format("DD MMM YYYY") : "—"}</p>
-  <p className="text-sm flex text-gray-400">Prochaine visite : {data.prochaine_visite ? dayjs(data.prochaine_visite).format("DD MMM YYYY") : "—"}</p>
+  <p className="text-sm flex text-gray-400">Dernier contrôle : {data.prochaine_visite ? dayjs(data.prochaine_visite).format("DD MMM YYYY") : "—"}</p>
+  <p className="text-sm flex text-gray-400">Prochaine visite : {data.dernier_controle ? dayjs(data.dernier_controle).format("DD MMM YYYY") : "—"}</p>
   </div>
           </div>
         </div>

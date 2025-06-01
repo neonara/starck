@@ -16,19 +16,27 @@ const FormulaireEnvoyerReclamation = () => {
   const navigate = useNavigate();
 
   const handleChange = (e) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [e.target.name]: e.target.value,
     }));
   };
 
+  // Gestion de l'ajout multiple cumulatif des images avec limite 5 max
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
-    if (files.length > 5) {
-      toast.error("Vous pouvez téléverser jusqu'à 5 images.");
+
+    if (images.length + files.length > 5) {
+      toast.error("Vous ne pouvez pas avoir plus de 5 images au total.");
       return;
     }
-    setImages(files);
+
+    setImages((prevImages) => [...prevImages, ...files]);
+  };
+
+  // Supprimer une image par son index
+  const handleRemoveImage = (indexToRemove) => {
+    setImages((prevImages) => prevImages.filter((_, i) => i !== indexToRemove));
   };
 
   const handleSend = async () => {
@@ -38,7 +46,7 @@ const FormulaireEnvoyerReclamation = () => {
     data.append("message", formData.message);
 
     images.forEach((file) => {
-      data.append("images", file); 
+      data.append("images", file);
     });
 
     try {
@@ -72,7 +80,9 @@ const FormulaireEnvoyerReclamation = () => {
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
           {/* Sujet */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Sujet</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Sujet
+            </label>
             <input
               type="text"
               name="sujet"
@@ -86,7 +96,9 @@ const FormulaireEnvoyerReclamation = () => {
 
           {/* Message */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Message
+            </label>
             <textarea
               name="message"
               value={formData.message}
@@ -99,65 +111,79 @@ const FormulaireEnvoyerReclamation = () => {
 
           {/* Images */}
           <div className="w-full">
-  <label className="block text-sm font-medium text-gray-700 mb-1">
-    Joindre des images (max 5)
-  </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Joindre des images (max 5)
+            </label>
 
-  <label
-    htmlFor="imageUpload"
-    className="flex items-center justify-center w-full border-2 border-dashed border-gray-300 bg-gray-50 text-gray-500 rounded-lg py-8 px-4 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition"
-  >
-    {images.length === 0
-      ? "Aucun fichier n’a été sélectionné"
-      : `${images.length} fichier(s) sélectionné(s)`}
-    <input
-      id="imageUpload"
-      type="file"
-      accept="image/*"
-      multiple
-      onChange={handleFileChange}
-      className="hidden"
-    />
-  </label>
+            <label
+              htmlFor="imageUpload"
+              className="flex items-center justify-center w-full border-2 border-dashed border-gray-300 bg-gray-50 text-gray-500 rounded-lg py-8 px-4 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition"
+            >
+              {images.length === 0
+                ? "Aucun fichier n’a été sélectionné"
+                : `${images.length} fichier(s) sélectionné(s)`}
+              <input
+                id="imageUpload"
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleFileChange}
+                className="hidden"
+              />
+            </label>
 
-  {images.length > 0 && (
-    <div className="flex gap-2 flex-wrap mt-3">
-      {images.map((file, i) => (
-        <img
-          key={i}
-          src={URL.createObjectURL(file)}
-          alt={`preview-${i}`}
-          className="w-16 h-16 object-cover rounded border"
-        />
-      ))}
-    </div>
-  )}
-</div>
+            {images.length > 0 && (
+              <div className="flex gap-2 flex-wrap mt-3">
+                {images.map((file, i) => (
+                  <div
+                    key={i}
+                    className="relative w-16 h-16 rounded border overflow-hidden"
+                  >
+                    <img
+                      src={URL.createObjectURL(file)}
+                      alt={`preview-${i}`}
+                      className="w-full h-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveImage(i)}
+                      className="absolute top-0 right-0 bg-black bg-opacity-50 text-white rounded-full w-5 h-5 flex items-center justify-center hover:bg-red-600 transition"
+                      title="Supprimer cette image"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
-
-          {/* Bouton envoyer */}
+          {/* Boutons */}
           <div className="flex justify-center gap-4">
-  <button
-    type="button"
-    onClick={() => navigate("/liste-reclamations")}
-    className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-6 py-3 rounded-lg font-semibold transition"
-  >
-    Annuler
-  </button>
+            <button
+              type="button"
+              onClick={() => navigate("/liste-reclamations")}
+              className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-6 py-3 rounded-lg font-semibold transition"
+            >
+              Annuler
+            </button>
 
-  <button
-    type="submit"
-    className="flex items-center justify-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
-  >
-    Envoyer
-  </button>
-</div>
-
+            <button
+              type="submit"
+              className="flex items-center justify-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
+            >
+              Envoyer
+            </button>
+          </div>
         </form>
       </div>
 
       {/* Popup de confirmation */}
-      <Dialog open={isConfirmDialogOpen} onClose={() => setIsConfirmDialogOpen(false)} className="fixed inset-0 z-50 overflow-y-auto">
+      <Dialog
+        open={isConfirmDialogOpen}
+        onClose={() => setIsConfirmDialogOpen(false)}
+        className="fixed inset-0 z-50 overflow-y-auto"
+      >
         <div className="flex items-center justify-center min-h-screen p-4">
           <Dialog.Panel className="bg-white p-8 rounded-xl shadow-xl max-w-md w-full text-center">
             <Dialog.Title className="text-2xl font-bold text-gray-800 mb-4">

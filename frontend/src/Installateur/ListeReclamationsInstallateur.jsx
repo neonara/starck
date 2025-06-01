@@ -135,12 +135,7 @@ const handleDeleteExport = async (id) => {
       header: "Action",
       cell: ({ row }) => (
         <div className="flex gap-2">
-        <button
-          onClick={() => navigate(`/reclamations/${row.original.id}/edit`)}
-          className="text-blue-500 hover:text-blue-700"
-        >
-          <FaEdit />
-        </button>
+
         <button
           onClick={() => handleDelete(row.original.id)}
           className="text-red-500 hover:text-red-700"

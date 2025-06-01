@@ -17,18 +17,43 @@ const ListeAlarmesInstallateur = () => {
   const [showExportOptions, setShowExportOptions] = useState(false);
   const [exports, setExports] = useState([]);
   const [showModalExports, setShowModalExports] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchAlarmes();
   }, []);
 
+  const normalizeGravite = (gravite) => {
+    const graviteMap = {
+      CRITICAL: "critique",
+      MAJOR: "majeure",
+      MINOR: "mineure"
+    };
+    return graviteMap[gravite?.toUpperCase()] || gravite?.toLowerCase() || "unknown";
+  };
+
   const fetchAlarmes = async () => {
+    setIsLoading(true);
     try {
-      const res = await ApiService.getAlarmesInstallateur();
-      setAlarmList(res.data.results || res.data);
+      const res = await ApiService.getAlarmesDeclenchees();
+      console.log("API Response:", res.data);
+      const data = Array.isArray(res.data.results) 
+        ? res.data.results 
+        : Array.isArray(res.data) 
+          ? res.data 
+          : [];
+      const normalizedData = data.map(alarm => ({
+        ...alarm,
+        gravite: normalizeGravite(alarm.gravite)
+      }));
+      console.log("Processed alarmList:", normalizedData);
+      setAlarmList(normalizedData);
     } catch {
       toast.error("Erreur chargement alarmes ❌");
+      setAlarmList([]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -98,7 +123,6 @@ const ListeAlarmesInstallateur = () => {
           ))}
         </div>
 
-        {/* Export */}
         <div className="relative">
           <button
             onClick={() => setShowExportOptions(!showExportOptions)}
@@ -126,70 +150,76 @@ const ListeAlarmesInstallateur = () => {
       </div>
 
       {/* Alarmes */}
-      {filteredByGravite.map((a) => (
-        <div
-          key={a.id}
-          onClick={() => {
-            if (a.installation_id) {
-              navigate(`/dashboard-installation/${a.installation_id}`);
-            } else {
-              toast.error("ID installation manquant");
-            }
-          }}
-          className={`flex justify-between items-center rounded-lg border p-4 shadow-sm mb-3 transition hover:shadow-md hover:bg-gray-50 ${
-            a.est_resolue ? "opacity-60 line-through" : "bg-white"
-          }`}
-        >
-          <div className="flex items-start gap-4">
-            <input
-              type="checkbox"
-              checked={a.est_resolue}
-              onChange={() => markAsResolved(a.id)}
-              disabled={a.est_resolue}
-              className="mt-1 accent-blue-600 w-5 h-5"
-            />
-            <div>
-              <p className="font-medium text-gray-800 text-base">{a.installation_nom}</p>
-              <p className="text-sm text-gray-500">Code : {a.code_constructeur}</p>
-              <div className="mt-1 flex items-center gap-3 text-xs text-gray-400">
-                <span>📅 {new Date(a.date_declenchement).toLocaleDateString()}</span>
-                <span
-                  className={`px-2 py-0.5 rounded-full text-white font-semibold ${
-                    a.gravite === "critique"
-                      ? "bg-red-500"
-                      : a.gravite === "majeure"
-                      ? "bg-yellow-500"
-                      : "bg-green-500"
-                  }`}
-                >
-                  {a.gravite}
-                </span>
+      {isLoading ? (
+        <p>Chargement des alarmes...</p>
+      ) : Array.isArray(filteredByGravite) && filteredByGravite.length > 0 ? (
+        filteredByGravite.map((a) => (
+          <div
+            key={a.id}
+            onClick={() => {
+              if (a.installation_id) {
+                navigate(`/dashboard-installation/${a.installation_id}`);
+              } else {
+                toast.error("ID installation manquant");
+              }
+            }}
+            className={`flex justify-between items-center rounded-lg border p-4 shadow-sm mb-3 transition hover:shadow-md hover:bg-gray-50 ${
+              a.est_resolue ? "opacity-60 line-through" : "bg-white"
+            }`}
+          >
+            <div className="flex items-start gap-4">
+              <input
+                type="checkbox"
+                checked={a.est_resolue}
+                onChange={() => markAsResolved(a.id)}
+                disabled={a.est_resolue}
+                className="mt-1 accent-blue-600 w-5 h-5"
+              />
+              <div>
+                <p className="font-medium text-gray-800 text-base">{a.installation_nom}</p>
+                <p className="text-sm text-gray-500">Code : {a.code_constructeur}</p>
+                <div className="mt-1 flex items-center gap-3 text-xs text-gray-400">
+                  <span>📅 {new Date(a.date_declenchement).toLocaleDateString()}</span>
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-white font-semibold ${
+                      a.gravite === "critique"
+                        ? "bg-red-500"
+                        : a.gravite === "majeure"
+                        ? "bg-yellow-500"
+                        : "bg-green-500"
+                    }`}
+                  >
+                    {a.gravite}
+                  </span>
+                </div>
               </div>
             </div>
-          </div>
 
-          <div className="flex items-center gap-4">
-            <span
-              className={`text-xs px-3 py-1 rounded-full font-medium ${
-                a.est_resolue
-                  ? "bg-green-100 text-green-700"
-                  : "bg-red-100 text-red-700"
-              }`}
-            >
-              {a.est_resolue ? "Résolue" : "Non résolue"}
-            </span>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setModalData(a);
-              }}
-              className="text-blue-600 hover:text-blue-800"
-            >
-              <FaEye />
-            </button>
+            <div className="flex items-center gap-4">
+              <span
+                className={`text-xs px-3 py-1 rounded-full font-medium ${
+                  a.est_resolue
+                    ? "bg-green-100 text-green-700"
+                    : "bg-red-100 text-red-700"
+                }`}
+              >
+                {a.est_resolue ? "Résolue" : "Non résolue"}
+              </span>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setModalData(a);
+                }}
+                className="text-blue-600 hover:text-blue-800"
+              >
+                <FaEye />
+              </button>
+            </div>
           </div>
-        </div>
-      ))}
+        ))
+      ) : (
+        <p>Aucune alarme disponible</p>
+      )}
 
       {/* Modal alarme */}
       {modalData && (

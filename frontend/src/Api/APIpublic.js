@@ -1,6 +1,9 @@
 import axios from "axios";
 
-const baseURL = "http://127.0.0.1:8000/";
+const baseURL =
+  window.location.hostname === "localhost"
+    ? "http://localhost:8000"
+    : "http://django:8000";
 
 const apipublic = axios.create({
   baseURL,
@@ -10,7 +13,8 @@ const apipublic = axios.create({
 });
 
 const PublicApiService = {
-  registerAdmin: (userData) => apipublic.post("users/register-admin/", userData),
+  registerAdmin: (userData) => apipublic.post("users/register/admin/", userData),
+
 
   verifyAdmin: (email, code) => apipublic.post("users/verify-admin/", { email, code }),
 

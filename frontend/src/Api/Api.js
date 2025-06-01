@@ -3,7 +3,10 @@ import { jwtDecode } from "jwt-decode";
 import Cookies from "js-cookie";
 import dayjs from "dayjs";
 
-const baseURL = "http://localhost:8000/";
+const baseURL =
+  window.location.hostname === "localhost"
+    ? "http://localhost:8000"
+    : "http://django:8000";
 
 const getAccessToken = () => localStorage.getItem("accessToken") || "";
 const getRefreshToken = () => localStorage.getItem("refreshToken") || "";
@@ -237,8 +240,9 @@ updateEntretien: (id, data) => api.put(`entretien/entretiens/${id}/`, data),
 deleteEntretien: (id) => api.delete(`entretien/entretiens/${id}/`),
 getEntretienCalendar: (params) => api.get("entretien/entretiens/calendar/", { params }),
 getEntretienStats: () => api.get("entretien/entretien/statistiques/"),
-
 getEntretienCalendarClient: () => api.get("entretien/calendar/client/"),
+getEntretienInstallateurDetail: (id) =>
+  api.get(`entretien/installateur/entretiens/${id}/`),
 
 //technicien
 ajouterRappelEntretien: (entretienId, rappel_datetime) =>

@@ -55,7 +55,6 @@ import CalendrierEntretiens from "./components/Entretien/CalendrierEntretiens";
 import ListeEntretiensClient from "./components/Entretien/ListeEntretiensClient.jsx";
 import DetailleEntretienClient from "./components/Entretien/DetailleEntretienClient.jsx";
 
-
  
 //Reclamations
 import ListeReclamationsPage from "./components/Reclamation/ListeReclamationPage";
@@ -100,6 +99,7 @@ import DashboardInstallateur from "./Installateur/Dashboard-installateur.jsx";
 import EquipmentSection from "./components/équipements/EquipmentSection.jsx";
 import ClientEquipmentPage from "./components/Client-dashboard/ClientEquipmentPage.jsx";
 import ScanEquipementPage from "./components/équipements/ScanEquipementPage.jsx";
+import DetailEntretienInstallateurPage from "./Installateur/DetailEntretienInstallateurPage.jsx";
 
 
 function App() {
@@ -107,6 +107,7 @@ function App() {
     <Router>
   <Routes>
     <Route path="/" element={<Login />} />
+    <Route path="/forgot-password" element={<ForgotPassword />} />
     <Route path="/register-admin" element={<RegisterAdmin />} />
     <Route path="/complete-registration" element={<CompleteRegistration />} />
 
@@ -124,7 +125,6 @@ function App() {
       <Route path="modifier-installation/:id" element={< EditInstallation/>} />
        <Route path="liste-clients" element={<ListeClientsPage/>}/>
        <Route path="modifier-client/:id" element={<ModifierClientPage />} />
-       <Route path="/forgot-password" element={<ForgotPassword />} />
        <Route path="/reset-password" element={<ResetPassword />} />
        <Route path="/notification" element={<NotificationsPage/>}/>
 
@@ -179,7 +179,7 @@ function App() {
        
        
        <Route path="/client/mes-entretien" element={<ListeEntretiensClient />} />
-       
+       <Route path="/detail_entretien_installateur/:id" element={<DetailEntretienInstallateurPage />} />
        <Route path="//rapports-alarme" element={<RapportAlarmesClientPage />} />
        
        <Route path="/client/details-interventions/:id" element={<DetailleInterventionClient />} />       

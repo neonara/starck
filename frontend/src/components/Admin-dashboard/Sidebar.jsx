@@ -199,7 +199,7 @@ const Sidebar = () => {
             exit={{ opacity: 0, x: -10 }}
             className="text-lg font-semibold text-gray-800"
           >
-            Starck
+            Stark
           </motion.span>
         )}
       </div>

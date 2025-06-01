@@ -86,7 +86,7 @@ export default function LoginPage() {
       <div className="relative text-center w-auto">
 <div className="flex items-center justify-center gap-2 mb-10">
 <img src="/assets/logo.jpg" alt="Starck Logo" className="h-10 w-auto rounded-lg" />
-<h1 className="text-4xl font-semibold text-blue-600">Starck</h1>
+<h1 className="text-4xl font-semibold text-blue-600">Stark</h1>
 </div>
  
         {error && <p className="text-red-500 text-center">{error}</p>}

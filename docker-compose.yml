@@ -24,6 +24,21 @@ services:
     networks:
       - app-network
 
+  celery:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: celery
+    command: celery -A backend worker --loglevel=info
+    volumes:
+      - ./backend:/app
+    env_file: .env
+    depends_on:
+      - db
+      - redis
+    networks:
+      - app-network
+
   backend:
     build:
       context: .

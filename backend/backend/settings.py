@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
-
+import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -60,7 +60,7 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("127.0.0.1", 6379)],
+            "hosts": [("redis", 6379)],
         },
     },
 }
@@ -68,11 +68,7 @@ CHANNEL_LAYERS = {
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-
-ALLOWED_HOSTS = [
-    "localhost",
-    "127.0.0.1",
-]
+ALLOWED_HOSTS = ["localhost", "0.0.0.0"]
 
 
 MIDDLEWARE = [
@@ -111,15 +107,18 @@ TEMPLATES = [
     },
 ]
 
-FRONTEND_BASE_URL = "http://localhost:5173"
+FRONTEND_BASE_URL = "http://0.0.0.0:5173"
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173", 
+     "http://localhost:5173",
+    "http://0.0.0.0:5173",
+
 ]
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
-]
+    "http://0.0.0.0:5173",
+    ]
 CSRF_COOKIE_NAME = "csrftoken"
 CSRF_COOKIE_HTTPONLY = False
 CORS_ALLOW_CREDENTIALS = True
@@ -133,12 +132,11 @@ CORS_ALLOW_CREDENTIALS = True
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'solar_db',  
-        'USER': 'postgres',
-        'PASSWORD': 'youta',
-        'HOST': 'localhost',
+        'NAME': os.getenv("POSTGRES_DB", "solar_db"),
+        'USER': os.getenv("POSTGRES_USER", "postgres"),
+        'PASSWORD': os.getenv("POSTGRES_PASSWORD", "youta"),
+        'HOST': os.getenv("POSTGRES_HOST", "db"),
         'PORT': '5432',
-
     }
 }
 
@@ -207,7 +205,7 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Celery Configuration
-CELERY_BROKER_URL = 'redis://127.0.0.1:6379/0'
+CELERY_BROKER_URL = 'redis://redis:6379/0'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 broker_connection_retry_on_startup = True
@@ -236,19 +234,18 @@ CORS_ALLOW_CREDENTIALS = True
 
 
 
-
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.redis.RedisCache",
-        "LOCATION": "redis://localhost:6379/0", 
+        "LOCATION": "redis://redis:6379/0",
     }
 }
 import os
 # Google OAuth - pour synchronisation personnelle de chaque utilisateur
 from decouple import config 
+FRONTEND_BASE_URL = "http://0.0.0.0:5173"
 
 GOOGLE_CLIENT_ID = config("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = config("GOOGLE_CLIENT_SECRET")
-LOGIN_URL = '/admin/login/'
 SITE_BASE_URL = os.getenv("SITE_BASE_URL", "http://localhost:8000")
 GOOGLE_REDIRECT_URI = f"{SITE_BASE_URL}/oauth2callback"

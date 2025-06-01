@@ -71,8 +71,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 
 ALLOWED_HOSTS = [
-    "localhost",
-    "127.0.0.1",
+  'localhost', '127.0.0.1', '0.0.0.0'
 ]
 
 

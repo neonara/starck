@@ -17,6 +17,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
 
   const { updateRole } = useUser();
+
  
   const handleChange = (e) => {
 
@@ -93,7 +94,7 @@ export default function LoginPage() {
         <form onSubmit={handleLogin}>
 <div className="flex items-center gap-4 justify-center">
  
-            <div className="flex items-center bg-white rounded-full px-4 py-1 w-50">
+<div className="flex items-center bg-white border border-transparent rounded-full px-5 py-1 w-50">
 <FaUser className="text-gray-500" />
 <input
 
@@ -106,6 +107,7 @@ export default function LoginPage() {
                 onChange={handleChange}
 
                 placeholder="Email ou Nom d'utilisateur"
+  className="bg-transparent outline-none border-none focus:ring-0 text-black placeholder-gray-500 px-2 flex-grow"
 
                 required
 
@@ -128,7 +130,7 @@ export default function LoginPage() {
 
                 required
 
-                className="bg-transparent outline-none text-black placeholder-gray-500 px-2 flex-grow"
+                className="bg-transparent outline-none border-none text-black placeholder-gray-500 px-2 flex-grow"
 
               />
 </div>

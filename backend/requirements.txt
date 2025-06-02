@@ -113,3 +113,5 @@ XlsxWriter==3.2.3
 zope.interface==7.2
 zopfli==0.2.3.post1
 python-decouple==3.8
+gunicorn
+uvicorn[standard]

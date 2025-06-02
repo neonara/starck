@@ -2,12 +2,15 @@ FROM node:20-slim
 
 WORKDIR /app
 
-COPY ./frontend/package*.json ./
+# ✅ On copie les fichiers package.json et package-lock.json qui se trouvent dans le contexte
+COPY package*.json ./
 
+# ✅ Nettoyage puis installation des dépendances
 RUN rm -rf node_modules package-lock.json \
   && npm install --legacy-peer-deps
 
-COPY ./frontend .
+# ✅ Copier tout le code du frontend (depuis le sous-module déjà dans le contexte)
+COPY . .
 
 EXPOSE 5173
 

@@ -70,9 +70,11 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 
+
 ALLOWED_HOSTS = [
   'localhost', '127.0.0.1', '0.0.0.0'
 ]
+
 
 
 MIDDLEWARE = [
@@ -111,15 +113,18 @@ TEMPLATES = [
     },
 ]
 
-FRONTEND_BASE_URL = "http://localhost:5173"
+FRONTEND_BASE_URL = "http://0.0.0.0:5173"
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173", 
+     "http://localhost:5173",
+    "http://0.0.0.0:5173",
+
 ]
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
-]
+    "http://0.0.0.0:5173",
+    ]
 CSRF_COOKIE_NAME = "csrftoken"
 CSRF_COOKIE_HTTPONLY = False
 CORS_ALLOW_CREDENTIALS = True
@@ -136,7 +141,7 @@ DATABASES = {
         'NAME': os.getenv("POSTGRES_DB", "solar_db"),
         'USER': os.getenv("POSTGRES_USER", "postgres"),
         'PASSWORD': os.getenv("POSTGRES_PASSWORD", "youta"),
-        'HOST': 'db', 
+        'HOST': os.getenv("POSTGRES_HOST", "db"),
         'PORT': '5432',
     }
 
@@ -236,19 +241,18 @@ CORS_ALLOW_CREDENTIALS = True
 
 
 
-
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.redis.RedisCache",
-        "LOCATION": "redis://redis:6379/0", 
+        "LOCATION": "redis://redis:6379/0",
     }
 }
 import os
 # Google OAuth - pour synchronisation personnelle de chaque utilisateur
 from decouple import config 
+FRONTEND_BASE_URL = "http://0.0.0.0:5173"
 
 GOOGLE_CLIENT_ID = config("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = config("GOOGLE_CLIENT_SECRET")
-LOGIN_URL = '/admin/login/'
 SITE_BASE_URL = os.getenv("SITE_BASE_URL", "http://localhost:8000")
 GOOGLE_REDIRECT_URI = f"{SITE_BASE_URL}/oauth2callback"

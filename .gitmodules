@@ -1,0 +1,3 @@
+[submodule "starck-Frontend"]
+	path = starck-Frontend
+	url = https://github.com/neonara/starck-Frontend.git

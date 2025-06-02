@@ -58,11 +58,11 @@ services:
 
   frontend:
     build:
-      context: .
-      dockerfile: Dockerfile.frontend
+      context: ./starck-Frontend
+      dockerfile: ../Dockerfile.frontend
     container_name: react
     volumes:
-      - ./frontend:/app
+      - ./starck-Frontend:/app
       - /app/node_modules
     ports:
       - "5173:5173"

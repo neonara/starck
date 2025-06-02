@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -68,7 +69,12 @@ CHANNEL_LAYERS = {
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-ALLOWED_HOSTS = ["localhost", "0.0.0.0"]
+
+
+ALLOWED_HOSTS = [
+  'localhost', '127.0.0.1', '0.0.0.0'
+]
+
 
 
 MIDDLEWARE = [
@@ -130,7 +136,7 @@ CORS_ALLOW_CREDENTIALS = True
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-    'default': {
+       'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.getenv("POSTGRES_DB", "solar_db"),
         'USER': os.getenv("POSTGRES_USER", "postgres"),
@@ -138,6 +144,7 @@ DATABASES = {
         'HOST': os.getenv("POSTGRES_HOST", "db"),
         'PORT': '5432',
     }
+
 }
 
 from datetime import timedelta
@@ -205,7 +212,7 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Celery Configuration
-CELERY_BROKER_URL = 'redis://redis:6379/0'
+CELERY_BROKER_URL = "redis://redis:6379/0"
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 broker_connection_retry_on_startup = True

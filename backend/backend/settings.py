@@ -72,7 +72,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 
 ALLOWED_HOSTS = [
-  'localhost', '127.0.0.1', '0.0.0.0'
+  'localhost', '127.0.0.1', '0.0.0.0','57.129.79.137'
 ]
 
 
@@ -119,11 +119,13 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 CORS_ALLOWED_ORIGINS = [
      "http://localhost:5173",
     "http://0.0.0.0:5173",
+    "http://57.129.79.137:5173",
 
 ]
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "http://0.0.0.0:5173",
+    "http://57.129.79.137:5173",
     ]
 CSRF_COOKIE_NAME = "csrftoken"
 CSRF_COOKIE_HTTPONLY = False

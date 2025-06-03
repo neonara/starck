@@ -4,6 +4,7 @@ WORKDIR /app
 
 # ✅ On copie les fichiers package.json et package-lock.json qui se trouvent dans le contexte
 COPY package*.json ./
+COPY .env.production .env
 
 # ✅ Nettoyage puis installation des dépendances
 RUN rm -rf node_modules package-lock.json \

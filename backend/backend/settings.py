@@ -12,7 +12,9 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
-
+from dotenv import load_dotenv
+load_dotenv()
+from celery.schedules import crontab
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -43,6 +45,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',  
     'corsheaders',
     'channels',
+    'django_celery_beat',
     'users',
     'installations',
     'alarme',
@@ -72,7 +75,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 
 ALLOWED_HOSTS = [
-  'localhost', '127.0.0.1', '0.0.0.0','57.129.79.137'
+  'localhost', '127.0.0.1',
 ]
 
 
@@ -113,19 +116,17 @@ TEMPLATES = [
     },
 ]
 
-FRONTEND_BASE_URL = "http://0.0.0.0:5173"
+FRONTEND_BASE_URL = "http://localhost:5173"
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 CORS_ALLOWED_ORIGINS = [
      "http://localhost:5173",
-    "http://0.0.0.0:5173",
-    "http://57.129.79.137:5173",
+
 
 ]
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
-    "http://0.0.0.0:5173",
-    "http://57.129.79.137:5173",
+  
     ]
 CSRF_COOKIE_NAME = "csrftoken"
 CSRF_COOKIE_HTTPONLY = False
@@ -222,7 +223,16 @@ default_app_config = 'entretien.apps.EntretienConfig'
 
 
 
-
+CELERY_BEAT_SCHEDULE = {
+    "fetch-homeassistant-data-every-5-minutes": {
+        "task": "production.tasks.fetch_homeassistant_data",
+        'schedule': 300.0,
+    },
+    'fetch-homeassistant-alarms-every-5-minutes': {
+        'task': 'production.tasks.fetch_homeassistant_alarms',
+        'schedule': 300.0,
+    },
+}
 
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
